@@ -2,6 +2,7 @@ import { PipeTransform, ArgumentMetadata, BadRequestException, HttpStatus, Injec
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { HttpException } from '@nestjs/common/exceptions/http.exception';
+import * as op from 'object-path';
 
 @Injectable()
 export class DtoValidationPipe implements PipeTransform<any> {
@@ -26,8 +27,8 @@ export class DtoValidationPipe implements PipeTransform<any> {
         const result = {};
         errors.forEach(el => {
             const prop = el.property;
-            Object.entries(el.constraints).forEach(constraint => {
-                result[prop + constraint[0]] = `${constraint[1]}`;
+            Object.entries(el.constraints).forEach(([constraint, msg]) => {
+                op.set(result, `${prop}.${constraint}`, msg);
             });
         });
         return result;
