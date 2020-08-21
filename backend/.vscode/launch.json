@@ -12,7 +12,9 @@
                 "tsconfig-paths/register"
             ],
             "args": [
-                "${workspaceFolder}/src/main.ts"
+                "${workspaceFolder}/src/main.ts",
+                "-c",
+                "config/settings.json"
             ]
         }
     ]
