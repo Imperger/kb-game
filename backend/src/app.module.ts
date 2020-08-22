@@ -6,8 +6,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 
-import ConfigLoader from './config/config-loader';
-import LaunchParams from './launch-params';
+import Config from './config'
 
 @Module({
   imports: [AuthModule,
@@ -15,7 +14,7 @@ import LaunchParams from './launch-params';
     ConfigModule.forRoot({
       isGlobal: true,
       ignoreEnvFile: true,
-      load: [() => ConfigLoader(LaunchParams.config)]
+      load: [() => Config]
     })],
   controllers: [AppController],
   providers: [AppService],

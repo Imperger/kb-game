@@ -28,6 +28,7 @@
     "@nestjs/passport": "^7.1.0",
     "@nestjs/platform-express": "^7.0.0",
     "@nestjs/platform-fastify": "^7.4.2",
+    "@nestlab/google-recaptcha": "^1.0.2",
     "class-transformer": "^0.3.1",
     "class-validator": "^0.12.2",
     "mongoose": "^5.9.28",
