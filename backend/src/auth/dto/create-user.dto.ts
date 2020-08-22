@@ -1,4 +1,4 @@
-import { IsEmail, Length } from 'class-validator';
+import { IsEmail, Length, IsString } from 'class-validator';
 
 export class CreateUserDto {
     @Length(3, 16)
@@ -9,4 +9,7 @@ export class CreateUserDto {
 
     @Length(8, 100)
     readonly password: string;
+
+    @IsString()
+    readonly reCaptchaResponse: string;
 }

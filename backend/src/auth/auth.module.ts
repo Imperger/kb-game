@@ -1,7 +1,7 @@
 import { BadRequestException, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { GoogleRecaptchaModule } from '@nestlab/google-recaptcha';
+import { GoogleRecaptchaModule } from '@imperger/google-recaptcha';
 import Config from '../config';
 @Module({
   imports: [
