@@ -6,6 +6,11 @@ class Api {
     @IsString()
     readonly jwtSecret: string;
 }
+class Mongo {
+    @IsDefined({ message: 'missing property \'mongo.connectionURI\'' })
+    @IsString()
+    readonly connectionURI: string;
+}
 class Google {
     @IsDefined({ message: 'missing property \'auth.google.clientId\'' })
     @IsString()
@@ -27,10 +32,19 @@ class ReCaptcha {
     readonly secret: string;
 }
 export class ConfigSchema {
+    @IsDefined({ message: 'missing \'domain\' property'})
+    @IsString()
+    readonly domain: string;
+
     @IsDefined({ message: 'missing \'api\' scope' })
     @ValidateNested()
     @Type(() => Api)
     readonly api: Api;
+
+    @IsDefined({ message: 'missing \'mongo\' scope' })
+    @ValidateNested()
+    @Type(() => Mongo)
+    readonly mongo: Mongo;
 
     @IsDefined({ message: 'missing \'auth\' scope' })
     @ValidateNested()

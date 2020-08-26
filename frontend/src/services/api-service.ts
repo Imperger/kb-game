@@ -12,7 +12,7 @@ export default class ApiService {
     }
     register(username: string, email: string, password: string, reCaptchaResponse: string) {
         return this.axios.post('/auth/register',
-            { username, email, password, reCaptchaResponse },
+            { username, email, password },
             { headers: { recaptcha: reCaptchaResponse } });
     }
     private updateAuthorizationHeader() {

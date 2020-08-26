@@ -1,8 +1,9 @@
 import * as fs from 'fs';
 
 import ConfigValidator from './config-validator';
+import { ConfigSchema } from './config-schema';
 
-export default (filename: string) => {
+export default (filename: string): ConfigSchema => {
     try {
         const config = JSON.parse(fs.readFileSync(filename, 'utf8'));
         ConfigValidator(config);
