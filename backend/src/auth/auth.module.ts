@@ -6,6 +6,9 @@ import { GoogleRecaptchaModule } from '@imperger/google-recaptcha';
 import Config from '../config';
 import { EmailModule } from '../email/email.module';
 import { User, UserSchema } from '../schemas/user.schema';
+import { JwtModule } from '@nestjs/jwt';
+import { UserModule } from '../user/user.module';
+import { LoginByEmailStrategy } from './login-by-email.strategy';
 @Module({
   imports: [
     GoogleRecaptchaModule.forRoot({
@@ -16,9 +19,14 @@ import { User, UserSchema } from '../schemas/user.schema';
       }
     }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    EmailModule
+    JwtModule.register({
+      secret: Config.api.jwtSecret,
+      signOptions: { expiresIn: '3m' },
+    }),
+    EmailModule,
+    UserModule
   ],
-  providers: [AuthService],
+  providers: [AuthService, LoginByEmailStrategy],
   controllers: [AuthController],
   exports: [AuthService]
 })

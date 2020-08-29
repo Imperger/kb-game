@@ -1,4 +1,4 @@
-import { IsString, ValidateNested, IsDefined } from 'class-validator';
+import { IsString, ValidateNested, IsDefined, IsBoolean, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class Api {
@@ -21,6 +21,10 @@ class Google {
     readonly secret: string;
 }
 class Auth {
+    @IsDefined({ message: 'missing \'auth.confirmCodeTtl\' property' })
+    @IsString()
+    readonly confirmCodeTtl: string;
+
     @IsDefined({ message: 'missing \'auth.google\' scope' })
     @ValidateNested()
     @Type(() => Google)
@@ -32,9 +36,17 @@ class ReCaptcha {
     readonly secret: string;
 }
 export class ConfigSchema {
-    @IsDefined({ message: 'missing \'domain\' property'})
+    @IsDefined({ message: 'missing \'domain\' property' })
     @IsString()
     readonly domain: string;
+
+    @IsDefined({ message: 'missing \'port\' property' })
+    @IsNumber()
+    readonly port: number;
+
+    @IsDefined({ message: 'missing \'ssl\' property' })
+    @IsBoolean()
+    readonly ssl: boolean;
 
     @IsDefined({ message: 'missing \'api\' scope' })
     @ValidateNested()

@@ -9,6 +9,7 @@ import { UserModule } from './user/user.module';
 import { EmailModule } from './email/email.module';
 
 import Config from './config'
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import Config from './config'
       load: [() => Config]
     }),
     MongooseModule.forRoot(Config.mongo.connectionURI),
+    PassportModule.register({}),
     AuthModule,
     UserModule,
     EmailModule,],

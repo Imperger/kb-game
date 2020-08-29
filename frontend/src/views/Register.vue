@@ -32,7 +32,7 @@ export default class Register extends Mixins(ApiServiceMixin) {
       const response = await this.api.register(this.username, this.email, this.password, token);
       console.log(response);
     } catch (e) {
-      console.error('Register error.');
+      console.error(e);
     }
   }
 }

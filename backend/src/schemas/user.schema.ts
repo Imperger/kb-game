@@ -10,16 +10,16 @@ class UserSecret {
     hash: string;
 }
 
-@Schema()
+@Schema({ timestamps: true })
 export class User extends Document {
-    @Prop()
+    @Prop({ unique: true })
     username: string;
 
-    @Prop()
+    @Prop({ unique: true })
     email: string;
 
     @Prop()
-    createdAt: string;
+    confirmed: boolean;
 
     @Prop({ type: UserSecret })
     secret: UserSecret;
