@@ -14,6 +14,6 @@ export default class RegistrationConfirm extends Mixins(ApiServiceMixin) {
   @Prop()
   private readonly code!: string;
 
-  mounted() { this.api.registrationConfirm(this.code); }
+  mounted() { this.api.confirmRegistration(this.code); }
 }
 </script>

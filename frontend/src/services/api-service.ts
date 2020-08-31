@@ -21,7 +21,7 @@ export default class ApiService {
             { username, email, password },
             { headers: { recaptcha: reCaptchaResponse } });
     }
-    registrationConfirm(code: string) {
+    confirmRegistration(code: string) {
         return this.axios.patch('auth/registration/confirm', { code });
     }
     login(usernameOrEmail: string, password: string, reCaptchaResponse: string) {

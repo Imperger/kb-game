@@ -1,4 +1,4 @@
-import { IsString, ValidateNested, IsDefined, IsBoolean, IsNumber } from 'class-validator';
+import { IsString, ValidateNested, IsDefined, IsBoolean, IsNumber, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class Api {
@@ -21,6 +21,10 @@ class Google {
     readonly secret: string;
 }
 class Auth {
+    @IsOptional()
+    @IsString()
+    readonly jwtSecret: string;
+
     @IsDefined({ message: 'missing \'auth.confirmCodeTtl\' property' })
     @IsString()
     readonly confirmCodeTtl: string;

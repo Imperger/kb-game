@@ -1,32 +1,27 @@
-import { BadRequestException, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { GoogleRecaptchaModule } from '@imperger/google-recaptcha';
+
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { GoogleRecaptchaModule } from '@imperger/google-recaptcha';
-import Config from '../config';
 import { EmailModule } from '../email/email.module';
-import { User, UserSchema } from '../schemas/user.schema';
-import { JwtModule } from '@nestjs/jwt';
+import { User, UserSchema } from '../common/schemas/user.schema';
 import { UserModule } from '../user/user.module';
-import { LoginByEmailStrategy } from './login-by-email.strategy';
+import { LoginByEmailStrategy, LoginByUsernameStrategy, RegistrationConfirmStrategy } from './strategies';
+import { CaptchaException } from '../common/exceptions/captcha-exception';
+import Config from '../config';
 @Module({
   imports: [
     GoogleRecaptchaModule.forRoot({
       secretKey: Config.reCaptcha.secret,
+      exceptionType: CaptchaException,
       response: req => req.headers.recaptcha,
-      onError: () => {
-        throw new BadRequestException('Invalid recaptcha.')
-      }
     }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    JwtModule.register({
-      secret: Config.api.jwtSecret,
-      signOptions: { expiresIn: '3m' },
-    }),
     EmailModule,
     UserModule
   ],
-  providers: [AuthService, LoginByEmailStrategy],
+  providers: [AuthService, LoginByEmailStrategy, LoginByUsernameStrategy, RegistrationConfirmStrategy],
   controllers: [AuthController],
   exports: [AuthService]
 })

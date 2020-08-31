@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { PassportModule } from '@nestjs/passport';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { EmailModule } from './email/email.module';
-
+import { JwtModule } from './jwt/jwt.module';
 import Config from './config'
-import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
@@ -22,7 +22,8 @@ import { PassportModule } from '@nestjs/passport';
     PassportModule.register({}),
     AuthModule,
     UserModule,
-    EmailModule,],
+    EmailModule,
+    JwtModule,],
   controllers: [AppController],
   providers: [AppService]
 })

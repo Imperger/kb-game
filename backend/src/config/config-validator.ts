@@ -2,7 +2,7 @@ import { plainToClass } from 'class-transformer';
 import { validateSync, ValidationError } from 'class-validator';
 
 import { ConfigSchema } from './config-schema';
-import MapTree from '../util/map-tree';
+import MapTree from '../common/util/map-tree';
 
 export default <T>(config: T) => {
     const object = plainToClass(ConfigSchema, config);

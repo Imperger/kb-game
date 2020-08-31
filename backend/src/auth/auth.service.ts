@@ -5,9 +5,11 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User } from '../schemas/user.schema';
+import { User } from '../common/schemas/user.schema';
 import { EmailService } from '../email/email.service';
 import { UserService } from '../user/user.service';
+import { UserValidationResult } from './interfaces/user-validation-result';
+import Config from '../config';
 
 @Injectable()
 export class AuthService {
@@ -23,42 +25,50 @@ export class AuthService {
         const hash = await AuthService.hashPassword(password, salt);
 
         const createUser = new this.userModel({ username, email, confirmed: false, secret: { salt, hash } });
-        await createUser.save();
+        const userId = (await createUser.save()).id;
+
 
         this.emailService.send({
             from: `no-reply@${this.configService.get<string>('domain')}`,
             to: email,
             subject: 'new_user',
-            html: `<span>${this.buildConfirmURL(username)}</span>`
+            html: `<span>${this.buildConfirmURL(userId)}</span>`
         });
     }
 
     async validateByEmail(email: string, password: string) {
         const user = await this.userService.findByEmail(email);
 
-        if (user === null || !user.confirmed)
-            return false;
-
-        return await AuthService.hashPassword(password, user.secret.salt) === user.secret.hash;
+        return await AuthService.validateUser(user, password);
     }
 
     async validateByUsername(username: string, password: string) {
         const user = await this.userService.findByUsername(username);
 
-        if (user === null)
-            return;
-
-        return await AuthService.hashPassword(password, user.secret.salt) === user.secret.hash;
+        return await AuthService.validateUser(user, password);
     }
 
-    private buildConfirmURL(username: string) {
+    private buildConfirmURL(userId: string) {
         const ssl = this.configService.get<boolean>('ssl');
         const protocol = ssl ? 'https://' : 'http://';
         const domain = this.configService.get<string>('domain');
         const port = this.configService.get<number>('port');
 
-        const confirmCode = this.jwtService.sign({ username }, { expiresIn: '15m' });
+        const confirmCode = this.jwtService.sign({ id: userId }, { expiresIn: Config.auth.confirmCodeTtl, secret: Config.auth.jwtSecret });
         return `${protocol}${domain}:${AuthService.isPortRequired(port, ssl) ? port : ''}/registration/confirm/${confirmCode}`;
+    }
+
+    static async validateUser(user: User, password: string) {
+        if (user === null)
+            return UserValidationResult.NotFound;
+
+        if (!user.confirmed)
+            return UserValidationResult.NotConfirmed;
+
+
+        return await AuthService.hashPassword(password, user.secret.salt) === user.secret.hash ?
+            UserValidationResult.Ok :
+            UserValidationResult.InvalidCredentials;
     }
 
     static isPortRequired(port: number, ssl: boolean) {
