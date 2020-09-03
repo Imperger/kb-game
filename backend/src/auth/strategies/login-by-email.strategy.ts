@@ -3,15 +3,12 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 
 import { AuthService } from '../auth.service';
-import { GetLoginStrategyResult } from './get-login-strategy-result';
 
 @Injectable()
 export class LoginByEmailStrategy extends PassportStrategy(Strategy, 'email') {
     constructor(private authService: AuthService) { super({ usernameField: 'email' }); }
 
     async validate(email: string, password: string) {
-        const result = await this.authService.validateByEmail(email, password);
-
-        return GetLoginStrategyResult(result);
+        return await this.authService.validateByEmail(email, password);
     }
 }

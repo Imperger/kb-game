@@ -1,12 +1,10 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
-import { UserValidationResult } from '../interfaces/user-validation-result';
+import { HttpStatus } from '@nestjs/common';
 
-export class RegistrationNotConfirmedException extends HttpException {
-    constructor() {
-        super({
-            status: UserValidationResult.NotConfirmed,
-            message: 'Pending confirm registration'
-        },
-            HttpStatus.UNAUTHORIZED);
-    }
+import { AppException } from '../../common/filters/app-exception/app-exception';
+import { StatusCode } from '../../common/types/status-code';
+
+export class RegistrationNotConfirmedException extends AppException {
+    code = StatusCode.PendingConfirmRegistration;
+    httpCode = HttpStatus.UNAUTHORIZED;
+    message = 'Pending confirm registration.';
 }

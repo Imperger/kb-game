@@ -1,1 +1,0 @@
-export class CaptchaException extends Error { }

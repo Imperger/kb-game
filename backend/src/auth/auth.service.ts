@@ -4,11 +4,20 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
+import { MongoError } from 'mongodb';
 import { Model } from 'mongoose';
+
 import { User } from '../common/schemas/user.schema';
 import { EmailService } from '../email/email.service';
 import { UserService } from '../user/user.service';
-import { UserValidationResult } from './interfaces/user-validation-result';
+import { ExtractDuplicateKey } from '../common/util/mongo-error-parser';
+import { UsernameIsTakenException } from './exceptions/username-is-taken.exception';
+import { EmailIsTakenException } from './exceptions/email-is-taken.exception';
+import { InternalException } from '../common/exceptions/internal.exception';
+import { RegistrationAlreadyConfirmedException } from './exceptions/registration-already-confirmed.exception';
+import { UnknownUserForConfirmRegistrationException } from './exceptions/object-of-confirmation-missing.exception';
+import { InvalidCredentialsException } from './exceptions/invalid-credentials.exception';
+import { RegistrationNotConfirmedException } from './exceptions/registration-not-confirmed-exception';
 import Config from '../config';
 
 @Injectable()
@@ -25,27 +34,60 @@ export class AuthService {
         const hash = await AuthService.hashPassword(password, salt);
 
         const createUser = new this.userModel({ username, email, confirmed: false, secret: { salt, hash } });
-        const userId = (await createUser.save()).id;
 
+        try {
+            const userId = (await createUser.save()).id;
+            this.emailService.send({
+                from: `no-reply@${this.configService.get<string>('domain')}`,
+                to: email,
+                subject: 'new_user',
+                html: `<span>${this.buildConfirmURL(userId)}</span>`
+            });
+        }
+        catch (e) {
+            if (e instanceof MongoError) {
+                if (e.code === 11000) {
+                    const k = ExtractDuplicateKey(e.message);
 
-        this.emailService.send({
-            from: `no-reply@${this.configService.get<string>('domain')}`,
-            to: email,
-            subject: 'new_user',
-            html: `<span>${this.buildConfirmURL(userId)}</span>`
-        });
+                    if (k.startsWith('username'))
+                        throw new UsernameIsTakenException();
+                    else if (k.startsWith('email'))
+                        throw new EmailIsTakenException();
+
+                    throw new InternalException();
+                }
+
+            }
+        }
+    }
+
+    async confirmRegistration(userId: string) {
+        const user = await this.userService.findById(userId);
+
+        if (!user)
+            throw new UnknownUserForConfirmRegistrationException();
+
+        if (user.confirmed)
+            throw new RegistrationAlreadyConfirmedException();
+
+        user.confirmed = true;
+        await user.save();
     }
 
     async validateByEmail(email: string, password: string) {
         const user = await this.userService.findByEmail(email);
 
-        return await AuthService.validateUser(user, password);
+        await AuthService.validateUser(user, password);
+
+        return user;
     }
 
     async validateByUsername(username: string, password: string) {
         const user = await this.userService.findByUsername(username);
 
-        return await AuthService.validateUser(user, password);
+        await AuthService.validateUser(user, password);
+
+        return user;
     }
 
     private buildConfirmURL(userId: string) {
@@ -58,17 +100,20 @@ export class AuthService {
         return `${protocol}${domain}:${AuthService.isPortRequired(port, ssl) ? port : ''}/registration/confirm/${confirmCode}`;
     }
 
+    async generateAccessToken(userId: string) {
+        return await this.jwtService.signAsync({ id: userId });
+    }
+
     static async validateUser(user: User, password: string) {
         if (user === null)
-            return UserValidationResult.NotFound;
+            throw new InvalidCredentialsException();
 
         if (!user.confirmed)
-            return UserValidationResult.NotConfirmed;
+            throw new RegistrationNotConfirmedException();
 
 
-        return await AuthService.hashPassword(password, user.secret.salt) === user.secret.hash ?
-            UserValidationResult.Ok :
-            UserValidationResult.InvalidCredentials;
+        if (await AuthService.hashPassword(password, user.secret.salt) !== user.secret.hash)
+            throw new InvalidCredentialsException();
     }
 
     static isPortRequired(port: number, ssl: boolean) {

@@ -8,13 +8,13 @@ import { EmailModule } from '../email/email.module';
 import { User, UserSchema } from '../common/schemas/user.schema';
 import { UserModule } from '../user/user.module';
 import { LoginByEmailStrategy, LoginByUsernameStrategy, RegistrationConfirmStrategy } from './strategies';
-import { CaptchaException } from '../common/exceptions/captcha-exception';
+import { RecaptchaException } from '../common/exceptions/recaptcha-exception';
 import Config from '../config';
 @Module({
   imports: [
     GoogleRecaptchaModule.forRoot({
       secretKey: Config.reCaptcha.secret,
-      exceptionType: CaptchaException,
+      exceptionType: RecaptchaException,
       response: req => req.headers.recaptcha,
     }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
