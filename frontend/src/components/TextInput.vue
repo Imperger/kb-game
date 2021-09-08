@@ -18,12 +18,12 @@
 .component {
     position: relative;
     display: flex;
+    margin: 13px 0;
 }
 
 .input {
     border: 1px solid #FF2406;
     font-size: 1.2em;
-    padding-left: 5px;
     padding: 5px 8px;
 }
 
