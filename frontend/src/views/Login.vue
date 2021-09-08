@@ -1,16 +1,13 @@
 <template>
   <form @submit.prevent="onSubmit">
-    <TextInput v-model="usernameOrEmail" label="Username or email" class="block" />
-    <TextInput v-model="password" password label="Password" class="block" />
+    <TextInput v-model="usernameOrEmail" label="Username or email"/>
+    <TextInput v-model="password" password label="Password" />
     <button>Login</button>
   </form>
 </template>
 
 <style scoped>
-.block {
-  display: block;
-  margin: 2px 0;
-}
+
 </style>
 
 <script lang="ts">
