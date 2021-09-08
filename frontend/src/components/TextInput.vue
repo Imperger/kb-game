@@ -1,0 +1,93 @@
+<template>
+<div class="component">
+    <label
+    class="label" 
+    :class="{'label-active': labelActive}" 
+    :for="id">{{ label }}</label>
+    <input :id="id"
+    class="input"
+    :type="type"
+    :value="value"
+    @input="changed"
+    @focus="focusChanged(true)"
+    @blur="focusChanged(false)"/>
+</div>
+</template>
+
+<style scoped>
+.component {
+    position: relative;
+    display: flex;
+}
+
+.input {
+    border: 1px solid #FF2406;
+    font-size: 1.2em;
+    padding-left: 5px;
+    padding: 5px 8px;
+}
+
+.input:focus {
+    outline: none;
+    border: 1px solid red;
+}
+
+.label {
+    position: absolute;
+    top: 8px;
+    margin-left: 13px;
+    pointer-events: none;
+    transition: transform 0.15s;
+}
+
+.label-active {
+    transform: translateY(-16px) scale(0.75);
+    pointer-events: auto;
+    background: linear-gradient(rgba(0,0,0,0) 7px 7px, rgba(255,255,255,1) 7px 10px, rgba(0,0,0,0) 10px )
+}
+</style>
+
+<script lang="ts">
+import { Component, Mixins, Model, Prop } from 'vue-property-decorator';
+
+import UniqueIdMixin from '@/mixins/unique-id-mixin';
+
+interface InputValue {
+    target: { value: string };
+}
+
+@Component
+export default class TextInput extends Mixins(UniqueIdMixin) {
+  @Model('input') 
+  private value!: string;
+
+  private changed(e: InputEvent & InputValue) { this.$emit('input', e.target?.value); }
+
+  @Prop(Boolean)
+  private password!: boolean;
+
+  @Prop()
+  private label!: string;
+
+  private focused = false;
+
+  private id!: string;
+
+  public created() {
+      this.id = `textInput_${this.generateId()}`;
+  }
+
+  private get type() {
+      return this.password ? 'password': 'text';
+  }
+
+  private get labelActive() {
+      return this.value || this.focused;
+  }
+
+  private focusChanged(focus: boolean) {
+      this.focused = focus;
+  }
+
+}
+</script>
