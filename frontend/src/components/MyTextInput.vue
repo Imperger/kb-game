@@ -57,7 +57,7 @@ interface InputValue {
 }
 
 @Component
-export default class TextInput extends Mixins(UniqueIdMixin) {
+export default class MyTextInput extends Mixins(UniqueIdMixin) {
   @Model('input') 
   private value!: string;
 
