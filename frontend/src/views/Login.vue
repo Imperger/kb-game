@@ -24,7 +24,7 @@ export default class Login extends Mixins(ApiServiceMixin) {
   async onSubmit() {
     try {
       await this.$recaptchaLoaded();
-      const token = await this.$recaptcha('register');
+      const token = await this.$recaptcha('LOGIN');
       const response = await this.api.login(this.usernameOrEmail, this.password, token);
       console.log(response);
     } catch (e) {
