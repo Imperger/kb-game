@@ -17,6 +17,7 @@ async function bootstrap() {
     cert: fs.readFileSync('../certs/server.cer'),
   };
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ https: httpsOptions })); // TODO: Respect to config.ssl
+  app.enableCors();
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalFilters(new AppExceptionFilter());
