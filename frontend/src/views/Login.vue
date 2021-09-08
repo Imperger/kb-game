@@ -1,7 +1,7 @@
 <template>
   <form @submit.prevent="onSubmit">
-    <input v-model="usernameOrEmail" type="text" class="block" />
-    <input v-model="password" type="password" class="block" />
+    <TextInput v-model="usernameOrEmail" label="Username or email" class="block" />
+    <TextInput v-model="password" password label="Password" class="block" />
     <button>Login</button>
   </form>
 </template>
@@ -9,6 +9,7 @@
 <style scoped>
 .block {
   display: block;
+  margin: 2px 0;
 }
 </style>
 
@@ -16,7 +17,9 @@
 import { Component, Mixins } from 'vue-property-decorator';
 import ApiServiceMixin from '@/mixins/api-service-mixin';
 
-@Component
+import TextInput from '../components/TextInput.vue';
+
+@Component({ components: { TextInput }})
 export default class Login extends Mixins(ApiServiceMixin) {
   private usernameOrEmail = '';
   private password = '';
