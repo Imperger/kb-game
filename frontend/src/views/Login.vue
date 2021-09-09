@@ -1,13 +1,28 @@
 <template>
   <form>
-    <MyTextInput v-model="usernameOrEmail" label="Username or email"/>
-    <MyTextInput v-model="password" password label="Password" />
+    <div class="inputWrapper">
+      <MyTextInput v-model="usernameOrEmail" label="Username or email" name="userid" v-validate="'login_or_email'"/>
+      <span class="error">{{ errors.first('userid') }}</span>
+    </div>
+    <div class="inputWrapper">
+      <MyTextInput v-model="password" password label="Password" name="password" v-validate="'required|length:8,100'"/>
+      <span class="error">{{ errors.first('password') }}</span>
+    </div>
     <MyButton @click="onSubmit">Login</MyButton>
   </form>
 </template>
 
 <style scoped>
+.inputWrapper {
+  display: flex;
+}
 
+.error {
+  margin-left: 10px;
+  padding-top: 21px;
+  max-height: 39px;
+  color: #f90909;
+}
 </style>
 
 <script lang="ts">
@@ -34,6 +49,11 @@ export default class Login extends Mixins(ApiServiceMixin) {
     } catch (e) {
       console.error(e);
     }
+  }
+
+  private get loginButtonDisabled() {
+    return this.$validator.errors.first('userid')?.length > 0 || 
+    this.$validator.errors.first('password')?.length > 0;
   }
 }
 </script>
