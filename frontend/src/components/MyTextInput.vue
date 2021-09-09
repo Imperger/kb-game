@@ -82,7 +82,7 @@ export default class MyTextInput extends Mixins(UniqueIdMixin) {
   }
 
   private get labelActive() {
-      return this.value || this.focused;
+      return this.value.length > 0 || this.focused;
   }
 
   private focusChanged(focus: boolean) {
