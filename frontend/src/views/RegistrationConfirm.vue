@@ -1,5 +1,5 @@
 <template>
-  <div></div>
+  <div>{{ result }}</div>
 </template>
 
 <style scoped>
@@ -7,13 +7,31 @@
 
 <script lang="ts">
 import { Component, Mixins, Prop } from 'vue-property-decorator';
+
 import ApiServiceMixin from '@/mixins/api-service-mixin';
+import { isAxiosError } from '@/typeguards/axios-typeguard';
+import { RegistrationConfirmResponse } from '@/services/interfaces/registration-confirm-response';
 
 @Component
 export default class RegistrationConfirm extends Mixins(ApiServiceMixin) {
   @Prop()
   private readonly code!: string;
 
-  mounted() { this.api.confirmRegistration(this.code); }
+  private result = '';
+
+  async mounted (): Promise<void> {
+    try {
+      const response = await (await this.api.confirmRegistration(this.code)).data;
+      if (response.code === 0) {
+        this.result = 'Registration successfully completed';
+      } else {
+        this.result = response.message;
+      }
+    } catch (e: unknown) {
+      if (isAxiosError<RegistrationConfirmResponse>(e)) {
+        this.result = e.response?.data.message || 'Unknown error';
+      }
+    }
+  }
 }
 </script>

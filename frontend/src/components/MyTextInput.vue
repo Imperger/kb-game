@@ -1,8 +1,8 @@
 <template>
 <div class="component">
     <label
-    class="label" 
-    :class="{'label-active': labelActive}" 
+    class="label"
+    :class="{'label-active': labelActive}"
     :for="id">{{ label }}</label>
     <input :id="id"
     class="input"
@@ -58,10 +58,10 @@ interface InputValue {
 
 @Component
 export default class MyTextInput extends Mixins(UniqueIdMixin) {
-  @Model('input') 
+  @Model('input')
   private value!: string;
 
-  private changed(e: InputEvent & InputValue) { this.$emit('input', e.target?.value); }
+  private changed (e: InputEvent & InputValue) { this.$emit('input', e.target?.value); }
 
   @Prop(Boolean)
   private password!: boolean;
@@ -73,21 +73,20 @@ export default class MyTextInput extends Mixins(UniqueIdMixin) {
 
   private id!: string;
 
-  public created() {
-      this.id = `textInput_${this.generateId()}`;
+  public created (): void {
+    this.id = `textInput_${this.generateId()}`;
   }
 
-  private get type() {
-      return this.password ? 'password': 'text';
+  private get type () {
+    return this.password ? 'password' : 'text';
   }
 
-  private get labelActive() {
-      return this.value.length > 0 || this.focused;
+  private get labelActive () {
+    return this.value.length > 0 || this.focused;
   }
 
-  private focusChanged(focus: boolean) {
-      this.focused = focus;
+  private focusChanged (focus: boolean) {
+    this.focused = focus;
   }
-
 }
 </script>

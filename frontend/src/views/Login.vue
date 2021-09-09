@@ -30,17 +30,19 @@ import { Component, Mixins } from 'vue-property-decorator';
 import ApiServiceMixin from '@/mixins/api-service-mixin';
 
 import MyTextInput from '@/components/MyTextInput.vue';
-import MyButton from '@/components/MyButton.vue'
+import MyButton from '@/components/MyButton.vue';
 
-@Component({ components: { 
-  MyTextInput,
-  MyButton
-}})
+@Component({
+  components: {
+    MyTextInput,
+    MyButton
+  }
+})
 export default class Login extends Mixins(ApiServiceMixin) {
   private usernameOrEmail = '';
   private password = '';
 
-  async onSubmit() {
+  async onSubmit (): Promise<void> {
     try {
       await this.$recaptchaLoaded();
       const token = await this.$recaptcha('LOGIN');
@@ -51,8 +53,8 @@ export default class Login extends Mixins(ApiServiceMixin) {
     }
   }
 
-  private get loginButtonDisabled() {
-    return this.$validator.errors.first('userid')?.length > 0 || 
+  private get loginButtonDisabled () {
+    return this.$validator.errors.first('userid')?.length > 0 ||
     this.$validator.errors.first('password')?.length > 0;
   }
 }

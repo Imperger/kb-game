@@ -4,5 +4,5 @@ let nextId = 0;
 
 @Component
 export default class UniqueIdMixin extends Vue {
-    public generateId() { return nextId++; }
+  public generateId (): number { return nextId++; }
 }

@@ -5,5 +5,5 @@ const instance = new ApiService('https://dev.lan:3000/api');
 
 @Component
 export default class ApiServiceMixin extends Vue {
-    public get api() { return instance }
+  public get api (): ApiService { return instance; }
 }

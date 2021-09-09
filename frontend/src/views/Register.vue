@@ -25,7 +25,7 @@ export default class Register extends Mixins(ApiServiceMixin) {
   private username = '';
   private email = '';
   private password = '';
-  async onSubmit() {
+  async onSubmit (): Promise<void> {
     try {
       await this.$recaptchaLoaded();
       const token = await this.$recaptcha('REGISTER');

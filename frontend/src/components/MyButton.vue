@@ -39,7 +39,7 @@
 </style>
 
 <script lang="ts">
-import { Component, Emit, Mixins, Model, Prop } from 'vue-property-decorator';
+import { Component, Mixins, Prop } from 'vue-property-decorator';
 
 import UniqueIdMixin from '@/mixins/unique-id-mixin';
 
@@ -49,21 +49,21 @@ interface ConcreteListener {
 
 @Component
 export default class MyButton extends Mixins(UniqueIdMixin) {
-    @Prop({type: Boolean, default: null})
+    @Prop({ type: Boolean, default: null })
     private disabled!: boolean | null;
 
     private disabledBtn = false;
 
-    private async onClick() {       
-        this.disabledBtn = true;
+    private async onClick () {
+      this.disabledBtn = true;
 
-        await (this.$listeners['click'] as unknown as ConcreteListener)?.fns();
+      await (this.$listeners.click as unknown as ConcreteListener)?.fns();
 
-        this.disabledBtn = false;
+      this.disabledBtn = false;
     }
 
-    private get isDisabled() {
-        return this.disabled === null ? this.disabledBtn : this.disabled;
+    private get isDisabled () {
+      return this.disabled === null ? this.disabledBtn : this.disabled;
     }
 }
 </script>
