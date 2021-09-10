@@ -1,25 +1,26 @@
 <template>
-  <form>
-    <div class="inputWrapper">
-      <MyTextInput v-model="usernameOrEmail" label="Username or email" name="userid" v-validate="'login_or_email'"/>
-      <span class="error">{{ errors.first('userid') }}</span>
+  <form class="loginComponent">
+    <MyTextInput v-model="usernameOrEmail" label="Username or email" name="userid" v-validate="'login_or_email'" data-vv-delay="600"/>
+    <MyTextInput v-model="password" password label="Password" name="password" v-validate="'required|length:8,100'" data-vv-delay="600"/>
+    <div class="loginButtonWrapper">
+      <MyButton @click="onSubmit" :disabled="loginButtonDisabled">Login</MyButton>
+      <span class="loginError">{{ loginError }}</span>
     </div>
-    <div class="inputWrapper">
-      <MyTextInput v-model="password" password label="Password" name="password" v-validate="'required|length:8,100'"/>
-      <span class="error">{{ errors.first('password') }}</span>
-    </div>
-    <MyButton @click="onSubmit">Login</MyButton>
   </form>
 </template>
 
 <style scoped>
-.inputWrapper {
+.loginComponent {
+  margin: auto;
+}
+
+.loginButtonWrapper {
   display: flex;
 }
 
-.error {
+.loginError {
   margin-left: 10px;
-  padding-top: 21px;
+  padding-top: 13px;
   max-height: 39px;
   color: #f90909;
 }
@@ -40,21 +41,26 @@ import MyButton from '@/components/MyButton.vue';
 })
 export default class Login extends Mixins(ApiServiceMixin) {
   private usernameOrEmail = '';
+
   private password = '';
+
+  private loginError = '';
 
   async onSubmit (): Promise<void> {
     try {
       await this.$recaptchaLoaded();
       const token = await this.$recaptcha('LOGIN');
-      const response = await this.api.login(this.usernameOrEmail, this.password, token);
-      console.log(response);
+      await this.api.login(this.usernameOrEmail, this.password, token);
+      this.loginError = '';
     } catch (e) {
-      console.error(e);
+      this.loginError = 'Login failed';
     }
   }
 
   private get loginButtonDisabled () {
-    return this.$validator.errors.first('userid')?.length > 0 ||
+    return this.usernameOrEmail.length === 0 ||
+    this.password.length === 0 ||
+    this.$validator.errors.first('userid')?.length > 0 ||
     this.$validator.errors.first('password')?.length > 0;
   }
 }
