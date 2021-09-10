@@ -1,3 +1,4 @@
 export interface RegisterResponse {
-    registered: true
+    code: number;
+    message?: string;
 }

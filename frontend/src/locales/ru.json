@@ -6,6 +6,8 @@
       "password": "Пароль",
       "login": "Вход",
       "signup": "Создать аккаунт",
-      "invalidCredentials": "Некорректные данные для входа"
+      "invalidCredentials": "Некорректные данные для входа",
+      "usernameIsTaken": "Имя пользователя уже занято",
+      "emailIsTaken": "Эта почта уже кем-то занята"
     }
   }

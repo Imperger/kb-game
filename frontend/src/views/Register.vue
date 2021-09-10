@@ -42,6 +42,10 @@
 .signupButtonWrapper {
   margin-top: 10px;
 }
+
+.signupError {
+  color: #f90909;
+}
 </style>
 
 <script lang="ts">
@@ -50,6 +54,9 @@ import { Component, Mixins } from 'vue-property-decorator';
 import MyValidatedTextInput from '@/components/MyValidatedTextInput.vue';
 import MyButton from '@/components/MyButton.vue';
 import ApiServiceMixin from '../mixins/api-service-mixin';
+import { StatusCode } from '@/services/api-service/types/status-code';
+import { isAxiosError } from '@/typeguards/axios-typeguard';
+import { RegisterResponse } from '@/services/api-service/interfaces/register-response';
 
 @Component({
   components: {
@@ -75,7 +82,13 @@ export default class Register extends Mixins(ApiServiceMixin) {
       const response = await this.api.register(this.username, this.email, this.password, token);
       console.log(response);
     } catch (e) {
-      console.error(e);
+      if (isAxiosError<RegisterResponse>(e)) {
+        if (e.response?.data.code === StatusCode.UsernameIsTaken) {
+          this.signupError = this.$t('auth.usernameIsTaken') as string;
+        } else if (e.response?.data.code === StatusCode.EmailIsTaken) {
+          this.signupError = this.$t('auth.emailIsTaken') as string;
+        }
+      }
     }
   }
 

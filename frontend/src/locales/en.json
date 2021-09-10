@@ -6,6 +6,8 @@
     "password": "Password",
     "login": "Login",
     "signup": "Create account",
-    "invalidCredentials": "Invalid credentials"
+    "invalidCredentials": "Invalid credentials",
+    "usernameIsTaken": "Username already taken",
+    "emailIsTaken": "Email already taken by another user"
   }
 }
