@@ -1,11 +1,11 @@
 <template>
-<button @click="onClick" :disabled="isDisabled" type="button" class="button">
+<button @click="onClick" :disabled="isDisabled" type="button" class="myButtonComponent">
     <slot></slot>
 </button>
 </template>
 
 <style scoped>
-.button {
+.myButtonComponent {
     display: flex;
     border: none;
     background-color: #FF2406;
@@ -15,7 +15,7 @@
     font-size: 1.2em;
 }
 
-.button::after {
+.myButtonComponent::after {
     content: "";
     display: block;
     position: absolute;
@@ -28,7 +28,7 @@
     transition: all 0.6s;
 }
 
-.button:active::after {
+.myButtonComponent:active::after {
     left: 50%;
     top: 50%;
     width: 0;

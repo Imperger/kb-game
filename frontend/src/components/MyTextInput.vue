@@ -1,5 +1,5 @@
 <template>
-<div class="component">
+<div class="myTextInputComponent">
     <label
     class="label"
     :class="{'label-active': labelActive}"
@@ -15,7 +15,7 @@
 </template>
 
 <style scoped>
-.component {
+.myTextInputComponent {
     position: relative;
     display: flex;
     margin: 13px 0;
