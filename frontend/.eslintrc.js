@@ -17,6 +17,7 @@ module.exports = {
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-empty-function': 'off',
     '@typescript-eslint/no-empty-function': ['error', { allow: ['decoratedFunctions'] }],
+    'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
     semi: 'off',
     '@typescript-eslint/semi': ['error']
