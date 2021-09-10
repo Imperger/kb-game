@@ -39,16 +39,14 @@
 </style>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator';
-
-import UniqueIdMixin from '@/mixins/unique-id-mixin';
+import { Component, Vue, Prop } from 'vue-property-decorator';
 
 interface ConcreteListener {
     fns: () => Promise<void>;
 }
 
 @Component
-export default class MyButton extends Mixins(UniqueIdMixin) {
+export default class MyButton extends Vue {
     @Prop({ type: Boolean, default: null })
     private disabled!: boolean | null;
 
