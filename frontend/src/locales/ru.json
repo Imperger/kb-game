@@ -2,6 +2,7 @@
     "auth": {
       "usernameOrEmail": "Имя пользователя или емейл",
       "password": "Пароль",
-      "login": "Вход"
+      "login": "Вход",
+      "invalidCredentials": "Некорректные данные для входа"
     }
   }

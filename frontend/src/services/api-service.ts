@@ -1,8 +1,8 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import isEmail from 'validator/es/lib/isEmail';
-import { LoginResponse } from './interfaces/login-response';
-import { RegisterResponse } from './interfaces/register-response';
-import { RegistrationConfirmResponse } from './interfaces/registration-confirm-response';
+import { LoginResponse } from './api-service/interfaces/login-response';
+import { RegisterResponse } from './api-service/interfaces/register-response';
+import { RegistrationConfirmResponse } from './api-service/interfaces/registration-confirm-response';
 
 export default class ApiService {
     private axios: AxiosInstance;

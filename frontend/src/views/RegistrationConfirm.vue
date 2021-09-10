@@ -10,7 +10,7 @@ import { Component, Mixins, Prop } from 'vue-property-decorator';
 
 import ApiServiceMixin from '@/mixins/api-service-mixin';
 import { isAxiosError } from '@/typeguards/axios-typeguard';
-import { RegistrationConfirmResponse } from '@/services/interfaces/registration-confirm-response';
+import { RegistrationConfirmResponse } from '@/services/api-service/interfaces/registration-confirm-response';
 
 @Component
 export default class RegistrationConfirm extends Mixins(ApiServiceMixin) {

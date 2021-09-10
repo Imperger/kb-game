@@ -32,6 +32,9 @@ import ApiServiceMixin from '@/mixins/api-service-mixin';
 
 import MyTextInput from '@/components/MyTextInput.vue';
 import MyButton from '@/components/MyButton.vue';
+import { isAxiosError } from '@/typeguards/axios-typeguard';
+import { LoginResponse } from '@/services/api-service/interfaces/login-response';
+import { StatusCode } from '@/services/api-service/types/status-code';
 
 @Component({
   components: {
@@ -53,7 +56,11 @@ export default class Login extends Mixins(ApiServiceMixin) {
       await this.api.login(this.usernameOrEmail, this.password, token);
       this.loginError = '';
     } catch (e) {
-      this.loginError = 'Login failed';
+      if (isAxiosError<LoginResponse>(e)) {
+        if (e.response?.data.code === StatusCode.InvalidCredentials) {
+          this.loginError = this.$t('auth.invalidCredentials') as string;
+        }
+      }
     }
   }
 
