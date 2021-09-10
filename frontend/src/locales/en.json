@@ -1,8 +1,11 @@
 {
   "auth": {
+    "username": "Username",
+    "email": "Email",
     "usernameOrEmail": "Username or email",
     "password": "Password",
     "login": "Login",
+    "signup": "Create account",
     "invalidCredentials": "Invalid credentials"
   }
 }

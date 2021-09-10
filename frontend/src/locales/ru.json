@@ -1,8 +1,11 @@
 {
     "auth": {
+      "username": "Имя пользователя",
+      "email": "Емейл",
       "usernameOrEmail": "Имя пользователя или емейл",
       "password": "Пароль",
       "login": "Вход",
+      "signup": "Создать аккаунт",
       "invalidCredentials": "Некорректные данные для входа"
     }
   }
