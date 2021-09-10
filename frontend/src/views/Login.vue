@@ -19,7 +19,8 @@
 }
 
 .loginError {
-  margin-left: 10px;
+  position: absolute;
+  margin-left: 132px;
   padding-top: 13px;
   max-height: 39px;
   color: #f90909;
