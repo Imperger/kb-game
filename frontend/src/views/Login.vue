@@ -1,9 +1,9 @@
 <template>
   <form class="loginComponent">
-    <MyTextInput v-model="usernameOrEmail" label="Username or email" name="userid" v-validate="'login_or_email'" data-vv-delay="600"/>
-    <MyTextInput v-model="password" password label="Password" name="password" v-validate="'required|length:8,100'" data-vv-delay="600"/>
+    <MyTextInput v-model="usernameOrEmail" :label="$t('auth.usernameOrEmail')" name="userid" v-validate="'login_or_email'" data-vv-delay="600"/>
+    <MyTextInput v-model="password" password :label="$t('auth.password')" name="password" v-validate="'required|length:8,100'" data-vv-delay="600"/>
     <div class="loginButtonWrapper">
-      <MyButton @click="onSubmit" :disabled="loginButtonDisabled">Login</MyButton>
+      <MyButton @click="onSubmit" :disabled="loginButtonDisabled">{{ $t('auth.login') }}</MyButton>
       <span class="loginError">{{ loginError }}</span>
     </div>
   </form>

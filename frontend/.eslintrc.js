@@ -16,9 +16,9 @@ module.exports = {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-empty-function': 'off',
-    '@typescript-eslint/no-empty-function': ['error', { "allow": ["decoratedFunctions"] }],
+    '@typescript-eslint/no-empty-function': ['error', { allow: ['decoratedFunctions'] }],
     '@typescript-eslint/no-unused-vars': 'off',
-    'semi': 'off',
+    semi: 'off',
     '@typescript-eslint/semi': ['error']
   },
   overrides: [
@@ -32,4 +32,4 @@ module.exports = {
       }
     }
   ]
-}
+};
