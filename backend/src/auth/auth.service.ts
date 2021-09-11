@@ -36,6 +36,8 @@ export class AuthService {
         const createUser = new this.userModel({ username, email, confirmed: false, secret: { salt, hash } });
 
         try {
+            this.userService.ClearExpiredRegistrations(username, email);
+
             const userId = (await createUser.save()).id;
             this.emailService.send({
                 from: `no-reply@${this.configService.get<string>('domain')}`,
