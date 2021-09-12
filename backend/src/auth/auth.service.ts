@@ -107,15 +107,11 @@ export class AuthService {
     }
 
     static async validateUser(user: User, password: string) {
-        if (user === null)
+        if (user === null || await AuthService.hashPassword(password, user.secret.salt) !== user.secret.hash)
             throw new InvalidCredentialsException();
 
         if (!user.confirmed)
             throw new RegistrationNotConfirmedException();
-
-
-        if (await AuthService.hashPassword(password, user.secret.salt) !== user.secret.hash)
-            throw new InvalidCredentialsException();
     }
 
     static isPortRequired(port: number, ssl: boolean) {
