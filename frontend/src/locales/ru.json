@@ -9,6 +9,8 @@
     "invalidCredentials": "Некорректные данные для входа",
     "usernameIsTaken": "Имя пользователя уже занято",
     "emailIsTaken": "Эта почта уже кем-то занята",
-    "pendingConfirmation": "Ожидание подтверждения"
+    "pendingConfirmation": "Ожидание подтверждения",
+    "confirmationExpired": "Отправить подтверждение?",
+    "unknownError": "Произошла ошибка"
   }
 }

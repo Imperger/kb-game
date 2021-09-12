@@ -23,6 +23,12 @@ export class User extends Document {
 
     @Prop({ type: UserSecret })
     secret: UserSecret;
+
+    @Prop()
+    createdAt: Date;
+
+    @Prop()
+    updatedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -19,6 +19,9 @@ import { UnknownUserForConfirmRegistrationException } from './exceptions/object-
 import { InvalidCredentialsException } from './exceptions/invalid-credentials.exception';
 import { RegistrationNotConfirmedException } from './exceptions/registration-not-confirmed-exception';
 import Config from '../config';
+import { timeDiff } from 'src/common/util/time-diff';
+import ms from 'ms';
+import { RegistrationConfirmExpiredException } from './exceptions/registration-confirm-expired-exception';
 
 @Injectable()
 export class AuthService {
@@ -110,8 +113,13 @@ export class AuthService {
         if (user === null || await AuthService.hashPassword(password, user.secret.salt) !== user.secret.hash)
             throw new InvalidCredentialsException();
 
-        if (!user.confirmed)
+        if (!user.confirmed) {
+            if (timeDiff(new Date(), user.createdAt) > ms(Config.auth.confirmCodeTtl)) {
+                throw new RegistrationConfirmExpiredException();
+            }
+            
             throw new RegistrationNotConfirmedException();
+        }
     }
 
     static isPortRequired(port: number, ssl: boolean) {

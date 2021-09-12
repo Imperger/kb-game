@@ -11,5 +11,5 @@ export enum StatusCode {
     // Login
     InvalidCredentials = 20,
     PendingConfirmRegistration = 21,
-
+    PendingConfirmRegistrationExpired = 22
 };

@@ -10,5 +10,6 @@ export enum StatusCode {
     RegistrationAlreadyConfirmed = 14,
     // Login
     InvalidCredentials = 20,
-    PendingConfirmRegistration = 21
+    PendingConfirmRegistration = 21,
+    PendingConfirmRegistrationExpired = 22
 }

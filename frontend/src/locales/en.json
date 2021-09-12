@@ -9,6 +9,8 @@
     "invalidCredentials": "Invalid credentials",
     "usernameIsTaken": "Username already taken",
     "emailIsTaken": "Email already taken by another user",
-    "pendingConfirmation": "Pending confirmation"
+    "pendingConfirmation": "Pending confirmation",
+    "confirmationExpired": "Resend confirmation again?",
+    "unknownError": "Something bad happened"
   }
 }

@@ -51,11 +51,12 @@ export default class Login extends Mixins(ApiServiceMixin) {
   private loginError = '';
 
   async onSubmit (): Promise<void> {
+    this.loginError = '';
+
     try {
       await this.$recaptchaLoaded();
       const token = await this.$recaptcha('LOGIN');
       await this.api.login(this.usernameOrEmail, this.password, token);
-      this.loginError = '';
     } catch (e) {
       if (isAxiosError<LoginResponse>(e)) {
         const code = e.response?.data.code;
@@ -63,6 +64,10 @@ export default class Login extends Mixins(ApiServiceMixin) {
           this.loginError = this.$t('auth.invalidCredentials') as string;
         } else if (code === StatusCode.PendingConfirmRegistration) {
           this.loginError = this.$t('auth.pendingConfirmation') as string;
+        } else if (code === StatusCode.PendingConfirmRegistrationExpired) {
+          this.loginError = this.$t('auth.confirmationExpired') as string;
+        } else {
+          this.loginError = this.$t('auth.unknownError') as string;
         }
       }
     }
