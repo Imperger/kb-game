@@ -58,8 +58,11 @@ export default class Login extends Mixins(ApiServiceMixin) {
       this.loginError = '';
     } catch (e) {
       if (isAxiosError<LoginResponse>(e)) {
-        if (e.response?.data.code === StatusCode.InvalidCredentials) {
+        const code = e.response?.data.code;
+        if (code === StatusCode.InvalidCredentials) {
           this.loginError = this.$t('auth.invalidCredentials') as string;
+        } else if (code === StatusCode.PendingConfirmRegistration) {
+          this.loginError = this.$t('auth.pendingConfirmation') as string;
         }
       }
     }

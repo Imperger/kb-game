@@ -8,6 +8,7 @@
     "signup": "Create account",
     "invalidCredentials": "Invalid credentials",
     "usernameIsTaken": "Username already taken",
-    "emailIsTaken": "Email already taken by another user"
+    "emailIsTaken": "Email already taken by another user",
+    "pendingConfirmation": "Pending confirmation"
   }
 }
