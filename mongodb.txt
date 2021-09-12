@@ -1,1 +1,0 @@
-docker run --name mongo --rm -it --ip 192.168.0.7 --network home_lan mongo:latest
