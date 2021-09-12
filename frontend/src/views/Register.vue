@@ -4,7 +4,7 @@
     v-model="username"
     :label="$t('auth.username')"
     name="username"
-    :validate="'required|length:3,16'"
+    :validate="'required|username'"
     @validation="validate"
     data-vv-delay="600"/>
 
