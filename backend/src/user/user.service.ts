@@ -12,9 +12,9 @@ export class UserService {
         @InjectModel(User.name) private readonly userModel: Model<User>,
         private readonly configService: ConfigService) { }
 
-    async findByEmail(email: string) { return this.userModel.findOne({ email }); }
+    async findByEmail(email: string) { return this.userModel.findOne({ email }).collation({ locale: 'en', strength: 1 }); }
 
-    async findByUsername(username: string) { return this.userModel.findOne({ username }); }
+    async findByUsername(username: string) { return this.userModel.findOne({ username }).collation({ locale: 'en', strength: 1 }); }
 
     async findById(id: string) { return this.userModel.findOne({ _id: id }) }
 

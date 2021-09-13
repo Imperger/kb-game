@@ -12,16 +12,16 @@ class UserSecret {
 
 @Schema({ timestamps: true })
 export class User extends Document {
-    @Prop({ unique: true })
+    @Prop({ required: true, index: { uniuqe: true, collation: { locale: 'en', strength: 1} }, unique: true})
     username: string;
 
-    @Prop({ unique: true })
+    @Prop({ required: true, index: { uniuqe: true, collation: { locale: 'en', strength: 1} }, unique: true})
     email: string;
 
-    @Prop()
+    @Prop({ default: false })
     confirmed: boolean;
 
-    @Prop({ type: UserSecret })
+    @Prop({ required: true, type: UserSecret })
     secret: UserSecret;
 
     @Prop()
