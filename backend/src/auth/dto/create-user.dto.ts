@@ -1,7 +1,7 @@
-import { IsEmail, Length } from 'class-validator';
+import { IsEmail, Length, Matches } from 'class-validator';
 
 export class CreateUserDto {
-    @Length(3, 16)
+    @Matches(/^[\w]{3,16}$/)
     readonly username: string;
 
     @IsEmail()
