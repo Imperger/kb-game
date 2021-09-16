@@ -1,9 +1,12 @@
 <template>
+<div class="registerComponent">
+  <KeyboardBackground :interactive="interactiveBackground" />
   <form class="signupForm">
     <MyValidatedTextInput
     v-model="username"
     :label="$t('auth.username')"
     name="username"
+    @focus="interactive"
     :validate="'required|username'"
     @validation="validate"
     data-vv-delay="600"/>
@@ -11,6 +14,7 @@
     <MyValidatedTextInput v-model="email"
     :label="$t('auth.email')"
     name="email"
+    @focus="interactive"
     :validate="'required|email'"
     @validation="validate"
     data-vv-delay="600"/>
@@ -20,6 +24,7 @@
     password
     :label="$t('auth.password')"
     name="password"
+    @focus="nonInteractive"
     :validate="'required|length:8,100'"
     @validation="validate"
      data-vv-delay="600"/>
@@ -29,9 +34,14 @@
       <span class="signupError">{{ signupError }}</span>
     </div>
   </form>
+</div>
 </template>
 
 <style scoped>
+.registerComponent {
+  margin: auto;
+}
+
 .signupForm {
   margin: auto;
   display: flex;
@@ -57,9 +67,11 @@ import ApiServiceMixin from '../mixins/api-service-mixin';
 import { StatusCode } from '@/services/api-service/types/status-code';
 import { isAxiosError } from '@/typeguards/axios-typeguard';
 import { RegisterResponse } from '@/services/api-service/interfaces/register-response';
+import KeyboardBackground from '@/components/KeyboardBackground.vue';
 
 @Component({
   components: {
+    KeyboardBackground,
     MyValidatedTextInput,
     MyButton
   }
@@ -74,6 +86,8 @@ export default class Register extends Mixins(ApiServiceMixin) {
   private signupError = '';
 
   private validInputCounter = 0;
+
+  private interactiveBackground = true;
 
   async onSubmit (): Promise<void> {
     try {
@@ -101,6 +115,14 @@ export default class Register extends Mixins(ApiServiceMixin) {
 
   private validate (valid: boolean) {
     this.validInputCounter += valid ? 1 : -1;
+  }
+
+  private interactive () {
+    this.interactiveBackground = true;
+  }
+
+  private nonInteractive () {
+    this.interactiveBackground = false;
   }
 }
 </script>
