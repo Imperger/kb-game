@@ -7,14 +7,15 @@
 
 <style scoped>
 .myValidatedTextInput {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .message {
-    color: #f90909;
-    margin-top: -12px;
+  position: relative;
+  color: #f90909;
+  margin-top: -12px;
 }
 </style>
 
