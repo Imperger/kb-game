@@ -48,7 +48,7 @@
 </style>
 
 <script lang="ts">
-import { Component, Mixins, Model, Prop } from 'vue-property-decorator';
+import { Component, Emit, Mixins, Model, Prop } from 'vue-property-decorator';
 
 import UniqueIdMixin from '@/mixins/unique-id-mixin';
 
@@ -69,6 +69,9 @@ export default class MyTextInput extends Mixins(UniqueIdMixin) {
   @Prop()
   private label!: string;
 
+  @Emit('focus')
+  private focus (): void {}
+
   private focused = false;
 
   private id!: string;
@@ -86,6 +89,10 @@ export default class MyTextInput extends Mixins(UniqueIdMixin) {
   }
 
   private focusChanged (focus: boolean) {
+    if (focus) {
+      this.focus();
+    }
+
     this.focused = focus;
   }
 }
