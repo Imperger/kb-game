@@ -5,6 +5,7 @@
 <style scoped>
 .backgroundComponent {
     position: absolute;
+    pointer-events: none;
     transform: scale(2, 2) translate(-150%, -150%) rotate(35deg);
     animation: 60s linear 1s infinite running slidein;
 }
