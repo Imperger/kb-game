@@ -1,6 +1,7 @@
 <template>
 <div class="registerComponent">
   <KeyboardBackground :interactive="interactiveBackground" />
+  <AppLangSelector />
   <form class="signupForm">
     <MyValidatedTextInput
     v-model="username"
@@ -42,6 +43,12 @@
   margin: auto;
 }
 
+.langSelector {
+  position: absolute;
+  right: 25px;
+  top: 25px;
+}
+
 .signupForm {
   margin: auto;
   display: flex;
@@ -68,12 +75,14 @@ import { StatusCode } from '@/services/api-service/types/status-code';
 import { isAxiosError } from '@/typeguards/axios-typeguard';
 import { RegisterResponse } from '@/services/api-service/interfaces/register-response';
 import KeyboardBackground from '@/components/KeyboardBackground.vue';
+import AppLangSelector from '@/components/AppLangSelector.vue';
 
 @Component({
   components: {
     KeyboardBackground,
+    MyButton,
     MyValidatedTextInput,
-    MyButton
+    AppLangSelector
   }
 })
 export default class Register extends Mixins(ApiServiceMixin) {
