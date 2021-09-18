@@ -35,28 +35,32 @@
 </style>
 
 <script lang="ts">
-import { Component, Emit, Vue, Prop } from 'vue-property-decorator';
+import { Component, Emit, Model, Vue, Prop } from 'vue-property-decorator';
 
 @Component
 export default class MySelect extends Vue {
+    @Model('selected', { type: Number, default: 0 })
+    private readonly selected!: number;
+
     @Prop({ required: true, type: Array })
     private readonly items!: unknown[];
 
     @Emit('select')
-    private emitSelect (item: unknown) {}
+    private emitSelect (item: unknown) { }
+
+    @Emit('selected')
+    private emitSelected (idx: number) {}
 
     private expanded = false;
-
-    private selected = 0;
 
     private expand () {
       this.expanded = true;
     }
 
     private select (index: number) {
-      this.selected = index;
       this.expanded = false;
 
+      this.emitSelected(index);
       this.emitSelect(this.items[index]);
     }
 
