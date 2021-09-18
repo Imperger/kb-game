@@ -1,23 +1,34 @@
 import Vue from 'vue';
-import VueI18n, { LocaleMessages } from 'vue-i18n';
+import VueI18n from 'vue-i18n';
+
+import { AvailableLocales } from '@/locales/available-locales';
 
 Vue.use(VueI18n);
 
-function loadLocaleMessages (): LocaleMessages {
-  const locales = require.context('./locales', true, /[A-Za-z0-9-_,\s]+\.json$/i);
-  const messages: LocaleMessages = {};
-  locales.keys().forEach(key => {
-    const matched = key.match(/([A-Za-z0-9-_]+)\./i);
-    if (matched && matched.length > 1) {
-      const locale = matched[1];
-      messages[locale] = locales(key);
-    }
-  });
-  return messages;
-}
-
-export default new VueI18n({
-  locale: navigator.language || 'en',
+const i18n = new VueI18n({
   fallbackLocale: process.env.VUE_APP_I18N_FALLBACK_LOCALE || 'en',
-  messages: loadLocaleMessages()
+  messages: {}
 });
+
+export const switchLocale = async (locale: AvailableLocales): Promise<boolean> => {
+  if (i18n.locale === locale) {
+    return true;
+  }
+
+  if (Object.keys(i18n.getLocaleMessage(locale)).length > 0) {
+    i18n.locale = locale;
+    return true;
+  }
+
+  try {
+    const message = await import(/* webpackChunkName: "lang-[request]" */ `@/locales/${locale}.json`);
+    i18n.setLocaleMessage(locale, message.default);
+    i18n.locale = locale;
+
+    return true;
+  } catch (e: unknown) {
+    return false;
+  }
+};
+
+export default i18n;
