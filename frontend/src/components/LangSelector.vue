@@ -1,5 +1,5 @@
 <template>
-<MySelect :items="languages" v-on="$listeners" class="langSelector">
+<MySelect :selected="selected" @selected="emitSelected" :items="langs" v-on="$listeners" class="langSelector">
     <template v-slot="{ item }">
         <div class="item">
             <img :src="flagIcon(item.flag)" class="flagImg" />
@@ -22,7 +22,7 @@
 </style>
 
 <script lang="ts">
-import { Component, Emit, Vue, Prop } from 'vue-property-decorator';
+import { Component, Emit, Model, Vue, Prop } from 'vue-property-decorator';
 import MySelect from './MySelect.vue';
 
 export interface LangItem {
@@ -36,17 +36,24 @@ export interface LangItem {
   components: { MySelect }
 })
 export default class LangSelector extends Vue {
+  @Model('selected', { type: Number, default: 0 })
+  private readonly selected!: number;
+
+  @Prop({ required: true })
+  private readonly languages!: string[];
+
   @Emit('select')
   private select () {}
+
+  @Emit('selected')
+  private emitSelected (index: number) { }
 
   private flagIcon (name: string): string {
     return require(`@/assets/flags/${name}`);
   }
 
-  private get languages () {
-    return [
-      { key: 'ru', flag: 'ru.svg', lang: 'ru', caption: 'ru' },
-      { key: 'en', flag: 'us.svg', lang: 'en', caption: 'en' }];
+  private get langs () {
+    return this.languages.map(x => ({ key: x, lang: x, flag: `${x}.svg`, caption: x }));
   }
 }
 </script>

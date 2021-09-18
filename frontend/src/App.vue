@@ -28,3 +28,33 @@
   color: #42b983;
 }
 </style>
+
+<script lang="ts">
+import { Component, Emit, Mixins, Model, Prop } from 'vue-property-decorator';
+
+import StoreMixin from '@/mixins/store-mixin';
+import { AvailableLocales } from '@/locales/available-locales';
+import { cachedLocale } from '@/locales/cached-locale';
+
+@Component
+export default class App extends Mixins(StoreMixin) {
+  public created (): void {
+    this.setupLocale();
+  }
+
+  private async setupLocale (): Promise<void> {
+    const cached = cachedLocale();
+    if (cached) {
+      await this.Settings.switchLocale(cached as AvailableLocales);
+    } else {
+      const browserLocale = navigator.language as AvailableLocales;
+      if (Object.values(AvailableLocales).includes(browserLocale)) {
+        await this.Settings.switchLocale(browserLocale);
+      } else {
+        await this.Settings.switchLocale(Object.values(AvailableLocales)[0]);
+      }
+    }
+  }
+}
+
+</script>
