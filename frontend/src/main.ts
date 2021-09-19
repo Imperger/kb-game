@@ -8,11 +8,14 @@ import store from './store';
 
 import '@/validators';
 import i18n from './i18n';
+import { populateFakeLocales } from './locales/populate-fake-locales';
 
 Vue.config.productionTip = false;
 
 Vue.use(VueReCaptcha, { siteKey: '6LfxGcIZAAAAAL2pcTnsqTwCIquSVT6kD-0VUt23' });
+
 Vue.use(VeeValidate);
+populateFakeLocales();
 
 new Vue({
   router,
