@@ -26,7 +26,7 @@
     :label="$t('auth.password')"
     name="password"
     @focus="nonInteractive"
-    :validate="'required|length:8,100'"
+    :validate="'required|password'"
     @validation="validate"
      data-vv-delay="600"/>
 

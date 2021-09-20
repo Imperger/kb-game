@@ -1,7 +1,7 @@
 import { Validator } from 'vee-validate';
-import isEmail from 'validator/es/lib/isEmail';
 
 import { validate as isUsername, validate } from './username-validator';
+import { validate as isEmail } from './email-validator';
 
 Validator.extend('username_or_email', {
   getMessage: () => 'Invalid identifier',

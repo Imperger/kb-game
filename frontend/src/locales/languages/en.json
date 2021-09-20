@@ -11,6 +11,9 @@
     "emailIsTaken": "Email already taken by another user",
     "pendingConfirmation": "Pending confirmation",
     "confirmationExpired": "Resend confirmation again?",
-    "unknownError": "Something bad happened"
+    "unknownError": "Something bad happened",
+    "invalidUsername": "Invalid username",
+    "invalidEmail": "Invalid email",
+    "invalidPassword": "The password length must be between 8 and 100"
   }
 }

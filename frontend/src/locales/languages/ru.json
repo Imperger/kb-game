@@ -11,6 +11,9 @@
     "emailIsTaken": "Эта почта уже кем-то занята",
     "pendingConfirmation": "Ожидание подтверждения",
     "confirmationExpired": "Отправить подтверждение?",
-    "unknownError": "Произошла ошибка"
+    "unknownError": "Произошла ошибка",
+    "invalidUsername": "Неподходящее имя пользователя",
+    "invalidEmail": "Не похоже на емейл",
+    "invalidPassword": "Неподходящий пароль"
   }
 }

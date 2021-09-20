@@ -21,7 +21,7 @@ export const switchLocale = async (locale: AvailableLocales): Promise<boolean> =
   }
 
   try {
-    const message = await import(/* webpackChunkName: "lang-[request]" */ `@/locales/${locale}.json`);
+    const message = await import(/* webpackChunkName: "lang-[request]" */ `@/locales/languages/${locale}.json`);
     i18n.setLocaleMessage(locale, message.default);
     i18n.locale = locale;
 
