@@ -26,9 +26,10 @@
     :label="$t('auth.password')"
     name="password"
     @focus="nonInteractive"
+    @blur="interactive"
     :validate="'required|password'"
     @validation="validate"
-     data-vv-delay="600"/>
+    data-vv-delay="600"/>
 
     <div class="signupButtonWrapper">
       <MyButton @click="onSubmit" :disabled="registerButtonDisabled">{{ $t('auth.signup') }}</MyButton>
