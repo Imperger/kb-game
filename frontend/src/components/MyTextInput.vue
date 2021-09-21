@@ -72,6 +72,9 @@ export default class MyTextInput extends Mixins(UniqueIdMixin) {
   @Emit('focus')
   private focus (): void {}
 
+  @Emit('blur')
+  private blur (): void {}
+
   private focused = false;
 
   private id!: string;
@@ -91,6 +94,8 @@ export default class MyTextInput extends Mixins(UniqueIdMixin) {
   private focusChanged (focus: boolean) {
     if (focus) {
       this.focus();
+    } else {
+      this.blur();
     }
 
     this.focused = focus;
