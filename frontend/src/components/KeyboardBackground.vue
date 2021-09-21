@@ -6,17 +6,20 @@
 .backgroundComponent {
     position: absolute;
     pointer-events: none;
-    transform: scale(2, 2) translate(-150%, -150%) rotate(35deg);
-    animation: 60s linear 1s infinite running slidein;
+    left: calc(-1070px * 3);
+    transform: scale(4, 4) rotate(15deg);
+    animation: 60s linear 1s infinite running throughScreen;
 }
 
-@keyframes slidein {
+@keyframes throughScreen {
 from {
-    transform: scale(4, 4) translate(-55%, -50%) rotate(15deg);
+    left: calc(-1070px * 3);
+    top: -800px;
     }
 
 to {
-    transform: scale(4, 4) translate(45%, 115%) rotate(15deg);
+    left: calc(100% + 1070px * 2);
+    top: 200%;
     }
 }
 </style>
