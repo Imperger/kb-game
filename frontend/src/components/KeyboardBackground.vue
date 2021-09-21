@@ -25,7 +25,7 @@ to {
 </style>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import DefaultKeyboard from '@/components/keyboard/DefaultKeyboard.vue';
 import { layout as enLayout } from '@/components/keyboard/layouts/en';
 
@@ -39,6 +39,13 @@ export default class KeyboardBackground extends Vue {
     private readonly interactive!: boolean;
 
     private readonly pressed: string[] = [];
+
+    @Watch('interactive')
+    private resetStateIfNoninteractive (x: boolean, old: boolean) {
+      if (!x) {
+        this.pressed.splice(0);
+      }
+    }
 
     private readonly keypressHandler = (e: KeyboardEvent) => {
       if (!this.interactive) {
