@@ -6,6 +6,7 @@
     "password": "Password",
     "login": "Login",
     "signup": "Create account",
+    "registrationSuccess": "Registration success",
     "invalidCredentials": "Invalid credentials",
     "usernameIsTaken": "Username already taken",
     "emailIsTaken": "Email already taken by another user",

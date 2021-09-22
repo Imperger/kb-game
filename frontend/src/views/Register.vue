@@ -33,7 +33,7 @@
 
     <div class="signupButtonWrapper">
       <MyButton @click="onSubmit" :disabled="registerButtonDisabled">{{ $t('auth.signup') }}</MyButton>
-      <span class="signupError">{{ signupError }}</span>
+      <span v-show="hasSignupResultMessage" class="signupMessage" :class="signupMessageType">{{ signupResultMessage }}</span>
     </div>
   </form>
 </div>
@@ -61,8 +61,15 @@
   margin-top: 10px;
 }
 
-.signupError {
-  position: relative;
+.signupMessage {
+  position: relative
+}
+
+.signupMessageOk {
+  color: #2c2c2c;
+}
+
+.signupMessageError {
   color: #f90909;
 }
 </style>
@@ -94,7 +101,7 @@ export default class Register extends Mixins(ApiServiceMixin) {
 
   private password = '';
 
-  private signupError = '';
+  private signupResult: StatusCode | null = null;
 
   private validInputCounter = 0;
 
@@ -109,18 +116,16 @@ export default class Register extends Mixins(ApiServiceMixin) {
       await this.$recaptchaLoaded();
       const token = await this.$recaptcha('REGISTER');
       const response = await this.api.register(this.username, this.email, this.password, token);
-      this.signupError = '';
+      this.signupResult = StatusCode.Ok;
     } catch (e) {
       if (isAxiosError<RegisterResponse>(e)) {
-        if (e.response?.data.code === StatusCode.UsernameIsTaken) {
-          this.signupError = this.$t('auth.usernameIsTaken') as string;
-        } else if (e.response?.data.code === StatusCode.EmailIsTaken) {
-          this.signupError = this.$t('auth.emailIsTaken') as string;
-        } else {
-          this.signupError = this.$t('auth.unknownError') as string;
-        }
+        this.signupResult = e.response?.data.code as StatusCode;
       }
     }
+  }
+
+  private get signupMessageType () {
+    return `signupMessage${this.signupResult === StatusCode.Ok ? 'Ok' : 'Error'}`;
   }
 
   private get registerButtonDisabled () {
@@ -128,6 +133,23 @@ export default class Register extends Mixins(ApiServiceMixin) {
     this.email.length === 0 ||
     this.password.length === 0 ||
     this.validInputCounter < 0;
+  }
+
+  private get hasSignupResultMessage () {
+    return this.signupResult !== null;
+  }
+
+  private get signupResultMessage () {
+    switch (this.signupResult) {
+      case StatusCode.Ok:
+        return this.$t('auth.registrationSuccess') as string;
+      case StatusCode.UsernameIsTaken:
+        return this.$t('auth.usernameIsTaken') as string;
+      case StatusCode.EmailIsTaken:
+        return this.$t('auth.emailIsTaken') as string;
+      default:
+        return this.$t('auth.unknownError') as string;
+    }
   }
 
   private validate (valid: boolean) {

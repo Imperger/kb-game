@@ -6,6 +6,7 @@
     "password": "Пароль",
     "login": "Вход",
     "signup": "Создать аккаунт",
+    "registrationSuccess": "Регистрация успешно завершена",
     "invalidCredentials": "Некорректные данные для входа",
     "usernameIsTaken": "Имя пользователя уже занято",
     "emailIsTaken": "Эта почта уже кем-то занята",
