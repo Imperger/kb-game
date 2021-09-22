@@ -62,6 +62,7 @@
 }
 
 .signupError {
+  position: relative;
   color: #f90909;
 }
 </style>
