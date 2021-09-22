@@ -15,6 +15,6 @@
     "unknownError": "Произошла ошибка",
     "invalidUsername": "Неподходящее имя пользователя",
     "invalidEmail": "Не похоже на емейл",
-    "invalidPassword": "Неподходящий пароль"
+    "invalidPassword": "Длина пароля должна быть от 8 до 100 символов"
   }
 }
