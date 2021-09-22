@@ -1,9 +1,18 @@
 <template>
 <div class="loginComponent">
+  <KeyboardBackground :interactive="interactiveBackground" />
   <AppLangSelector />
   <form @keyup.enter="onSubmit">
-    <MyTextInput v-model="usernameOrEmail" :label="$t('auth.usernameOrEmail')" name="userid" v-validate="'username_or_email'" data-vv-delay="600"/>
-    <MyTextInput v-model="password" password :label="$t('auth.password')" name="password" v-validate="'required|length:8,100'" data-vv-delay="600"/>
+    <MyTextInput v-model="usernameOrEmail" :label="$t('auth.usernameOrEmail')" name="userid" v-validate="'username_or_email'" data-vv-delay="600" @focus="interactive"/>
+    <MyTextInput
+      v-model="password"
+      password
+      :label="$t('auth.password')"
+      name="password"
+      v-validate="'required|length:8,100'"
+      data-vv-delay="600"
+      @focus="nonInteractive"
+      @blur="interactive"/>
     <div class="loginButtonWrapper">
       <MyButton @click="onSubmit" :disabled="loginButtonDisabled">{{ $t('auth.login') }}</MyButton>
       <span v-show="hasLoginErrorMessage" class="loginError">{{ loginError }}</span>
@@ -47,12 +56,14 @@ import { isAxiosError } from '@/typeguards/axios-typeguard';
 import { LoginResponse } from '@/services/api-service/interfaces/login-response';
 import { StatusCode } from '@/services/api-service/types/status-code';
 import AppLangSelector from '@/components/AppLangSelector.vue';
+import KeyboardBackground from '@/components/KeyboardBackground.vue';
 
 @Component({
   components: {
     AppLangSelector,
     MyTextInput,
-    MyButton
+    MyButton,
+    KeyboardBackground
   }
 })
 export default class Login extends Mixins(ApiServiceMixin) {
@@ -61,6 +72,8 @@ export default class Login extends Mixins(ApiServiceMixin) {
   private password = '';
 
   private loginErrorStatusCode: StatusCode | null = null;
+
+  private interactiveBackground = true;
 
   async onSubmit (): Promise<void> {
     if (this.loginButtonDisabled) {
@@ -78,6 +91,14 @@ export default class Login extends Mixins(ApiServiceMixin) {
         this.loginErrorStatusCode = e.response?.data.code as StatusCode;
       }
     }
+  }
+
+  private interactive () {
+    this.interactiveBackground = true;
+  }
+
+  private nonInteractive () {
+    this.interactiveBackground = false;
   }
 
   private get loginError () {
