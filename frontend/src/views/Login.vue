@@ -1,7 +1,7 @@
 <template>
 <div class="loginComponent">
   <AppLangSelector />
-  <form>
+  <form @keyup.enter="onSubmit">
     <MyTextInput v-model="usernameOrEmail" :label="$t('auth.usernameOrEmail')" name="userid" v-validate="'username_or_email'" data-vv-delay="600"/>
     <MyTextInput v-model="password" password :label="$t('auth.password')" name="password" v-validate="'required|length:8,100'" data-vv-delay="600"/>
     <div class="loginButtonWrapper">
@@ -63,6 +63,10 @@ export default class Login extends Mixins(ApiServiceMixin) {
   private loginErrorStatusCode: StatusCode | null = null;
 
   async onSubmit (): Promise<void> {
+    if (this.loginButtonDisabled) {
+      return;
+    }
+
     this.loginErrorStatusCode = null;
 
     try {
