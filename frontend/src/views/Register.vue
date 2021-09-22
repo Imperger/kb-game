@@ -2,7 +2,7 @@
 <div class="registerComponent">
   <KeyboardBackground :interactive="interactiveBackground" />
   <AppLangSelector />
-  <form class="signupForm">
+  <form @keyup.enter="onSubmit" class="signupForm">
     <MyValidatedTextInput
     v-model="username"
     :label="$t('auth.username')"
@@ -100,6 +100,10 @@ export default class Register extends Mixins(ApiServiceMixin) {
   private interactiveBackground = true;
 
   async onSubmit (): Promise<void> {
+    if (this.registerButtonDisabled) {
+      return;
+    }
+
     try {
       await this.$recaptchaLoaded();
       const token = await this.$recaptcha('REGISTER');
