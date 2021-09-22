@@ -116,6 +116,8 @@ export default class Register extends Mixins(ApiServiceMixin) {
           this.signupError = this.$t('auth.usernameIsTaken') as string;
         } else if (e.response?.data.code === StatusCode.EmailIsTaken) {
           this.signupError = this.$t('auth.emailIsTaken') as string;
+        } else {
+          this.signupError = this.$t('auth.unknownError') as string;
         }
       }
     }
