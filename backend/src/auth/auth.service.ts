@@ -66,6 +66,10 @@ export class AuthService {
         }
     }
 
+    async updatePassword(id: string, password: string) {
+        return (await this.userService.updateSecret(id, await AuthService.buildSecret(password)));
+    }
+
     async confirmRegistration(userId: string) {
         const user = await this.userService.findById(userId);
 
@@ -125,6 +129,11 @@ export class AuthService {
     static isPortRequired(port: number, ssl: boolean) {
         return ssl && port !== 443 ||
             !ssl && port !== 80;
+    }
+
+    static async buildSecret(password: string) {
+        const salt = AuthService.genSalt();
+        return { hash: await AuthService.hashPassword(password, salt), salt };
     }
 
     static async hashPassword(password: string, salt: string) {
