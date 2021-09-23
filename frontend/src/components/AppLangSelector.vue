@@ -10,7 +10,7 @@ import { Component, Vue, Prop, Mixins } from 'vue-property-decorator';
 
 import LangSelector, { LangItem } from './LangSelector.vue';
 import { AvailableLocales, locales } from '@/locales/available-locales';
-import StoreMixin from '@/mixins/store-mixin';
+import { StoreMixin } from '@/mixins';
 import { cachedLocale } from '@/locales/cached-locale';
 
 @Component({

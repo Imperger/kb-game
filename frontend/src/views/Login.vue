@@ -48,7 +48,7 @@
 
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
-import ApiServiceMixin from '@/mixins/api-service-mixin';
+import { ApiServiceMixin, StoreMixin } from '@/mixins';
 
 import MyTextInput from '@/components/MyTextInput.vue';
 import MyButton from '@/components/MyButton.vue';
@@ -66,7 +66,7 @@ import KeyboardBackground from '@/components/KeyboardBackground.vue';
     KeyboardBackground
   }
 })
-export default class Login extends Mixins(ApiServiceMixin) {
+export default class Login extends Mixins(ApiServiceMixin, StoreMixin) {
   private usernameOrEmail = '';
 
   private password = '';
@@ -85,7 +85,10 @@ export default class Login extends Mixins(ApiServiceMixin) {
     try {
       await this.$recaptchaLoaded();
       const token = await this.$recaptcha('LOGIN');
-      await this.api.login(this.usernameOrEmail, this.password, token);
+      const resp = await this.api.login(this.usernameOrEmail, this.password, token);
+      if (resp.data?.token) {
+        this.App.setToken(resp.data.token);
+      }
     } catch (e) {
       if (isAxiosError<LoginResponse>(e)) {
         this.loginErrorStatusCode = e.response?.data.code as StatusCode;

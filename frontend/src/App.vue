@@ -32,7 +32,7 @@
 <script lang="ts">
 import { Component, Emit, Mixins, Model, Prop } from 'vue-property-decorator';
 
-import StoreMixin from '@/mixins/store-mixin';
+import { StoreMixin } from '@/mixins';
 import { AvailableLocales } from '@/locales/available-locales';
 import { cachedLocale } from '@/locales/cached-locale';
 
