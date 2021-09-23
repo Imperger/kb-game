@@ -21,6 +21,8 @@ export class UserService {
     async updateSecret(id: string, secret: { salt: string, hash: string }) {
         return (await this.userModel.updateOne({ _id: id }, { secret })).modifiedCount > 0;
     }
+
+    async clearExpiredRegistrations(username: string, email: string): Promise<number> {
         try {
             const ttl = ms(this.configService.get<string>('auth.confirmCodeTtl'));
             const result = await this.userModel.remove({
