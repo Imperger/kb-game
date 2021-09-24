@@ -32,13 +32,14 @@
 <script lang="ts">
 import { Component, Emit, Mixins, Model, Prop } from 'vue-property-decorator';
 
-import { StoreMixin } from '@/mixins';
+import { ApiServiceMixin, StoreMixin } from '@/mixins';
 import { AvailableLocales } from '@/locales/available-locales';
 import { cachedLocale } from '@/locales/cached-locale';
 
 @Component
-export default class App extends Mixins(StoreMixin) {
+export default class App extends Mixins(ApiServiceMixin, StoreMixin) {
   public created (): void {
+    this.api.setAccessToken(this.App.authToken);
     this.setupLocale();
   }
 

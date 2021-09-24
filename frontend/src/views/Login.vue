@@ -88,6 +88,7 @@ export default class Login extends Mixins(ApiServiceMixin, StoreMixin) {
       const resp = await this.api.login(this.usernameOrEmail, this.password, token);
       if (resp.data?.token) {
         this.App.setToken(resp.data.token);
+        this.api.setAccessToken(resp.data.token);
       }
     } catch (e) {
       if (isAxiosError<LoginResponse>(e)) {
