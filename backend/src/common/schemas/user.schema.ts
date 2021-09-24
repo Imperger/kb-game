@@ -28,10 +28,10 @@ export class User extends Document {
     secret: UserSecret;
 
     @Prop()
-    createdAt: Date;
+    createdAt?: Date;
 
     @Prop()
-    updatedAt: Date;
+    updatedAt?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
