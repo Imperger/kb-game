@@ -8,6 +8,9 @@ class UserSecret {
 
     @Prop()
     hash: string;
+
+    @Prop()
+    updatedAt?: Date;
 }
 
 @Schema({ timestamps: true })
