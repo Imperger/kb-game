@@ -33,7 +33,7 @@ export class AuthService {
         @InjectModel(User.name) private readonly userModel: Model<User>) { }
 
     async registerUser(username: string, email: string, password: string) {
-        const createUser = new this.userModel({ username, email, confirmed: false, secret: await AuthService.buildSecret(password) });
+        const createUser = new this.userModel({ username, email, confirmed: false, secret: await AuthService.buildSecret(password), scopes: {} });
 
         try {
             this.userService.clearExpiredRegistrations(username, email);
