@@ -41,6 +41,7 @@ export default class App extends Mixins(ApiServiceMixin, StoreMixin) {
   public created (): void {
     this.api.setAccessToken(this.App.authToken);
     this.setupLocale();
+    this.loginPageIfNotAuth();
   }
 
   private async setupLocale (): Promise<void> {
@@ -55,6 +56,16 @@ export default class App extends Mixins(ApiServiceMixin, StoreMixin) {
         await this.Settings.switchLocale(Object.values(AvailableLocales)[0]);
       }
     }
+  }
+
+  private loginPageIfNotAuth () {
+    this.api.unauthorizeHandler(error => {
+      if (this.$route.name !== 'Login') {
+        this.$router.push({ name: 'Login' });
+      }
+
+      return Promise.reject(error);
+    });
   }
 }
 

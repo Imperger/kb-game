@@ -4,8 +4,11 @@ import { LoginResponse } from './api-service/interfaces/login-response';
 import { RegisterResponse } from './api-service/interfaces/register-response';
 import { RegistrationConfirmResponse } from './api-service/interfaces/registration-confirm-response';
 
+export type UnauthorizedHandler<T> = (error: T) => T;
+
 export default class ApiService {
     private axios: AxiosInstance;
+    private unauthHandler: number | null = null;
     constructor (baseURL: string, private accessToken = '') {
       this.axios = axios.create({ baseURL });
 
@@ -16,6 +19,14 @@ export default class ApiService {
       this.accessToken = token;
 
       if (token.length) { this.updateAuthorizationHeader(); }
+    }
+
+    unauthorizeHandler<T> (handler: UnauthorizedHandler<T>): void {
+      if (this.unauthHandler !== null) {
+        this.axios.interceptors.response.eject(this.unauthHandler);
+      }
+
+      this.unauthHandler = this.axios.interceptors.response.use(r => r, error => handler(error));
     }
 
     register (username: string, email: string, password: string, reCaptchaResponse: string): Promise<AxiosResponse<RegisterResponse>> {
