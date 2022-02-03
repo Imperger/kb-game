@@ -42,7 +42,7 @@
 import { Component, Vue, Prop } from 'vue-property-decorator';
 
 interface ConcreteListener {
-    fns: () => Promise<void>;
+    fns: (e: MouseEvent) => Promise<void>;
 }
 
 @Component
@@ -52,10 +52,10 @@ export default class MyButton extends Vue {
 
     private disabledBtn = false;
 
-    private async onClick () {
+    private async onClick (e: MouseEvent) {
       this.disabledBtn = true;
 
-      await (this.$listeners.click as unknown as ConcreteListener)?.fns();
+      await (this.$listeners.click as unknown as ConcreteListener)?.fns(e);
 
       this.disabledBtn = false;
     }
