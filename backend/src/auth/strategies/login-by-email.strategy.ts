@@ -9,6 +9,6 @@ export class LoginByEmailStrategy extends PassportStrategy(Strategy, 'email') {
     constructor(private authService: AuthService) { super({ usernameField: 'email' }); }
 
     async validate(email: string, password: string) {
-        return await this.authService.validateByEmail(email, password);
+        return this.authService.validateByEmail(email, password);
     }
 }

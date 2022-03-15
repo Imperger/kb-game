@@ -9,6 +9,6 @@ export class LoginByUsernameStrategy extends PassportStrategy(Strategy, 'usernam
     constructor(private authService: AuthService) { super(); }
 
     async validate(username: string, password: string) {
-        return await this.authService.validateByUsername(username, password);
+        return this.authService.validateByUsername(username, password);
     }
 }

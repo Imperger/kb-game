@@ -107,7 +107,7 @@ export class AuthService {
     }
 
     async generateAccessToken(userId: string) {
-        return await this.jwtService.signAsync({ id: userId });
+        return this.jwtService.signAsync({ id: userId });
     }
 
     static async validateUser(user: User, password: string) {
