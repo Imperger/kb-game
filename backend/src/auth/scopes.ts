@@ -23,5 +23,9 @@ export enum Scope {
     /**
      * Possibility to mute users for some time period, remove messages, etc
      */
-    ModerateChat
+    ModerateChat,
+    /**
+     * Possibility to manage server related settings
+     */
+    SystemManager
 };
