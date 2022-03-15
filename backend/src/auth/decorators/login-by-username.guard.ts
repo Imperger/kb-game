@@ -1,3 +1,5 @@
 import { AuthGuard } from '@nestjs/passport';
 
-export class LoginByUsernameGuard extends AuthGuard('username') { }
+import { LoginByUsernameStrategyName } from '../constants'
+
+export class LoginByUsernameGuard extends AuthGuard(LoginByUsernameStrategyName) { }

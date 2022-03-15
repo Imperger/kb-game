@@ -1,3 +1,5 @@
 import { AuthGuard } from '@nestjs/passport';
 
-export class RegistrationConfirmGuard extends AuthGuard('registration_confirm') { }
+import { RegistrationConfirmStrategyName } from '../constants'
+
+export class RegistrationConfirmGuard extends AuthGuard(RegistrationConfirmStrategyName) { }
