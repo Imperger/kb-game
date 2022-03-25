@@ -68,7 +68,7 @@ If the server returned 1 in the previous step, the client enters the lobby state
 
 **GET** `/info`
 
-Get information about spawners. This endpoint is used by the `backend` for validation purposes.
+Get information about spawner. This endpoint is used by the `backend` for validation purposes.
 
 ## Request
 
