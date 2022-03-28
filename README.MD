@@ -11,11 +11,11 @@ This software is a multiplayer typing game. It consists of several components: a
 
 `backend` - authorization server. This component can request game instances from a `spawner` (game instance manager). Allows new users to register, log in already registered, stores all information about users.
 
-`spawner` - game instance manager. Launches game instances upon request from the authorization server.
+`spawner` - `game instance`s manager. Launches game instances upon request from the authorization server.
+
+`game instance` - A dedicated game server to which players connect to.
 
 # Terms
-
-`game instance` - A dedicated game server to which players connect  to
 
 # Authorization server (`backend`)
 
