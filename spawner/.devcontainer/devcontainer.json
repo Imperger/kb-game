@@ -10,7 +10,8 @@
 		"args": { "VARIANT": "16-bullseye" }
 	},
 
-	"mounts": ["source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind,consistency=default"],
+	"mounts": ["source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind,consistency=default",
+	           "source=${localWorkspaceFolder}/../certs,target=${containerWorkspaceFolder}/certs,type=bind,consistency=default"],
 	"postStartCommand": "target=${containerWorkspaceFolder}/.devcontainer/scripts/postStartCommand.sh && chmod +x $target && $target",
 
 	// Set *default* container specific settings.json values on container create.
