@@ -1,5 +1,5 @@
 
-# Typing game documentation
+# Typing game
 
 # Summary
 
