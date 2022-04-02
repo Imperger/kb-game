@@ -74,7 +74,7 @@ Get information about spawner. This endpoint is used by the `backend` for valida
 
 ### Headers
 ```
-Authorization: Bearer <Signed JWT>
+Authorization: Bearer <BackendToken>
 ```
 
 ## Response
@@ -95,10 +95,17 @@ Request a custom game instance from the spawner. Used by `backend`
 
 ## Request
 
+### Headers
 ```
+Authorization: Bearer <NewCustomGameToken>
+```
+
+```
+// NewCustomGameToken
 }
     spawner: string, // For preventing replay attack on another spawner with same secret
     request: string, // unique string for preventing replay attack
+    iat: number, // token issue time
     exp: number, // token expiration
     backend: string // backend which request instance, used for requesting additional info
 }
@@ -118,11 +125,19 @@ Request an quick game instance from the spawner. Used by `backend`
 
 ## Request
 
+### Headers
 ```
+Authorization: Bearer <NewQuickGameToken>
+```
+
+```
+// NewQuickGameToken
 }
     spawner: string, // For preventing replay attack on another spawner with same secret
     request: string, // unique string for preventing replay attack
+    iat: number, // token issue time
     exp: number, // token expiration
+    backend: string // backend which request instance, used for requesting additional info
     type: string, // 'FFA' or 'Teams'
     text: string // text content ??
 }
@@ -138,7 +153,7 @@ Request an quick game instance from the spawner. Used by `backend`
 
 **WS** `/game/{request}`
 
-Connects player to the dedicated game instance. Used by `frontend`. The request part is a same field from body of **POST** `/game/new_{quick|custom}`
+Connects player to the dedicated game instance. Used by `frontend`. The *request* part is a same field from body of **POST** `/game/new_{quick|custom}`
 
 
 
