@@ -14,7 +14,7 @@
       @focus="nonInteractive"
       @blur="interactive"/>
     <div class="loginButtonWrapper">
-      <MyButton @click="onSubmit" :disabled="loginButtonDisabled">{{ $t('auth.login') }}</MyButton>
+      <MyButton @click="doLogin" :disabled="loginButtonDisabled">{{ $t('auth.login') }}</MyButton>
       <span v-show="hasLoginErrorMessage" class="loginError">{{ loginError }}</span>
     </div>
   </form>
@@ -75,11 +75,7 @@ export default class Login extends Mixins(ApiServiceMixin, StoreMixin) {
 
   private interactiveBackground = true;
 
-  async onSubmit (): Promise<void> {
-    if (this.loginButtonDisabled) {
-      return;
-    }
-
+  private async doLogin () {
     this.loginErrorStatusCode = null;
 
     try {
