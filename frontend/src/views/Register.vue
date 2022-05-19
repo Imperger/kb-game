@@ -115,7 +115,7 @@ export default class Register extends Mixins(ApiServiceMixin) {
     try {
       await this.$recaptchaLoaded();
       const token = await this.$recaptcha('REGISTER');
-      const response = await this.api.register(this.username, this.email, this.password, token);
+      await this.api.register(this.username, this.email, this.password, token);
       this.signupResult = StatusCode.Ok;
     } catch (e) {
       if (isAxiosError<RegisterResponse>(e)) {

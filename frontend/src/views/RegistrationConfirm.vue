@@ -21,7 +21,7 @@ export default class RegistrationConfirm extends Mixins(ApiServiceMixin) {
 
   async mounted (): Promise<void> {
     try {
-      const response = await (await this.api.confirmRegistration(this.code)).data;
+      const response = await this.api.confirmRegistration(this.code);
       if (response.code === 0) {
         this.result = 'Registration successfully completed';
       } else {

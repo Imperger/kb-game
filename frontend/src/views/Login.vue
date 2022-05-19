@@ -86,9 +86,9 @@ export default class Login extends Mixins(ApiServiceMixin, StoreMixin) {
       await this.$recaptchaLoaded();
       const token = await this.$recaptcha('LOGIN');
       const resp = await this.api.login(this.usernameOrEmail, this.password, token);
-      if (resp.data?.token) {
-        this.App.setToken(resp.data.token);
-        this.api.setAccessToken(resp.data.token);
+      if (resp?.token) {
+        this.App.setToken(resp.token);
+        this.api.setAccessToken(resp.token);
       }
     } catch (e) {
       if (isAxiosError<LoginResponse>(e)) {

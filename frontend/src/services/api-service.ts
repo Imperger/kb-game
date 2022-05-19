@@ -1,8 +1,10 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import isEmail from 'validator/es/lib/isEmail';
-import { LoginResponse } from './api-service/interfaces/login-response';
-import { RegisterResponse } from './api-service/interfaces/register-response';
-import { RegistrationConfirmResponse } from './api-service/interfaces/registration-confirm-response';
+import {
+  LoginResponse,
+  RegisterResponse,
+  RegistrationConfirmResponse
+} from './api-service/interfaces';
 
 export type UnauthorizedHandler<T> = (error: T) => T;
 
@@ -29,32 +31,33 @@ export default class ApiService {
       this.unauthHandler = this.axios.interceptors.response.use(r => r, error => handler(error));
     }
 
-    register (username: string, email: string, password: string, reCaptchaResponse: string): Promise<AxiosResponse<RegisterResponse>> {
-      return this.axios.post<RegisterResponse>('auth/register',
+    async register (username: string, email: string, password: string, reCaptchaResponse: string): Promise<RegisterResponse> {
+      return (await this.axios.post<RegisterResponse>('auth/register',
         { username, email, password },
-        { headers: { recaptcha: reCaptchaResponse } });
+        { headers: { recaptcha: reCaptchaResponse } })).data;
     }
 
-    confirmRegistration (code: string): Promise<AxiosResponse<RegistrationConfirmResponse>> {
-      return this.axios.patch('auth/registration/confirm', { code });
+    async confirmRegistration (code: string): Promise<RegistrationConfirmResponse> {
+      return (await this.axios.patch<RegistrationConfirmResponse>('auth/registration/confirm', { code })).data;
     }
 
-    login (usernameOrEmail: string, password: string, reCaptchaResponse: string): Promise<AxiosResponse<LoginResponse>> {
+    async login (usernameOrEmail: string, password: string, reCaptchaResponse: string): Promise<LoginResponse> {
       return isEmail(usernameOrEmail)
         ? this.loginEmail(usernameOrEmail, password, reCaptchaResponse)
         : this.loginUsername(usernameOrEmail, password, reCaptchaResponse);
     }
 
-    loginUsername (username: string, password: string, reCaptchaResponse: string): Promise<AxiosResponse<LoginResponse>> {
-      return this.axios.post('auth/login/username',
+    async loginUsername (username: string, password: string, reCaptchaResponse: string): Promise<LoginResponse> {
+      return (await this.axios.post('auth/login/username',
         { username, password },
-        { headers: { recaptcha: reCaptchaResponse } });
+        { headers: { recaptcha: reCaptchaResponse } })).data;
     }
 
-    loginEmail (email: string, password: string, reCaptchaResponse: string): Promise<AxiosResponse<LoginResponse>> {
-      return this.axios.post('auth/login/email',
+    async loginEmail (email: string, password: string, reCaptchaResponse: string): Promise<LoginResponse> {
+      return (await this.axios.post('auth/login/email',
         { email, password },
-        { headers: { recaptcha: reCaptchaResponse } });
+        { headers: { recaptcha: reCaptchaResponse } })).data;
+    }
     }
 
     private updateAuthorizationHeader () {
