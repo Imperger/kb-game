@@ -13,3 +13,19 @@ export enum StatusCode {
     PendingConfirmRegistration = 21,
     PendingConfirmRegistrationExpired = 22
 }
+
+export interface LoginResponse {
+    code: number;
+    message?: string;
+    token?: string;
+}
+
+export interface RegisterResponse {
+    code: number;
+    message?: string;
+}
+
+export interface RegistrationConfirmResponse {
+    code: number;
+    message: string;
+}

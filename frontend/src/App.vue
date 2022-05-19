@@ -39,7 +39,7 @@ import { cachedLocale } from '@/locales/cached-locale';
 @Component
 export default class App extends Mixins(ApiServiceMixin, StoreMixin) {
   public created (): void {
-    this.api.setAccessToken(this.App.authToken);
+    this.api.auth.accessToken = this.App.authToken;
     this.setupLocale();
     this.loginPageIfNotAuth();
   }
@@ -59,7 +59,7 @@ export default class App extends Mixins(ApiServiceMixin, StoreMixin) {
   }
 
   private loginPageIfNotAuth () {
-    this.api.unauthorizeHandler(error => {
+    this.api.auth.unauthorizeHandler(error => {
       if (this.$route.name !== 'Login') {
         this.$router.push({ name: 'Login' });
       }

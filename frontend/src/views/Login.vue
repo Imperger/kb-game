@@ -53,8 +53,7 @@ import { ApiServiceMixin, StoreMixin } from '@/mixins';
 import MyTextInput from '@/components/MyTextInput.vue';
 import MyButton from '@/components/MyButton.vue';
 import { isAxiosError } from '@/typeguards/axios-typeguard';
-import { LoginResponse } from '@/services/api-service/interfaces/login-response';
-import { StatusCode } from '@/services/api-service/types/status-code';
+import { LoginResponse, StatusCode } from '@/services/api-service/auth/types';
 import AppLangSelector from '@/components/AppLangSelector.vue';
 import KeyboardBackground from '@/components/KeyboardBackground.vue';
 
@@ -81,10 +80,10 @@ export default class Login extends Mixins(ApiServiceMixin, StoreMixin) {
     try {
       await this.$recaptchaLoaded();
       const token = await this.$recaptcha('LOGIN');
-      const resp = await this.api.login(this.usernameOrEmail, this.password, token);
+      const resp = await this.api.auth.login(this.usernameOrEmail, this.password, token);
       if (resp?.token) {
         this.App.setToken(resp.token);
-        this.api.setAccessToken(resp.token);
+        this.api.auth.accessToken = resp.token;
       }
     } catch (e) {
       if (isAxiosError<LoginResponse>(e)) {

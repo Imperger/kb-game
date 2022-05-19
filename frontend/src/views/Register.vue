@@ -80,9 +80,8 @@ import { Component, Mixins } from 'vue-property-decorator';
 import MyValidatedTextInput from '@/components/MyValidatedTextInput.vue';
 import MyButton from '@/components/MyButton.vue';
 import ApiServiceMixin from '../mixins/api-service-mixin';
-import { StatusCode } from '@/services/api-service/types/status-code';
 import { isAxiosError } from '@/typeguards/axios-typeguard';
-import { RegisterResponse } from '@/services/api-service/interfaces/register-response';
+import { RegisterResponse, StatusCode } from '@/services/api-service/auth/types';
 import KeyboardBackground from '@/components/KeyboardBackground.vue';
 import AppLangSelector from '@/components/AppLangSelector.vue';
 
@@ -115,7 +114,7 @@ export default class Register extends Mixins(ApiServiceMixin) {
     try {
       await this.$recaptchaLoaded();
       const token = await this.$recaptcha('REGISTER');
-      await this.api.register(this.username, this.email, this.password, token);
+      await this.api.auth.register(this.username, this.email, this.password, token);
       this.signupResult = StatusCode.Ok;
     } catch (e) {
       if (isAxiosError<RegisterResponse>(e)) {
