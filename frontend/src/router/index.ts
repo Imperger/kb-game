@@ -1,32 +1,16 @@
 import Vue from 'vue';
 import VueRouter, { RouteConfig } from 'vue-router';
-import Home from '../views/Home.vue';
-import Register from '../views/Register.vue';
-import Login from '../views/Login.vue';
+import MainMenu from '../views/MainMenu.vue';
+import { auth } from './auth';
 
 Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
+  ...auth,
   {
     path: '/',
-    name: 'Home',
-    component: Home
-  },
-  {
-    path: '/register',
-    name: 'Register',
-    component: Register
-  },
-  {
-    path: '/registration/confirm/:code',
-    name: 'RegistrationConfirm',
-    component: () => import(/* webpackChunkName: "RegistrationConfirm" */ '../views/RegistrationConfirm.vue'),
-    props: true
-  },
-  {
-    path: '/login',
-    name: 'Login',
-    component: Login
+    name: 'MainMenu',
+    component: MainMenu
   },
   {
     path: '/about',
