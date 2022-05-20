@@ -82,6 +82,7 @@ export default class Login extends Mixins(ApiServiceMixin, StoreMixin) {
 
     if (loggedIn.code === StatusCode.Ok) {
       this.App.setToken(this.api.auth.accessToken);
+      this.$router.push({ name: 'MainMenu' });
     } else {
       this.loginErrorStatusCode = loggedIn.code;
     }
