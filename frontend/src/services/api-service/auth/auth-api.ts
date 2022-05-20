@@ -1,4 +1,4 @@
-import { AxiosError, AxiosInstance } from 'axios';
+import { AxiosInstance, AxiosResponse } from 'axios';
 
 import isEmail from 'validator/es/lib/isEmail';
 import {
@@ -29,18 +29,18 @@ export default class AuthApi {
     return this.token;
   }
 
-  unauthorizeHandler (handler: UnauthorizedHandler<AxiosError>): void {
+  unauthorizeHandler (handler: UnauthorizedHandler<AxiosResponse>): void {
     if (this.unauthHandler !== null) {
       this.http.interceptors.response.eject(this.unauthHandler);
     }
 
-    this.unauthHandler = this.http.interceptors.response.use(r => r, (error: AxiosError) => {
-      if (error.response?.status === 401) {
-        handler(error);
+    this.unauthHandler = this.http.interceptors.response.use((response: AxiosResponse<unknown>) => {
+      if (response?.status === 401) {
+        handler(response);
       }
 
-      return Promise.reject(error);
-    });
+      return Promise.resolve(response);
+    }, e => e);
   }
 
   async register (username: string, email: string, password: string, reCaptchaResponse: string): Promise<RegisterResponse> {
