@@ -2,12 +2,14 @@ import { RouteConfig } from 'vue-router';
 
 import Register from '../views/Register.vue';
 import Login from '../views/Login.vue';
+import { Role } from './roles';
 
 export const auth: Array<RouteConfig> = [
   {
     path: '/register',
     name: 'Register',
-    component: Register
+    component: Register,
+    meta: { role: Role.Noname }
   },
   {
     path: '/registration/confirm/:code',
@@ -19,6 +21,7 @@ export const auth: Array<RouteConfig> = [
   {
     path: '/login',
     name: 'Login',
-    component: Login
+    component: Login,
+    meta: { role: Role.Noname }
   }
 ];
