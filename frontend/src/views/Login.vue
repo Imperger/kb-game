@@ -2,7 +2,7 @@
 <div class="loginComponent">
   <KeyboardBackground :interactive="interactiveBackground" />
   <AppLangSelector />
-  <form @keyup.enter="onSubmit">
+  <form @keyup.enter="doLogin">
     <MyTextInput v-model="usernameOrEmail" :label="$t('auth.usernameOrEmail')" name="userid" v-validate="'username_or_email'" data-vv-delay="600" @focus="interactive"/>
     <MyTextInput
       v-model="password"
