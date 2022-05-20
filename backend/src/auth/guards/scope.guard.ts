@@ -6,18 +6,18 @@ import { Scope, scopeMetaId } from '../scopes';
 
 @Injectable()
 export class ScopeGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(private reflector: Reflector) { }
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const user: User = context.switchToHttp().getRequest().user;
 
-    return this.reflector
-      .get<Scope[]>(scopeMetaId, context.getHandler())
+    return (this.reflector
+      .get<Scope[]>(scopeMetaId, context.getHandler()) || [])
       .every(scope => this.checkScope(scope, user));
   }
 
   private checkScope(scope: Scope, user: User) {
-    switch(scope) {
+    switch (scope) {
       case Scope.AssignScope:
         return user.scopes.assignScope;
       case Scope.EditScenario:
