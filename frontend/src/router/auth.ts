@@ -1,7 +1,9 @@
+import { RouteConfig } from 'vue-router';
+
 import Register from '../views/Register.vue';
 import Login from '../views/Login.vue';
 
-export const auth = [
+export const auth: Array<RouteConfig> = [
   {
     path: '/register',
     name: 'Register',
