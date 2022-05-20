@@ -13,7 +13,7 @@ export default class App extends VuexModule {
     private initialized = false;
     private $initialized = new Subject<void>();
 
-    public authToken = '';
+    private authToken = '';
     private me: CurrentUser | null = null;
 
     @Mutation
@@ -61,6 +61,11 @@ export default class App extends VuexModule {
     public get hasToken (): boolean {
       return this.authToken.length > 0;
     }
+
+    public get accessToken (): string {
+      return this.authToken;
+    }
+
     public get user (): CurrentUser | null {
       return this.me;
     }

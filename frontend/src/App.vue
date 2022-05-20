@@ -39,9 +39,9 @@ import { cachedLocale } from '@/locales/cached-locale';
 @Component
 export default class App extends Mixins(ApiServiceMixin, StoreMixin) {
   public created (): void {
-    this.api.auth.accessToken = this.App.authToken;
-    this.setupLocale();
+    this.api.auth.accessToken = this.App.accessToken;
     this.loginPageIfNotAuth();
+    this.setupLocale();
   }
 
   private async setupLocale (): Promise<void> {
