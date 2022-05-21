@@ -78,13 +78,16 @@ export default class App extends Mixins(ApiServiceMixin, StoreMixin) {
     this.App.Initialize();
   }
 
+  /**
+   * Watched for unauthorized response from any api request
+   * and redirect to login page if any was happened
+   */
   private loginPageIfNotAuth () {
-    this.api.auth.unauthorizeHandler(error => {
+    this.api.auth.unauthorizeHandler(_ => {
+      this.App.resetToken();
       if (this.$route.name !== 'Login') {
         this.$router.push({ name: 'Login' });
       }
-
-      return Promise.reject(error);
     });
   }
 }
