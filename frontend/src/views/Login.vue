@@ -55,6 +55,7 @@ import MyButton from '@/components/MyButton.vue';
 import { StatusCode } from '@/services/api-service/auth/types';
 import AppLangSelector from '@/components/AppLangSelector.vue';
 import KeyboardBackground from '@/components/KeyboardBackground.vue';
+import { isRejectedResponse } from '@/services/api-service/rejected-response';
 
 @Component({
   components: {
@@ -81,6 +82,13 @@ export default class Login extends Mixins(ApiServiceMixin, StoreMixin) {
     const loggedIn = await this.api.auth.login(this.usernameOrEmail, this.password, token);
 
     if (loggedIn.code === StatusCode.Ok) {
+      const me = await this.api.user.currentUserInfo();
+
+      if (isRejectedResponse(me)) {
+        return;
+      }
+
+      this.App.setUser(me);
       this.App.setToken(this.api.auth.accessToken);
       this.$router.push({ name: 'MainMenu' });
     } else {
