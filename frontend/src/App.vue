@@ -35,13 +35,16 @@ import { Component, Emit, Mixins, Model, Prop } from 'vue-property-decorator';
 import { ApiServiceMixin, StoreMixin } from '@/mixins';
 import { AvailableLocales } from '@/locales/available-locales';
 import { cachedLocale } from '@/locales/cached-locale';
+import { isRejectedResponse } from './services/api-service/rejected-response';
 
 @Component
 export default class App extends Mixins(ApiServiceMixin, StoreMixin) {
   public created (): void {
     this.api.auth.accessToken = this.App.accessToken;
     this.loginPageIfNotAuth();
+
     this.setupLocale();
+    this.tryLogin();
   }
 
   private async setupLocale (): Promise<void> {
@@ -56,6 +59,23 @@ export default class App extends Mixins(ApiServiceMixin, StoreMixin) {
         await this.Settings.switchLocale(Object.values(AvailableLocales)[0]);
       }
     }
+  }
+
+  /**
+  * Trying auto login when open app
+  */
+  private async tryLogin () {
+    if (this.App.hasToken) {
+      const me = await this.api.user.currentUserInfo();
+
+      if (isRejectedResponse(me)) {
+        this.App.resetToken();
+      } else {
+        this.App.setUser(me);
+      }
+    }
+
+    this.App.Initialize();
   }
 
   private loginPageIfNotAuth () {
