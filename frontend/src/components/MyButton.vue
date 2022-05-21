@@ -40,6 +40,9 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from 'vue-property-decorator';
+import { Location } from 'vue-router/types/router';
+
+import { isRoutesEqual, toLocation } from '@/router/router-comparator';
 
 interface ConcreteListener {
     fns: (e: MouseEvent) => Promise<void>;
@@ -50,9 +53,17 @@ export default class MyButton extends Vue {
     @Prop({ type: Boolean, default: null })
     private disabled!: boolean | null;
 
+    @Prop({ type: [String, Object], default: '' })
+    private to!: string | Location;
+
     private disabledBtn = false;
 
     private async onClick (e: MouseEvent) {
+      if (this.to && !isRoutesEqual(this.to, toLocation(this.$route))) {
+        this.$router.push(this.to);
+        return;
+      }
+
       this.disabledBtn = true;
 
       await (this.$listeners.click as unknown as ConcreteListener)?.fns(e);
