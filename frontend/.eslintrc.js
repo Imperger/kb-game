@@ -15,6 +15,8 @@ module.exports = {
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'indent': 'off',
+    '@typescript-eslint/indent': ['error', 2],
     'no-empty-function': 'off',
     '@typescript-eslint/no-empty-function': ['error', { allow: ['decoratedFunctions'] }],
     'no-unused-vars': 'off',
