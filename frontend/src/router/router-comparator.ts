@@ -1,6 +1,6 @@
 import { Location, Route } from 'vue-router/types/router';
 
-export const isRoutesEqual = <T extends string | Location> (a: T, b: T): boolean => {
+export const isRoutesEqual = <T extends string | Location>(a: T, b: T): boolean => {
   if (typeof a !== typeof b) {
     return false;
   }

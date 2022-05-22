@@ -9,40 +9,40 @@ import UserApi from './user/user-api';
 export { UnauthorizedHandler } from './auth/auth-api';
 
 export default class ApiService {
-    private axios: AxiosInstance;
-    private authApi: AuthApi = new AuthApi();
-    private userApi: UserApi = new UserApi();
+  private axios: AxiosInstance;
+  private authApi: AuthApi = new AuthApi();
+  private userApi: UserApi = new UserApi();
 
-    constructor (baseURL: string, accessToken = '') {
-      this.axios = axios.create({ baseURL, adapter: ApiService.UnauthorizedIsNotThrowsAdapter });
-      this.auth.httpClient = this.axios;
-      this.auth.accessToken = accessToken;
+  constructor (baseURL: string, accessToken = '') {
+    this.axios = axios.create({ baseURL, adapter: ApiService.UnauthorizedIsNotThrowsAdapter });
+    this.auth.httpClient = this.axios;
+    this.auth.accessToken = accessToken;
 
-      this.userApi.httpClient = this.axios;
-    }
+    this.userApi.httpClient = this.axios;
+  }
 
-    get auth (): AuthApi {
-      return this.authApi;
-    }
+  get auth (): AuthApi {
+    return this.authApi;
+  }
 
-    get user (): UserApi {
-      return this.userApi;
-    }
+  get user (): UserApi {
+    return this.userApi;
+  }
 
-    private static async UnauthorizedIsNotThrowsAdapter (config: AxiosRequestConfig): Promise<AxiosResponse<unknown>> {
-      try {
-        const response = await httpAdapter(config);
-        return await new Promise((resolve, reject) => {
-          settle(resolve, reject, response);
-        });
-      } catch (e) {
-        if (isAxiosError(e)) {
-          if (e.response?.status === 401) {
-            return e.response;
-          }
+  private static async UnauthorizedIsNotThrowsAdapter (config: AxiosRequestConfig): Promise<AxiosResponse<unknown>> {
+    try {
+      const response = await httpAdapter(config);
+      return await new Promise((resolve, reject) => {
+        settle(resolve, reject, response);
+      });
+    } catch (e) {
+      if (isAxiosError(e)) {
+        if (e.response?.status === 401) {
+          return e.response;
         }
-
-        throw e;
       }
+
+      throw e;
     }
+  }
 }

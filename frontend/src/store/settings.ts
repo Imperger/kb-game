@@ -5,20 +5,20 @@ import { switchLocale } from '@/i18n';
 
 @Module({ name: 'settings' })
 export default class Settings extends VuexModule {
-    public locale: AvailableLocales | null = null;
+  public locale: AvailableLocales | null = null;
 
-    @Mutation
-    public setLocale (locale: AvailableLocales): void {
-      this.locale = locale;
+  @Mutation
+  public setLocale (locale: AvailableLocales): void {
+    this.locale = locale;
+  }
+
+  @Action
+  public async switchLocale (locale: AvailableLocales): Promise<boolean> {
+    if (await switchLocale(locale)) {
+      this.setLocale(locale);
+      return true;
     }
 
-    @Action
-    public async switchLocale (locale: AvailableLocales): Promise<boolean> {
-      if (await switchLocale(locale)) {
-        this.setLocale(locale);
-        return true;
-      }
-
-      return false;
-    }
+    return false;
+  }
 }

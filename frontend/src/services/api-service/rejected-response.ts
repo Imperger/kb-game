@@ -1,6 +1,6 @@
 export interface RejectedResponse {
-    code: number;
-    message?: string;
+  code: number;
+  message?: string;
 }
 
 export const isRejectedResponse =

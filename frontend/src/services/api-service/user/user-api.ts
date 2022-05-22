@@ -3,13 +3,13 @@ import { RejectedResponse } from '../rejected-response';
 import { CurrentUser } from './types';
 
 export default class UserApi {
-    private http!: AxiosInstance;
+  private http!: AxiosInstance;
 
-    set httpClient (httpClient: AxiosInstance) {
-      this.http = httpClient;
-    }
+  set httpClient (httpClient: AxiosInstance) {
+    this.http = httpClient;
+  }
 
-    async currentUserInfo (): Promise<CurrentUser | RejectedResponse> {
-      return (await this.http.get('user/me')).data;
-    }
+  async currentUserInfo (): Promise<CurrentUser | RejectedResponse> {
+    return (await this.http.get('user/me')).data;
+  }
 }

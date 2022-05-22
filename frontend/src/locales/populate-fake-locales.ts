@@ -3,7 +3,7 @@ import { Locale, Validator } from 'vee-validate';
 import { locales } from './available-locales';
 
 interface DictionaryGuts {
-    container: { en: Locale }
+  container: { en: Locale }
 }
 
 const defaultLocaleDictionary = () => (Validator.dictionary as unknown as DictionaryGuts).container.en;
