@@ -1,85 +1,62 @@
 <template>
-<div class="loginComponent">
-  <KeyboardBackground :interactive="interactiveBackground" />
-  <AppLangSelector />
-  <form @keyup.enter="doLogin">
-    <MyTextInput v-model="usernameOrEmail" :label="$t('auth.usernameOrEmail')" name="userid" v-validate="'username_or_email'" data-vv-delay="600" @focus="interactive"/>
-    <MyTextInput
-      v-model="password"
-      password
-      :label="$t('auth.password')"
-      name="password"
-      v-validate="'required|length:8,100'"
-      data-vv-delay="600"
-      @focus="nonInteractive"
-      @blur="interactive"/>
-    <div class="loginButtonWrapper">
-      <MyButton @click="doLogin" :disabled="loginButtonDisabled">{{ $t('auth.login') }}</MyButton>
-      <span v-show="hasLoginErrorMessage" class="loginError">{{ loginError }}</span>
-    </div>
-  </form>
+<div class="login-component">
+  <keyboard-background :interactive="interactiveBackground" />
+  <app-language-selector class="language-selector" />
+  <login-form
+    v-model="credentials"
+    :error="loginErrorStatusCode"
+    @secureInteract="secureInteract"
+    @submit="doLogin"/>
 </div>
 </template>
 
 <style scoped>
-
-.langSelector {
-  position: absolute;
-  right: 25px;
-  top: 25px;
-}
-
-.loginComponent {
+.login-component {
   margin: auto;
 }
 
-.loginButtonWrapper {
-  display: flex;
-}
-
-.loginError {
+.language-selector {
   position: absolute;
-  margin-left: 132px;
-  padding-top: 13px;
-  max-height: 39px;
-  color: #f90909;
+  right: 25px;
+  top: 25px;
 }
 </style>
 
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
-import { ApiServiceMixin, StoreMixin } from '@/mixins';
 
-import MyTextInput from '@/components/MyTextInput.vue';
-import MyButton from '@/components/MyButton.vue';
 import { StatusCode } from '@/services/api-service/auth/types';
-import AppLangSelector from '@/components/AppLangSelector.vue';
-import KeyboardBackground from '@/components/KeyboardBackground.vue';
+import { ApiServiceMixin, StoreMixin } from '@/mixins';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
+import LoginForm, { Credentials } from '@/components/LoginForm.vue';
+import KeyboardBackground from '@/components/KeyboardBackground.vue';
+import AppLanguageSelector from '@/components/AppLanguageSelector.vue';
 
 @Component({
   components: {
-    AppLangSelector,
-    MyTextInput,
-    MyButton,
-    KeyboardBackground
+    KeyboardBackground,
+    AppLanguageSelector,
+    LoginForm
   }
 })
 export default class Login extends Mixins(ApiServiceMixin, StoreMixin) {
-  private usernameOrEmail = '';
-
-  private password = '';
-
-  private loginErrorStatusCode: StatusCode | null = null;
+  private credentials: Credentials = { identifier: '', password: '' };
 
   private interactiveBackground = true;
 
-  private async doLogin () {
+  private loginErrorStatusCode: StatusCode | null = null;
+
+  async doLogin (): Promise<void> {
+    if (!(this.credentials.identifier.length &&
+          this.credentials.password)) {
+      return;
+    }
+
     this.loginErrorStatusCode = null;
 
     await this.$recaptchaLoaded();
     const token = await this.$recaptcha('LOGIN');
-    const loggedIn = await this.api.auth.login(this.usernameOrEmail, this.password, token);
+    const loggedIn = await this.api.auth.login(this.credentials.identifier, this.credentials.password, token);
 
     if (loggedIn.code === StatusCode.Ok) {
       const me = await this.api.user.currentUserInfo();
@@ -96,36 +73,8 @@ export default class Login extends Mixins(ApiServiceMixin, StoreMixin) {
     }
   }
 
-  private interactive () {
-    this.interactiveBackground = true;
-  }
-
-  private nonInteractive () {
-    this.interactiveBackground = false;
-  }
-
-  private get loginError () {
-    switch (this.loginErrorStatusCode) {
-      case StatusCode.InvalidCredentials:
-        return this.$t('auth.invalidCredentials') as string;
-      case StatusCode.PendingConfirmRegistration:
-        return this.$t('auth.pendingConfirmation') as string;
-      case StatusCode.PendingConfirmRegistrationExpired:
-        return this.$t('auth.confirmationExpired') as string;
-      default:
-        return this.$t('auth.unknownError') as string;
-    }
-  }
-
-  private get hasLoginErrorMessage () {
-    return this.loginErrorStatusCode !== null;
-  }
-
-  private get loginButtonDisabled () {
-    return this.usernameOrEmail.length === 0 ||
-    this.password.length === 0 ||
-    this.$validator.errors.first('userid')?.length > 0 ||
-    this.$validator.errors.first('password')?.length > 0;
+  secureInteract (active: boolean): void {
+    this.interactiveBackground = !active;
   }
 }
 </script>
