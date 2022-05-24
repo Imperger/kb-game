@@ -40,7 +40,7 @@ export default class AuthApi {
       }
 
       return Promise.resolve(response);
-    }, e => e);
+    }, e => Promise.reject(e));
   }
 
   async register (username: string, email: string, password: string, reCaptchaResponse: string): Promise<RegisterResponse> {
