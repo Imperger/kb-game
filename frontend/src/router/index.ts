@@ -5,6 +5,7 @@ import { getModule } from 'vuex-module-decorators';
 import store, { App } from '@/store';
 import MainMenu from '../views/MainMenu.vue';
 import { auth } from './auth';
+import { mainMenu } from './main-menu';
 import { Role } from './roles';
 
 Vue.use(VueRouter);
@@ -14,7 +15,8 @@ const routes: Array<RouteConfig> = [
   {
     path: '/',
     name: 'MainMenu',
-    component: MainMenu
+    component: MainMenu,
+    children: mainMenu
   },
   {
     path: '/about',
