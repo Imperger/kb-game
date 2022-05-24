@@ -1,4 +1,4 @@
 export interface ButtonLayout {
-    caption: string | string[];
-    code: string;
+  caption: string | string[];
+  code: string;
 }

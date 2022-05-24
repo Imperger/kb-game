@@ -40,48 +40,48 @@ import { Component, Vue, Prop } from 'vue-property-decorator';
 
 @Component
 export default class Button extends Vue {
-    @Prop({ required: true, type: [String, Array] })
-    private readonly caption!: string | string[];
+  @Prop({ required: true, type: [String, Array] })
+  private readonly caption!: string | string[];
 
-    @Prop({ type: Boolean })
-    private readonly pressed!: boolean;
+  @Prop({ type: Boolean })
+  private readonly pressed!: boolean;
 
-    @Prop({ type: Number, default: 0 })
-    private readonly x!: number;
+  @Prop({ type: Number, default: 0 })
+  private readonly x!: number;
 
-    @Prop({ type: Number, default: 0 })
-    private readonly y!: number;
+  @Prop({ type: Number, default: 0 })
+  private readonly y!: number;
 
-    @Prop({ type: Number, default: 40 })
-    private readonly width!: number;
+  @Prop({ type: Number, default: 40 })
+  private readonly width!: number;
 
-    @Prop({ type: Number, default: 40 })
-    private readonly height!: number;
+  @Prop({ type: Number, default: 40 })
+  private readonly height!: number;
 
-    private get isSingleline () {
-      return typeof this.caption === 'string';
-    }
+  private get isSingleline () {
+    return typeof this.caption === 'string';
+  }
 
-    private captionHOffset (x: number) {
-      return x + (this.isLongWord ? 4 : 12);
-    }
+  private captionHOffset (x: number) {
+    return x + (this.isLongWord ? 4 : 12);
+  }
 
-    private captionVOffset (y: number) {
-      return y + this.height / 2 + 6;
-    }
+  private captionVOffset (y: number) {
+    return y + this.height / 2 + 6;
+  }
 
-    private captionTopVOffset (y: number) {
-      return y + this.height / 3;
-    }
+  private captionTopVOffset (y: number) {
+    return y + this.height / 3;
+  }
 
-    private captionBottomVOffset (y: number) {
-      return y + 2 * (this.height / 3) + 6;
-    }
+  private captionBottomVOffset (y: number) {
+    return y + 2 * (this.height / 3) + 6;
+  }
 
-    private get isLongWord () {
-      return typeof this.caption === 'string'
-        ? this.caption.length > 3
-        : this.caption[0].length > 1;
-    }
+  private get isLongWord () {
+    return typeof this.caption === 'string'
+      ? this.caption.length > 3
+      : this.caption[0].length > 1;
+  }
 }
 </script>
