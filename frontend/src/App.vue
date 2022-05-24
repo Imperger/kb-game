@@ -47,7 +47,7 @@ export default class App extends Mixins(ApiServiceMixin, StoreMixin) {
     this.tryLogin();
   }
 
-  private async setupLocale (): Promise<void> {
+  async setupLocale (): Promise<void> {
     const cached = cachedLocale();
     if (cached) {
       await this.Settings.switchLocale(cached as AvailableLocales);
@@ -64,7 +64,7 @@ export default class App extends Mixins(ApiServiceMixin, StoreMixin) {
   /**
   * Trying auto login when open app
   */
-  private async tryLogin () {
+  async tryLogin (): Promise<void> {
     if (this.App.hasToken) {
       const me = await this.api.user.currentUserInfo();
 
@@ -82,7 +82,7 @@ export default class App extends Mixins(ApiServiceMixin, StoreMixin) {
    * Watched for unauthorized response from any api request
    * and redirect to login page if any was happened
    */
-  private loginPageIfNotAuth () {
+  loginPageIfNotAuth (): void {
     this.api.auth.unauthorizeHandler(_ => {
       this.App.resetToken();
       if (this.$route.name !== 'Login') {
