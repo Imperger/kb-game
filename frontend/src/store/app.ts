@@ -31,6 +31,12 @@ export default class App extends VuexModule {
     this.me = user;
   }
 
+  @Action
+  signOut (): void {
+    this.setUser(null);
+    this.resetToken();
+  }
+
   @Mutation
   public Initialize (): void {
     this.initialized = true;
