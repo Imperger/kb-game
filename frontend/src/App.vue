@@ -33,13 +33,21 @@
 import { Component, Emit, Mixins, Model, Prop } from 'vue-property-decorator';
 
 import { ApiServiceMixin, StoreMixin } from '@/mixins';
-import { AvailableLocales } from '@/locales/available-locales';
+import { AvailableLocales, locales } from '@/locales/available-locales';
 import { cachedLocale } from '@/locales/cached-locale';
 import { isRejectedResponse } from './services/api-service/rejected-response';
 
 @Component
 export default class App extends Mixins(ApiServiceMixin, StoreMixin) {
-  public created (): void {
+  async beforeMount (): Promise<void> {
+    const cached = cachedLocale();
+
+    if (cached && locales.includes(cached as AvailableLocales)) {
+      this.$root.$validator.locale = cached as string;
+    }
+  }
+
+  created (): void {
     this.api.auth.accessToken = this.App.accessToken;
     this.loginPageIfNotAuth();
 
