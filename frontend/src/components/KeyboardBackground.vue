@@ -1,9 +1,9 @@
 <template>
-<DefaultKeyboard :layout="layout" :pressed="pressed" class="backgroundComponent" />
+<default-keyboard :layout="layout" :pressed="pressed" class="keyboard-background" />
 </template>
 
 <style scoped>
-.backgroundComponent {
+.keyboard-background {
     position: absolute;
     pointer-events: none;
     left: calc(-1070px * 3);
@@ -28,6 +28,7 @@ to {
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import DefaultKeyboard from '@/components/keyboard/DefaultKeyboard.vue';
 import { layout as enLayout } from '@/components/keyboard/layouts/en';
+import { ButtonLayout } from './keyboard/layouts/button-layout';
 
 @Component({
   components: {
@@ -35,54 +36,54 @@ import { layout as enLayout } from '@/components/keyboard/layouts/en';
   }
 })
 export default class KeyboardBackground extends Vue {
-    @Prop({ type: Boolean, default: true })
-    private readonly interactive!: boolean;
+  @Prop({ type: Boolean, default: true })
+  private readonly interactive!: boolean;
 
-    private readonly pressed: string[] = [];
+  private readonly pressed: string[] = [];
 
-    @Watch('interactive')
-    private resetStateIfNoninteractive (x: boolean, old: boolean) {
-      if (!x) {
-        this.pressed.splice(0);
-      }
+  @Watch('interactive')
+  resetStateIfNoninteractive (x: boolean, old: boolean): void {
+    if (!x) {
+      this.pressed.splice(0);
+    }
+  }
+
+  private readonly keypressHandler = (e: KeyboardEvent) => {
+    if (!this.interactive) {
+      return;
     }
 
-    private readonly keypressHandler = (e: KeyboardEvent) => {
-      if (!this.interactive) {
-        return;
-      }
+    const idx = this.pressed.findIndex(x => x === e.code);
 
-      const idx = this.pressed.findIndex(x => x === e.code);
+    if (idx === -1) {
+      this.pressed.push(e.code);
+    }
+  };
 
-      if (idx === -1) {
-        this.pressed.push(e.code);
-      }
-    };
-
-    private readonly keyupHandler = (e: KeyboardEvent) => {
-      if (!this.interactive) {
-        return;
-      }
-
-      const idx = this.pressed.findIndex(x => x === e.code);
-
-      if (idx >= 0) {
-        this.pressed.splice(idx, 1);
-      }
-    };
-
-    public mounted (): void {
-      document.addEventListener('keydown', this.keypressHandler);
-      document.addEventListener('keyup', this.keyupHandler);
+  private readonly keyupHandler = (e: KeyboardEvent) => {
+    if (!this.interactive) {
+      return;
     }
 
-    public destroyed (): void {
-      document.removeEventListener('keydown', this.keypressHandler);
-      document.removeEventListener('keyup', this.keyupHandler);
-    }
+    const idx = this.pressed.findIndex(x => x === e.code);
 
-    private get layout () {
-      return enLayout;
+    if (idx >= 0) {
+      this.pressed.splice(idx, 1);
     }
+  };
+
+  mounted (): void {
+    document.addEventListener('keydown', this.keypressHandler);
+    document.addEventListener('keyup', this.keyupHandler);
+  }
+
+  destroyed (): void {
+    document.removeEventListener('keydown', this.keypressHandler);
+    document.removeEventListener('keyup', this.keyupHandler);
+  }
+
+  get layout (): ButtonLayout[] {
+    return enLayout;
+  }
 }
 </script>
