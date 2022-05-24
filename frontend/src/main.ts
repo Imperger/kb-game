@@ -9,6 +9,7 @@ import store from './store';
 import '@/validators';
 import i18n from './i18n';
 import { populateFakeLocales } from './locales/populate-fake-locales';
+import vuetify from './plugins/vuetify';
 
 Vue.config.productionTip = false;
 
@@ -21,5 +22,6 @@ new Vue({
   router,
   store,
   i18n,
+  vuetify,
   render: h => h(App)
 }).$mount('#app');
