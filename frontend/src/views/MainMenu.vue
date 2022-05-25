@@ -41,9 +41,5 @@ import AuthButtonsWidget from '@/components/AuthButtonsWidget.vue';
   }
 })
 export default class MainMenu extends Mixins(StoreMixin) {
-  mounted (): void {
-    const defaultRoute = 'MainMenuHome';
-    if (this.$route.name !== defaultRoute) { this.$router.push({ name: defaultRoute }); }
-  }
 }
 </script>
