@@ -64,9 +64,7 @@ export default class AuthApi {
       { username, password },
       { headers: { recaptcha: reCaptchaResponse } })).data;
 
-    const success = response.code === StatusCode.Ok;
-
-    if (success) {
+    if (response.code === StatusCode.Ok) {
       this.accessToken = response.token as string;
     }
 
@@ -78,9 +76,7 @@ export default class AuthApi {
       { email, password },
       { headers: { recaptcha: reCaptchaResponse } })).data;
 
-    const success = response.code === StatusCode.Ok;
-
-    if (success) {
+    if (response.code === StatusCode.Ok) {
       this.accessToken = response.token as string;
     }
 
