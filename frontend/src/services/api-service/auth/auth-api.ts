@@ -87,10 +87,6 @@ export default class AuthApi {
     return response;
   }
 
-  testJwt (): Promise<unknown> {
-    return this.http.get('auth/testjwt');
-  }
-
   private updateAuthorizationHeader () {
     this.http.defaults.headers.common.Authorization = `Bearer ${this.token}`;
   }
