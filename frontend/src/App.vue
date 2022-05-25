@@ -92,7 +92,7 @@ export default class App extends Mixins(ApiServiceMixin, StoreMixin) {
    */
   loginPageIfNotAuth (): void {
     this.api.auth.unauthorizeHandler(_ => {
-      this.App.resetToken();
+      this.App.signOut();
       if (this.$route.name !== 'Login') {
         this.$router.push({ name: 'Login' });
       }
