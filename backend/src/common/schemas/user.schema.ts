@@ -42,6 +42,9 @@ export class User extends Document {
     @Prop({ default: false })
     confirmed: boolean;
 
+    @Prop({ default: '' })
+    avatar: string;
+
     @Prop({ required: true, type: UserSecret })
     secret: UserSecret;
 

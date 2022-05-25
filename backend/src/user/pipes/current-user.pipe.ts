@@ -9,6 +9,7 @@ export class CurrentUserPipe implements PipeTransform {
     return { 
       username: user.username,
       email: user.email,
+      avatar: user.avatar,
       registeredAt: new Date(user.createdAt),
       scopes: {
         assignScope: user.scopes.assignScope,
