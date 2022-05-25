@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@imperger/google-recaptcha": "^1.1.6",
+    "@nestjs/axios": "0.0.8",
     "@nestjs/common": "^8.0.6",
     "@nestjs/config": "^1.0.1",
     "@nestjs/core": "^8.0.6",
