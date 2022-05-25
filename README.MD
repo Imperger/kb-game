@@ -15,6 +15,9 @@ This software is a multiplayer typing game. It consists of several components: a
 
 `game instance` - A dedicated game server to which players connect to.
 
+# Development environment
+
+Each project runs in its own dev container. Some containers should be accessible to others so they configured to use `dev` network. To create a network `docker network create dev`
 # Terms
 
 # Authorization server (`backend`)

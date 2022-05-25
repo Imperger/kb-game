@@ -17,8 +17,8 @@ services:
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
 
-    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
-    network_mode: service:db
+    networks:
+       - dev
 
     # Uncomment the next line to use a non-root user for all processes.
     # user: node
@@ -31,6 +31,8 @@ services:
     restart: unless-stopped
     volumes:
       - mongodb-data:/data/db
+    networks:
+       - dev
 
     # Uncomment to change startup options
     # environment:
@@ -43,3 +45,6 @@ services:
 
 volumes:
   mongodb-data:
+networks:
+  dev:
+    external: true   
