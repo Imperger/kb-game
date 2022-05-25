@@ -13,6 +13,7 @@ export class CurrentUserPipe implements PipeTransform {
       registeredAt: new Date(user.createdAt),
       scopes: {
         assignScope: user.scopes.assignScope,
+        serverMaintainer: user.scopes.serverMaintainer,
         blockedUntil: new Date(user.scopes.blockedUntil),
         editScenario: user.scopes.editScenario,
         moderateChat: user.scopes.moderateChat,

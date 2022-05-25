@@ -20,6 +20,8 @@ export class ScopeGuard implements CanActivate {
     switch (scope) {
       case Scope.AssignScope:
         return user.scopes.assignScope;
+      case Scope.ServerMaintainer:
+        return user.scopes.serverMaintainer;
       case Scope.EditScenario:
         return user.scopes.editScenario;
       case Scope.ModerateChat:

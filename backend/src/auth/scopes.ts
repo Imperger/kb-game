@@ -9,6 +9,10 @@ export enum Scope {
      */
     AssignScope, 
     /**
+     * 
+     */
+    ServerMaintainer,
+    /**
      * Possibility to take part in games
      */
     PlayGame, 

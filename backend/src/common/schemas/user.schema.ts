@@ -17,6 +17,9 @@ class UserSecret {
 class Scopes {
     @Prop({ default: false })
     assignScope: boolean;
+
+    @Prop({ default: false })
+    serverMaintainer: boolean;
     
     @Prop({ default: false })
     editScenario: boolean;

@@ -166,6 +166,8 @@ Connects player to the dedicated game instance. Used by `frontend`. The *request
 
 **access manager** - Add & remove rights for users.
 
+**server maintainer** - Can change server settings
+
 **scenario maker** - Add & edit texts.
 
 **chat moderator** - Hide messages from other users. Mute users.
