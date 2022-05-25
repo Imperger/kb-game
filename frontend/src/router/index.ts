@@ -37,6 +37,7 @@ const router = new VueRouter({
 const app = getModule(App, store);
 
 const redirectFromAuthForLoggedIn = (to: Route, next: NavigationGuardNext<Vue>) => {
+  // Redirect logged in user from pages intended for unregistered
   if (to.meta?.role === Role.Noname && app.loggedIn) {
     next({ name: 'MainMenu' });
   }
