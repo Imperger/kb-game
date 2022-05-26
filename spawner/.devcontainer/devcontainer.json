@@ -9,10 +9,11 @@
 		// Use -bullseye variants on local arm64/Apple Silicon.
 		"args": { "VARIANT": "16-bullseye" }
 	},
-	"runArgs": ["--name=spawner_dev", "--network=dev"],
+	"runArgs": ["--name=spawner.dev.wsl", "--network=dev"],
 
 	"mounts": ["source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind,consistency=default",
-	           "source=${localWorkspaceFolder}/../certs,target=${containerWorkspaceFolder}/certs,type=bind,consistency=default"],
+		       "source=${localWorkspaceFolder}/../certs,target=${containerWorkspaceFolder}/certs,type=bind,consistency=default"],
+			   
 	"postStartCommand": "target=${containerWorkspaceFolder}/.devcontainer/scripts/postStartCommand.sh && chmod +x $target && $target",
 
 	// Set *default* container specific settings.json values on container create.

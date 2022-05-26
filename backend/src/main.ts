@@ -13,8 +13,8 @@ import Config from './config'
 
 async function bootstrap() {
   const httpsOptions = {
-    key: fs.readFileSync('../certs/server.key'),
-    cert: fs.readFileSync('../certs/server.cer'),
+    key: fs.readFileSync('./certs/server.key'),
+    cert: fs.readFileSync('./certs/server.cer'),
   };
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ https: httpsOptions })); // TODO: Respect to config.ssl
   app.enableCors();

@@ -10,6 +10,8 @@
 		"args": { "VARIANT": "16-bullseye" }
 	},
 
+	"mounts": ["source=${localWorkspaceFolder}/../certs,target=${containerWorkspaceFolder}/certs,type=bind,consistency=default"],
+
 	// Set *default* container specific settings.json values on container create.
 	"settings": {},
 

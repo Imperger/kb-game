@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   app:
+    container_name: backend.dev.wsl
     build: 
       context: .
       dockerfile: Dockerfile
@@ -12,7 +13,7 @@ services:
         VARIANT: 14-buster
     volumes:
       - ..:/workspace:cached
-      - ../../certs:/certs
+      - ../../certs:/workspace/certs
 
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
