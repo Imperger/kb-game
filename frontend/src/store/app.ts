@@ -31,12 +31,6 @@ export default class App extends VuexModule {
     this.me = user;
   }
 
-  @Action
-  signOut (): void {
-    this.setUser(null);
-    this.resetToken();
-  }
-
   @Mutation
   public Initialize (): void {
     this.initialized = true;
@@ -62,6 +56,12 @@ export default class App extends VuexModule {
           .pipe(first())
           .subscribe(x => ((clearTimeout(timeoutTimer), resolve())));
       });
+  }
+
+  @Action
+  signOut (): void {
+    this.setUser(null);
+    this.resetToken();
   }
 
   public get hasToken (): boolean {
