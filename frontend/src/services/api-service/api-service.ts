@@ -4,6 +4,7 @@ import * as httpAdapter from 'axios/lib/adapters/http';
 import * as settle from 'axios/lib/core/settle';
 
 import AuthApi from './auth/auth-api';
+import { SpawnerApi } from './spawner/spawner-api';
 import UserApi from './user/user-api';
 
 export { UnauthorizedHandler } from './auth/auth-api';
@@ -12,6 +13,7 @@ export default class ApiService {
   private axios: AxiosInstance;
   private authApi: AuthApi = new AuthApi();
   private userApi: UserApi = new UserApi();
+  private spawnerApi: SpawnerApi = new SpawnerApi();
 
   constructor (baseURL: string, accessToken = '') {
     this.axios = axios.create({ baseURL, adapter: ApiService.UnauthorizedIsNotThrowsAdapter });
@@ -19,6 +21,7 @@ export default class ApiService {
     this.auth.accessToken = accessToken;
 
     this.userApi.httpClient = this.axios;
+    this.spawnerApi.httpClient = this.axios;
   }
 
   get auth (): AuthApi {
@@ -27,6 +30,10 @@ export default class ApiService {
 
   get user (): UserApi {
     return this.userApi;
+  }
+
+  get spawner (): SpawnerApi {
+    return this.spawnerApi;
   }
 
   private static async UnauthorizedIsNotThrowsAdapter (config: AxiosRequestConfig): Promise<AxiosResponse<unknown>> {
