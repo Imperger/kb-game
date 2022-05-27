@@ -37,8 +37,11 @@ export default class ApiService {
       });
     } catch (e) {
       if (isAxiosError(e)) {
-        if (e.response?.status === 401) {
-          return e.response;
+        if (e.response) {
+          const status = e.response?.status;
+          if (status >= 400 && status < 500) {
+            return e.response;
+          }
         }
       }
 
