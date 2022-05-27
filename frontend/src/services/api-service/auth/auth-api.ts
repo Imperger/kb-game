@@ -1,6 +1,7 @@
 import { AxiosInstance, AxiosResponse } from 'axios';
 
 import isEmail from 'validator/es/lib/isEmail';
+import { RejectedResponse } from '../rejected-response';
 import {
   LoginResponse,
   RegisterResponse,
@@ -43,23 +44,37 @@ export default class AuthApi {
     }, e => Promise.reject(e));
   }
 
-  async register (username: string, email: string, password: string, reCaptchaResponse: string): Promise<RegisterResponse> {
+  async register (
+    username: string,
+    email: string,
+    password: string,
+    reCaptchaResponse: string
+  ): Promise<RegisterResponse | RejectedResponse> {
     return (await this.http.post<RegisterResponse>('auth/register',
       { username, email, password },
       { headers: { recaptcha: reCaptchaResponse } })).data;
   }
 
-  async confirmRegistration (code: string): Promise<RegistrationConfirmResponse> {
+  async confirmRegistration (
+    code: string
+  ): Promise<RegistrationConfirmResponse | RejectedResponse> {
     return (await this.http.patch<RegistrationConfirmResponse>('auth/registration/confirm', { code })).data;
   }
 
-  async login (usernameOrEmail: string, password: string, reCaptchaResponse: string): Promise<LoginResponse> {
+  async login (
+    usernameOrEmail: string,
+    password: string,
+    reCaptchaResponse: string
+  ): Promise<LoginResponse | RejectedResponse> {
     return isEmail(usernameOrEmail)
       ? await this.loginEmail(usernameOrEmail, password, reCaptchaResponse)
       : await this.loginUsername(usernameOrEmail, password, reCaptchaResponse);
   }
 
-  async loginUsername (username: string, password: string, reCaptchaResponse: string): Promise<LoginResponse> {
+  async loginUsername (
+    username: string,
+    password: string,
+    reCaptchaResponse: string): Promise<LoginResponse | RejectedResponse> {
     const response: LoginResponse = (await this.http.post('auth/login/username',
       { username, password },
       { headers: { recaptcha: reCaptchaResponse } })).data;
@@ -71,7 +86,11 @@ export default class AuthApi {
     return response;
   }
 
-  async loginEmail (email: string, password: string, reCaptchaResponse: string): Promise<LoginResponse> {
+  async loginEmail (
+    email: string,
+    password: string,
+    reCaptchaResponse: string
+  ): Promise<LoginResponse | RejectedResponse> {
     const response: LoginResponse = (await this.http.post('auth/login/email',
       { email, password },
       { headers: { recaptcha: reCaptchaResponse } })).data;
