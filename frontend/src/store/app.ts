@@ -79,4 +79,8 @@ export default class App extends VuexModule {
   public get loggedIn (): boolean {
     return this.me !== null;
   }
+
+  public get serverMaintainer (): boolean {
+    return this.me?.scopes.serverMaintainer ?? false;
+  }
 }
