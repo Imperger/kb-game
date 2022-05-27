@@ -7,9 +7,9 @@ import { CurrentUser } from './interfaces/current-user';
 
 @Controller('user')
 export class UserController {
-    @UseGuards(JwtGuard)
-    @Get('me')
-    me(@User(CurrentUserPipe) user: CurrentUser) {
-      return user;
+  @UseGuards(JwtGuard)
+  @Get('me')
+  me(@User(CurrentUserPipe) user: CurrentUser) {
+    return user;
   }
 }

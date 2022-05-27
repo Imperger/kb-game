@@ -7,14 +7,14 @@ import { JwtStrategy } from './jwt.strategy';
 
 @Global()
 @Module({
-    imports: [
-        NestJwtModule.register({
-            secret: Config.api.jwtSecret,
-            signOptions: { expiresIn: '3m' },
-        }),
-        UserModule
-    ],
-    providers: [JwtStrategy],
-    exports: [NestJwtModule]
+  imports: [
+    NestJwtModule.register({
+      secret: Config.api.jwtSecret,
+      signOptions: { expiresIn: '30m' },
+    }),
+    UserModule
+  ],
+  providers: [JwtStrategy],
+  exports: [NestJwtModule]
 })
 export class JwtModule { }

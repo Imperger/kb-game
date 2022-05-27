@@ -8,39 +8,39 @@ import { User } from '../common/schemas/user.schema';
 
 @Injectable()
 export class UserService {
-    constructor(
-        @InjectModel(User.name) private readonly userModel: Model<User>,
-        private readonly configService: ConfigService) { }
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<User>,
+    private readonly configService: ConfigService) { }
 
-    async findByEmail(email: string) { return this.userModel.findOne({ email }).collation({ locale: 'en', strength: 1 }); }
+  async findByEmail(email: string) { return this.userModel.findOne({ email }).collation({ locale: 'en', strength: 1 }); }
 
-    async findByUsername(username: string) { return this.userModel.findOne({ username }).collation({ locale: 'en', strength: 1 }); }
+  async findByUsername(username: string) { return this.userModel.findOne({ username }).collation({ locale: 'en', strength: 1 }); }
 
-    async findById(id: string) { return this.userModel.findOne({ _id: id }) }
+  async findById(id: string) { return this.userModel.findOne({ _id: id }) }
 
-    async updateSecret(id: string, secret: { salt: string, hash: string }) {
-        return (await this.userModel.updateOne({ _id: id }, { secret })).modifiedCount > 0;
+  async updateSecret(id: string, secret: { salt: string, hash: string }) {
+    return (await this.userModel.updateOne({ _id: id }, { secret })).modifiedCount > 0;
+  }
+
+  async clearExpiredRegistrations(username: string, email: string): Promise<number> {
+    try {
+      const ttl = ms(this.configService.get<string>('auth.confirmCodeTtl'));
+      const result = await this.userModel.remove({
+        $or: [
+          { $and: [
+            { username, confirmed: false }, 
+            { $expr: { $lt: ['$createdAt', { $subtract: [ '$$NOW', ttl ] }] } }
+          ]},
+          { $and: [
+            { email, confirmed: false }, 
+            { $expr: { $lt: ['$createdAt', { $subtract: [ '$$NOW', ttl ] }] } }
+          ]}
+        ]
+      });
+
+      return result?.n || 0;
+    }catch(e) {
+      return 0;
     }
-
-    async clearExpiredRegistrations(username: string, email: string): Promise<number> {
-        try {
-            const ttl = ms(this.configService.get<string>('auth.confirmCodeTtl'));
-            const result = await this.userModel.remove({
-                $or: [
-                    { $and: [
-                        { username, confirmed: false }, 
-                        { $expr: { $lt: ['$createdAt', { $subtract: [ '$$NOW', ttl ] }] } }
-                            ]},
-                    { $and: [
-                        { email, confirmed: false }, 
-                        { $expr: { $lt: ['$createdAt', { $subtract: [ '$$NOW', ttl ] }] } }
-                    ]}
-                ]
-            });
-
-            return result?.n || 0;
-        }catch(e) {
-            return 0;
-        }
-    }
+  }
 }
