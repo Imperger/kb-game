@@ -10,6 +10,7 @@
         color="grey darken-1">
       <v-tab :to="{ name: 'MainMenuHome' }">Home</v-tab>
       <v-tab :to="{ name: 'MainMenuPlay' }">Play</v-tab>
+      <v-tab v-if="App.serverMaintainer" :to="{ name: 'MainMenuServer' }">Server</v-tab>
     </v-tabs>
     <section class="profile">
       <profile-widget v-if="App.loggedIn" :profile="App.user" />
