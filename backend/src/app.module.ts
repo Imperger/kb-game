@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { EmailModule } from './email/email.module';
 import { JwtModule } from './jwt/jwt.module';
+import { SpawnerModule } from './spawner/spawner.module';
 import Config from './config'
 
 @Module({
@@ -23,7 +24,8 @@ import Config from './config'
     AuthModule,
     UserModule,
     EmailModule,
-    JwtModule,],
+    JwtModule,
+    SpawnerModule,],
   controllers: [AppController],
   providers: [AppService]
 })
