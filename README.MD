@@ -82,7 +82,7 @@ Authorization: Bearer <BackendToken>
 
 ## Response
 
-If JWT signed by correct secret then status code set to 200, else 401
+If JWT signed by correct secret then status code set to 200, otherwise 401
 
 ### Body
 ```
