@@ -4,32 +4,32 @@ export const scopeMetaId = Symbol('scope');
  * User scopes
  */
 export enum Scope { 
-    /**
+  /**
      * Possibility to edit scopes of another users
      */
-    AssignScope, 
-    /**
+  AssignScope, 
+  /**
      * 
      */
-    ServerMaintainer,
-    /**
+  ServerMaintainer,
+  /**
      * Possibility to take part in games
      */
-    PlayGame, 
-    /**
+  PlayGame, 
+  /**
      * Possibility to write to non-game and game chat
      */
-    WriteToChat,
-    /**
+  WriteToChat,
+  /**
      * Possibility to manage game texts
      */
-    EditScenario, 
-    /**
+  EditScenario, 
+  /**
      * Possibility to mute users for some time period, remove messages, etc
      */
-    ModerateChat,
-    /**
+  ModerateChat,
+  /**
      * Possibility to manage server related settings
      */
-    SystemManager
+  SystemManager
 };
