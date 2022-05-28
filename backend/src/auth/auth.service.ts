@@ -102,7 +102,10 @@ export class AuthService {
     const domain = this.configService.get<string>('domain');
     const port = this.configService.get<number>('port');
 
-    const confirmCode = this.jwtService.sign({ id: userId }, { expiresIn: Config.auth.confirmCodeTtl, secret: Config.auth.jwtSecret });
+    const confirmCode = this.jwtService.sign(
+      { id: userId }, 
+      { expiresIn: Config.auth.confirmCodeTtl, secret: Config.auth.registrationConfirmJwtSecret });
+      
     return `${protocol}${domain}:${AuthService.isPortRequired(port, ssl) ? port : ''}/registration/confirm/${confirmCode}`;
   }
 

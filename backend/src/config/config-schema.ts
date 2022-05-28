@@ -23,7 +23,7 @@ class Google {
 class Auth {
   @IsOptional()
   @IsString()
-  readonly jwtSecret: string;
+  readonly registrationConfirmJwtSecret: string;
 
   @IsDefined({ message: 'missing \'auth.confirmCodeTtl\' property' })
   @IsString()

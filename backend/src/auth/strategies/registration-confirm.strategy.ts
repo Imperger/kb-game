@@ -11,7 +11,7 @@ export class RegistrationConfirmStrategy extends PassportStrategy(Strategy, Regi
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromBodyField('code'),
-      secretOrKey: Config.auth.jwtSecret,
+      secretOrKey: Config.auth.registrationConfirmJwtSecret,
     });
   }
 
