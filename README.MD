@@ -47,9 +47,10 @@ Immediately when connection has been established, the client must send a signed 
 ```
 // C->S
 {
-    request: string,
-    player_id: string,
-    display_name: string
+    instanceId: string,
+    playerId: string,
+    nickname: string,
+    exp: number
     // Possible more info for avoiding additional request from instance to backend
 }
 ```
@@ -104,13 +105,10 @@ Authorization: Bearer <NewCustomGameToken>
 ```
 
 ```
-// NewCustomGameToken
+// NewCustomGame
 }
-    spawner: string, // For preventing replay attack on another spawner with same secret
-    request: string, // unique string for preventing replay attack
-    iat: number, // token issue time
-    exp: number, // token expiration
-    backend: string // backend which request instance, used for requesting additional info
+    ownerId: string, // player id that has moderator access
+    backendApi: string // for uploading game results
 }
 ```
 
@@ -118,7 +116,8 @@ Authorization: Bearer <NewCustomGameToken>
 
 ```
 {
-    status: number // 0 - ok, 1 - full
+    instanceId: string;
+    instanceUrl: string;
 }
 ```
 
@@ -136,11 +135,8 @@ Authorization: Bearer <NewQuickGameToken>
 ```
 // NewQuickGameToken
 }
-    spawner: string, // For preventing replay attack on another spawner with same secret
-    request: string, // unique string for preventing replay attack
-    iat: number, // token issue time
-    exp: number, // token expiration
-    backend: string // backend which request instance, used for requesting additional info
+    ownerId: string, // player id that has moderator access
+    backendApi: string // for uploading game results
     type: string, // 'FFA' or 'Teams'
     text: string // text content ??
 }
@@ -150,7 +146,8 @@ Authorization: Bearer <NewQuickGameToken>
 
 ```
 {
-    status: number // 0 - ok, 1 - full
+    instanceId: string;
+    instanceUrl: string;
 }
 ```
 
