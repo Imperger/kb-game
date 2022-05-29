@@ -12,7 +12,7 @@ import { spawnerHostNotFound, spawnerHostNotResponse, spawnerRequestInstanceFail
 import { SpawnerAlreadyAdded } from './exceptions/spawner-already-added';
 import { ConfigHelperService } from 'src/config/config-helper.service';
 
-export interface RequestdSpawnerInfo {
+export interface RequestedSpawnerInfo {
   name: string;
   capacity: number;
 }
@@ -42,23 +42,24 @@ export class SpawnerService {
     private readonly configHelperService: ConfigHelperService,
     @InjectModel(Spawner.name) private readonly spawnerModel: Model<Spawner>) { }
 
-  async add(url: string, secret: string): Promise<RequestdSpawnerInfo> {
+  async add(url: string, secret: string): Promise<RequestedSpawnerInfo> {
     try {
       const info = (await this.http
-        .get<RequestdSpawnerInfo>(`${url}/info`, this.useAuthorization(secret))
+        .get<RequestedSpawnerInfo>(`${url}/info`, this.useAuthorization(secret))
         .toPromise())
         .data;
 
-      await new this.spawnerModel({ 
-        url: url.toLowerCase(), 
+      await new this.spawnerModel({
+        url: url.toLowerCase(),
         name: info.name,
         capacity: info.capacity,
-        secret }).save();
+        secret
+      }).save();
 
       return info;
-    } catch(e) {
+    } catch (e) {
       if (isAxiosError(e)) {
-        switch(e.code) {
+        switch (e.code) {
           case 'ECONNREFUSED':
             throw new RejectedResponseException(spawnerHostNotResponse);
           case 'ENOTFOUND':
@@ -72,7 +73,7 @@ export class SpawnerService {
         if (e.code === 11000) {
           throw new SpawnerAlreadyAdded();
         }
-  
+
       }
     }
   }
