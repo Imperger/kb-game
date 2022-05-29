@@ -10,6 +10,7 @@ import { UserModule } from './user/user.module';
 import { EmailModule } from './email/email.module';
 import { JwtModule } from './jwt/jwt.module';
 import { SpawnerModule } from './spawner/spawner.module';
+import { PlayerModule } from './player/player.module';
 import Config from './config'
 
 @Module({
@@ -25,7 +26,8 @@ import Config from './config'
     UserModule,
     EmailModule,
     JwtModule,
-    SpawnerModule,],
+    SpawnerModule,
+    PlayerModule],
   controllers: [AppController],
   providers: [AppService]
 })
