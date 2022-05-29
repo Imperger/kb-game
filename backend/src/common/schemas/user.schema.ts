@@ -1,5 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import * as mongoose from 'mongoose';
+
+import { Player } from '../../player/schemas/player.schema';
 
 @Schema({ timestamps: { createdAt: false } })
 class UserSecret {
@@ -53,6 +56,9 @@ export class User extends Document {
 
   @Prop({ required: true, type: Scopes })
   scopes: Scopes;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Player', default: null })
+  player: Player;
 
   @Prop()
   createdAt?: Date;

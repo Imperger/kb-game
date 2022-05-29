@@ -22,12 +22,14 @@ import Config from '../config';
 import { timeDiff } from 'src/common/util/time-diff';
 import ms from 'ms';
 import { RegistrationConfirmExpiredException } from './exceptions/registration-confirm-expired-exception';
+import { PlayerService } from 'src/player/player.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly emailService: EmailService,
     private readonly userService: UserService,
+    private readonly playerService: PlayerService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     @InjectModel(User.name) private readonly userModel: Model<User>) { }
@@ -76,7 +78,11 @@ export class AuthService {
     if (user.confirmed)
       throw new RegistrationAlreadyConfirmedException();
 
+    const player = await this.playerService.newPlayer(user.username);
+    
+    user.player = player;
     user.confirmed = true;
+
     await user.save();
   }
 

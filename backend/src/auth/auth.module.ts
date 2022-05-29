@@ -10,6 +10,7 @@ import { UserModule } from '../user/user.module';
 import { LoginByEmailStrategy, LoginByUsernameStrategy, RegistrationConfirmStrategy } from './strategies';
 import { RecaptchaException } from '../common/exceptions/recaptcha-exception';
 import Config from '../config';
+import { PlayerModule } from 'src/player/player.module';
 @Module({
   imports: [
     GoogleRecaptchaModule.forRoot({
@@ -19,7 +20,8 @@ import Config from '../config';
     }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     EmailModule,
-    UserModule
+    UserModule,
+    PlayerModule
   ],
   providers: [AuthService, LoginByEmailStrategy, LoginByUsernameStrategy, RegistrationConfirmStrategy],
   controllers: [AuthController],
