@@ -11,6 +11,7 @@ import { EmailModule } from './email/email.module';
 import { JwtModule } from './jwt/jwt.module';
 import { SpawnerModule } from './spawner/spawner.module';
 import { PlayerModule } from './player/player.module';
+import { ConfigHelperModule } from './config/config-helper.module';
 import Config from './config'
 
 @Module({
@@ -27,7 +28,8 @@ import Config from './config'
     EmailModule,
     JwtModule,
     SpawnerModule,
-    PlayerModule],
+    PlayerModule,
+    ConfigHelperModule],
   controllers: [AppController],
   providers: [AppService]
 })
