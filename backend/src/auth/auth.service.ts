@@ -23,6 +23,7 @@ import { timeDiff } from 'src/common/util/time-diff';
 import ms from 'ms';
 import { RegistrationConfirmExpiredException } from './exceptions/registration-confirm-expired-exception';
 import { PlayerService } from 'src/player/player.service';
+import { ConfigHelperService } from 'src/config/config-helper.service';
 
 @Injectable()
 export class AuthService {
@@ -31,6 +32,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly playerService: PlayerService,
     private readonly configService: ConfigService,
+    private readonly configHelperService: ConfigHelperService,
     private readonly jwtService: JwtService,
     @InjectModel(User.name) private readonly userModel: Model<User>) { }
 
@@ -103,16 +105,11 @@ export class AuthService {
   }
 
   private buildConfirmURL(userId: string) {
-    const ssl = this.configService.get<boolean>('ssl');
-    const protocol = ssl ? 'https://' : 'http://';
-    const domain = this.configService.get<string>('domain');
-    const port = this.configService.get<number>('port');
-
     const confirmCode = this.jwtService.sign(
       { id: userId }, 
       { expiresIn: Config.auth.confirmCodeTtl, secret: Config.auth.registrationConfirmJwtSecret });
       
-    return `${protocol}${domain}:${AuthService.isPortRequired(port, ssl) ? port : ''}/registration/confirm/${confirmCode}`;
+    return `${this.configHelperService.apiEntry}/registration/confirm/${confirmCode}`;
   }
 
   async generateAccessToken(userId: string) {
@@ -130,11 +127,6 @@ export class AuthService {
             
       throw new RegistrationNotConfirmedException();
     }
-  }
-
-  static isPortRequired(port: number, ssl: boolean) {
-    return ssl && port !== 443 ||
-            !ssl && port !== 80;
   }
 
   static async buildSecret(password: string) {

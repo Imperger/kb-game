@@ -11,6 +11,7 @@ import { LoginByEmailStrategy, LoginByUsernameStrategy, RegistrationConfirmStrat
 import { RecaptchaException } from '../common/exceptions/recaptcha-exception';
 import Config from '../config';
 import { PlayerModule } from 'src/player/player.module';
+import { ConfigHelperModule } from 'src/config/config-helper.module';
 @Module({
   imports: [
     GoogleRecaptchaModule.forRoot({
@@ -21,7 +22,8 @@ import { PlayerModule } from 'src/player/player.module';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     EmailModule,
     UserModule,
-    PlayerModule
+    PlayerModule,
+    ConfigHelperModule
   ],
   providers: [AuthService, LoginByEmailStrategy, LoginByUsernameStrategy, RegistrationConfirmStrategy],
   controllers: [AuthController],
