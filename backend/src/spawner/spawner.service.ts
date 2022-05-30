@@ -11,6 +11,7 @@ import { RejectedResponseException } from '../common/types/rejected-response';
 import { spawnerHostNotFound, spawnerHostNotResponse, spawnerRequestInstanceFailed, spawnerUnknownError, spawnerWrongSecret } from './types/rejected-reason';
 import { SpawnerAlreadyAdded } from './exceptions/spawner-already-added';
 import { ConfigHelperService } from 'src/config/config-helper.service';
+import { firstValueFrom } from 'rxjs';
 
 export interface RequestedSpawnerInfo {
   name: string;
@@ -44,9 +45,8 @@ export class SpawnerService {
 
   async add(url: string, secret: string): Promise<RequestedSpawnerInfo> {
     try {
-      const info = (await this.http
-        .get<RequestedSpawnerInfo>(`${url}/info`, this.useAuthorization(secret))
-        .toPromise())
+      const info = (await firstValueFrom(this.http
+        .get<RequestedSpawnerInfo>(`${url}/info`, this.useAuthorization(secret))))
         .data;
 
       await new this.spawnerModel({
@@ -103,10 +103,10 @@ export class SpawnerService {
 
   private async requestCustomInstance(spawnerUrl: string, secret: string, ownerId: string): Promise<InstanceDescriptor> {
     try {
-      return (await this.http.post<InstanceDescriptor>(
+      return (await firstValueFrom(this.http.post<InstanceDescriptor>(
         `${spawnerUrl}/game/new_custom`,
         { ownerId, backendApi: this.configHelperService.apiEntry },
-        this.useAuthorization(secret)).toPromise()).data;
+        this.useAuthorization(secret)))).data;
     } catch (e) {
       if (isAxiosError(e)) {
         throw new RejectedResponseException(spawnerRequestInstanceFailed);
