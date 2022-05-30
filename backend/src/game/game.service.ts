@@ -4,7 +4,7 @@ import { SpawnerService } from 'src/spawner/spawner.service';
 
 export interface CustomGameDescriptor {
   instanceUrl: string;
-  token: string;
+  playerToken: string;
 }
 
 export interface PlayerDescriptor {
@@ -26,10 +26,10 @@ export class GameService {
       return null;
     }
 
-    const token = this.jwtService.sign(
+    const playerToken = this.jwtService.sign(
       { instanceId: instance.instanceId, ...player },
       { expiresIn: "3m", secret: instance.spawnerSecret });
 
-    return { instanceUrl: instance.instanceUrl, token };
+    return { instanceUrl: instance.instanceUrl, playerToken };
   }
 }

@@ -21,13 +21,19 @@
 </style>
 
 <script lang="ts">
+import { GameClient } from '@/gameplay/game-client';
 import { ApiServiceMixin } from '@/mixins';
+import { isRejectedResponse } from '@/services/api-service/rejected-response';
 import { Component, Mixins, Vue } from 'vue-property-decorator';
 
 @Component
 export default class MainMenuPlay extends Mixins(ApiServiceMixin) {
   async newCustomGame (): Promise<void> {
-    this.api.game.newCustom();
+    const gi = await this.api.game.newCustom();
+    if (!isRejectedResponse(gi)) {
+      const client = new GameClient();
+      client.connect(gi.instanceUrl, gi.playerToken);
+    }
   }
 }
 </script>
