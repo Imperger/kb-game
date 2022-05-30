@@ -11,6 +11,10 @@
                 "-r",
                 "tsconfig-paths/register"
             ],
+            "env": { 
+                "SPAWNER_SECRET": "12345",
+                "GAME_TYPE": "custom"
+             },
             "args": [
                 "${workspaceFolder}/src/main.ts",
                 "-c",

@@ -33,11 +33,11 @@ export class SpawnerService {
   }
 
   async createQuickGame(options: QuickGameOptions): Promise<InstanceRequestResult | null> {
-    return { instanceId: SpawnerService.generateInstanceId(), instanceUrl: 'https://game' }
+    return { instanceId: SpawnerService.generateInstanceId(), instanceUrl: 'wss://game.dev.wsl:3002' }
   }
 
   async createCustomGame(options: CustomGameOptions): Promise<InstanceRequestResult | null> {
-    return { instanceId: SpawnerService.generateInstanceId(), instanceUrl: 'https://game' }
+    return { instanceId: SpawnerService.generateInstanceId(), instanceUrl: 'wss://game.dev.wsl:3002' }
   }
 
   private static generateInstanceId(): string {
