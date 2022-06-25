@@ -1,12 +1,13 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { GameGateway } from './game.gateway';
 import { GameService } from './game/game.service';
+import { ShutdownService } from './shutdown.service';
 
 @Module({
-  imports: [],
+  imports: [HttpModule],
   controllers: [AppController],
-  providers: [AppService, GameGateway, GameService],
+  providers: [GameGateway, GameService, ShutdownService],
 })
 export class AppModule {}

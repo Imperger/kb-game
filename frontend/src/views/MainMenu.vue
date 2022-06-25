@@ -1,5 +1,5 @@
 <template>
-<v-container>
+<v-container fluid>
   <v-app-bar
       app
       color="white"
@@ -18,7 +18,7 @@
     </section>
   </v-app-bar>
   <v-main>
-    <v-container>
+    <v-container fluid>
       <router-view></router-view>
     </v-container>
   </v-main>

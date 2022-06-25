@@ -13,6 +13,7 @@ import { SpawnerModule } from './spawner/spawner.module';
 import { GameModule } from './game/game.module';
 import { PlayerModule } from './player/player.module';
 import { ConfigHelperModule } from './config/config-helper.module';
+import { ScenarioModule } from './scenario/scenario.module';
 import Config from './config'
 
 @Module({
@@ -31,7 +32,8 @@ import Config from './config'
     SpawnerModule,
     GameModule,
     PlayerModule,
-    ConfigHelperModule],
+    ConfigHelperModule,
+    ScenarioModule],
   controllers: [AppController],
   providers: [AppService]
 })

@@ -9,6 +9,8 @@
 		// Use -bullseye variants on local arm64/Apple Silicon.
 		"args": { "VARIANT": "16-bullseye" }
 	},
+	"runArgs": ["--name=game_instance_dev.dev.wsl", "--network=dev"],
+	
 	"mounts": ["source=${localWorkspaceFolder}/../certs,target=${containerWorkspaceFolder}/certs,type=bind,consistency=default"],
 	
 	"postCreateCommand": "target=${containerWorkspaceFolder}/.devcontainer/scripts/postCreateCommand.sh && chmod +x $target && $target",

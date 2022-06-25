@@ -2,7 +2,7 @@
 <v-list-item>
     <v-list-item-content class="d-inline-flex">
         <v-col><v-text-field v-model="url" label="Spawner URL" placeholder="https://spawner.domain:443"></v-text-field></v-col>
-        <v-col><v-text-field v-model="secret" label="Secret" type="password"></v-text-field></v-col>
+        <v-col cols="3"><v-text-field v-model="secret" label="Secret" type="password"></v-text-field></v-col>
         <v-col class=" flex-grow-0"><v-btn @click="add(url, secret, loading)" :loading="loading.addBtn">Add</v-btn></v-col>
     </v-list-item-content>
 </v-list-item>

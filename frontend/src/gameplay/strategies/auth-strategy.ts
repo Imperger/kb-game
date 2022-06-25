@@ -1,26 +1,35 @@
 import { Socket } from 'socket.io-client';
 import { remoteCall } from '../remote-call';
+import { LobbyStrategy } from './lobby-strategy';
 import { Strategy } from './strategy';
 
-enum AuthResult { Unauthorized = 0, CustomGame = 1, QuickGame = 2 }
+export enum AuthResult { Unauthorized = 0, CustomGame = 1, QuickGame = 2 }
 
-export class AuthStrategy implements Strategy {
+export class AuthStrategy extends Strategy {
   private token = '';
 
   private socket!: Socket;
 
-  use (socket: Socket, switchStrategy: (strategy: Strategy) => void): void {
+  async activate (socket: Socket, switchStrategy: (strategy: Strategy) => void): Promise<void> {
     this.socket = socket;
-    this.auth();
+    switch (await this.auth()) {
+      case AuthResult.CustomGame:
+        switchStrategy(new LobbyStrategy());
+        break;
+      case AuthResult.QuickGame:
+        throw new Error('Not implemented yet');
+      case AuthResult.Unauthorized:
+        break;
+    }
   }
+
+  async deactivate (): Promise<void> { }
 
   set playerToken (token: string) {
     this.token = token;
   }
 
   private async auth (): Promise<AuthResult> {
-    const ret = await remoteCall(this.socket, 'auth', this.token);
-
-    return AuthResult.CustomGame;
+    return remoteCall(this.socket, 'auth', this.token);
   }
 }

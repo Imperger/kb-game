@@ -6,12 +6,16 @@ import store, { App } from '@/store';
 import MainMenu from '../views/MainMenu.vue';
 import { auth } from './auth';
 import { mainMenu } from './main-menu';
+import { game } from './game';
+import { scenario } from './scenario';
 import { Role } from './roles';
 
 Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
   ...auth,
+  ...game,
+  ...scenario,
   {
     path: '/',
     name: 'MainMenu',

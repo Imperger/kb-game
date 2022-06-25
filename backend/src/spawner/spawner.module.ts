@@ -7,6 +7,7 @@ import { SpawnerService } from './spawner.service';
 import { Spawner, SpawnerSchema } from './schemas/spawner.schema';
 import { Base64DecoderPipe } from './pipes/base64-decoder.pipe';
 import { ConfigHelperModule } from '../config/config-helper.module';
+import { JwtKnownSpawnerGuard } from './decorators/jwt-known-spawner.guard';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { ConfigHelperModule } from '../config/config-helper.module';
   controllers: [SpawnerController],
   providers: [
     SpawnerService,
+    JwtKnownSpawnerGuard,
     Base64DecoderPipe],
-  exports: [SpawnerService]
+  exports: [SpawnerService, JwtKnownSpawnerGuard]
 })
 export class SpawnerModule {}

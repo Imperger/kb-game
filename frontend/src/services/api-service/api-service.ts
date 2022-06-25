@@ -7,6 +7,7 @@ import AuthApi from './auth/auth-api';
 import { SpawnerApi } from './spawner/spawner-api';
 import UserApi from './user/user-api';
 import GameApi from './game/game-api';
+import ScenarioApi from './scenario/scenario-api';
 
 export { UnauthorizedHandler } from './auth/auth-api';
 
@@ -15,6 +16,7 @@ export default class ApiService {
   private authApi: AuthApi = new AuthApi();
   private userApi: UserApi = new UserApi();
   private spawnerApi: SpawnerApi = new SpawnerApi();
+  private scenarioApi: ScenarioApi = new ScenarioApi();
   private readonly gameApi = new GameApi();
 
   constructor (baseURL: string, accessToken = '') {
@@ -25,6 +27,7 @@ export default class ApiService {
     this.userApi.httpClient = this.axios;
     this.spawnerApi.httpClient = this.axios;
     this.gameApi.httpClient = this.axios;
+    this.scenarioApi.httpClient = this.axios;
   }
 
   get auth (): AuthApi {
@@ -37,6 +40,10 @@ export default class ApiService {
 
   get spawner (): SpawnerApi {
     return this.spawnerApi;
+  }
+
+  get scenario (): ScenarioApi {
+    return this.scenarioApi;
   }
 
   get game (): GameApi {

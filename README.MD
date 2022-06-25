@@ -59,14 +59,29 @@ Immediately after, the server will send uint8 with following meaning
 
 >0 - player not verified and the server has terminated the connection; 1 - custom game; 2 - quick game;
 
-```
+```js
 // S->C
 uint8
 ``` 
 
 ## Lobby protocol
 
-If the server returned 1 in the previous step, the client enters the lobby state
+If the server returned 1 in the previous step, the client enters the lobby state.
+
+First the client gets the state of the lobby by calling rpc `lobby_state`.
+
+```js
+// Lobby state
+{
+    players: [ 
+        { 
+            id: string;
+            nickname: string;
+            slot: number;
+        }
+    ]
+}
+```
 
 # Spawner api
 

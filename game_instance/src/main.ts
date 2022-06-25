@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
+import { ShutdownService } from './shutdown.service';
 
 async function bootstrap() {
   const httpsOptions = {
@@ -13,7 +14,8 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter({ https: httpsOptions }),
   );
+  app.get(ShutdownService).subscribeToShutdown(() => app.close());
   app.enableCors();
-  await app.listen(3002);
+  await app.listen(3002, '0.0.0.0');
 }
 bootstrap();

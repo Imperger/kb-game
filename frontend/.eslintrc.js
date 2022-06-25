@@ -21,6 +21,8 @@ module.exports = {
     '@typescript-eslint/no-empty-function': ['error', { allow: ['decoratedFunctions'] }],
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
+    'no-empty-function': 'off',
+    '@typescript-eslint/no-empty-function': 'off',
     semi: 'off',
     '@typescript-eslint/semi': ['error']
   },
