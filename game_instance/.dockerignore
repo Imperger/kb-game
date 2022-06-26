@@ -1,0 +1,6 @@
+.devcontainer
+.vscode
+scripts
+certs
+dist
+node_modules

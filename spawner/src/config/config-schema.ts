@@ -1,9 +1,17 @@
-import { IsString, IsDefined, IsNumber } from 'class-validator';
+import { IsString, IsDefined, IsNumber, IsOptional } from 'class-validator';
 
 export class ConfigSchema {
   @IsDefined({ message: "missing 'name' property" })
   @IsString()
   readonly name: string;
+
+  @IsDefined({ message: "missing 'hostname' property" })
+  @IsString()
+  readonly hostname: string;
+
+  @IsOptional()
+  @IsString()
+  readonly entry: string;
 
   @IsDefined({ message: "missing 'capacity' property" })
   @IsNumber()

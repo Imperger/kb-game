@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { SpawnerService } from './spawner/spawner.service';
 
 import { JwtModule } from './jwt/jwt.module';
+import { SpawnerModule } from './spawner/spawner.module';
 
 @Module({
-  imports: [JwtModule],
+  imports: [JwtModule, SpawnerModule],
   controllers: [AppController],
-  providers: [SpawnerService],
+  providers: [],
 })
 export class AppModule {}
