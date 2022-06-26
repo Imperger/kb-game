@@ -12,7 +12,8 @@
 	"runArgs": ["--name=spawner.dev.wsl", "--network=dev"],
 
 	"mounts": ["source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind,consistency=default",
-		       "source=${localWorkspaceFolder}/../certs,target=${containerWorkspaceFolder}/certs,type=bind,consistency=default"],
+		       "source=${localWorkspaceFolder}/../certs,target=${containerWorkspaceFolder}/certs,type=bind,consistency=default",
+			   "source=${localWorkspaceFolder}/../game_instance,target=${containerWorkspaceFolder}/../game_instance,type=bind,consistency=default"],
 			   
 	"postStartCommand": "target=${containerWorkspaceFolder}/.devcontainer/scripts/postStartCommand.sh && chmod +x $target && $target",
 
