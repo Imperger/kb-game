@@ -109,7 +109,7 @@ export class SpawnerService implements OnModuleInit {
 
     const ret = this.dockerService.client.run(
       this.gameInstanceImageName,
-      ['npm start'],
+      [],
       [],
       { name: options.host, ExposedPorts, HostConfig: { AutoRemove: true, NetworkMode: 'dev', Binds, PortBindings }, Env }
     );
