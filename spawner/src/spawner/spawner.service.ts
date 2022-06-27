@@ -3,6 +3,8 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 
 import Config from '../config';
 import { DockerService } from './docker.service';
+import { HttpService } from '@nestjs/axios';
+import { catchError, firstValueFrom, forkJoin, map, Observable, tap } from 'rxjs';
 
 export interface CustomGameOptions {
   ownerId: string;
@@ -26,12 +28,26 @@ export interface InstanceRequestResult {
 };
 
 interface GameInstanceOptions {
-  host: string;
+  hostname: string;
   port: number;
   instanceId: string;
   owner: string;
   backendApi: string;
   type: 'custom';
+}
+
+type Nickname = string;
+export interface ServerDescription {
+  url: string;
+  owner: Nickname;
+  capacity: number;
+  occupancy: number;
+  started: boolean;
+}
+
+interface InstanceHost {
+  external: string;
+  internal: string;
 }
 
 @Injectable()
@@ -40,7 +56,11 @@ export class SpawnerService implements OnModuleInit {
 
   private readonly gameInstanceImageName = 'game_instance';
 
-  constructor(private readonly dockerService: DockerService) { }
+  private readonly instancesHost = new Set<InstanceHost>();
+
+  constructor(
+    private readonly dockerService: DockerService,
+    private readonly http: HttpService) { }
 
   async onModuleInit(): Promise<void> {
     await this.prepareGameInstanceImage();
@@ -61,7 +81,7 @@ export class SpawnerService implements OnModuleInit {
     const instancePort = this.devPortHack;
 
     await this.spawnGameInstance({
-      host: instanceHost,
+      hostname: instanceHost,
       port: instancePort,
       instanceId,
       owner: options.ownerId,
@@ -70,6 +90,23 @@ export class SpawnerService implements OnModuleInit {
     });
 
     return { instanceId, instanceUrl: `wss://${instanceHost}:${instancePort}` }
+  }
+
+  async listInstances(): Promise<ServerDescription[]> {
+    if (this.instancesHost.size === 0)
+      return [];
+
+    const requests = [...this.instancesHost.values()]
+      .map(instance => new Observable<any>(observer => {
+        this.http.get<ServerDescription>(`https://${instance.internal}/info`)
+          .pipe(catchError(x => Promise.resolve(null)))
+          .subscribe(game => {
+            observer.next({ ...game.data, url: instance.external });
+            observer.complete();
+          });
+      }));
+
+    return (await firstValueFrom(forkJoin(requests))).filter(x => x !== null);
   }
 
   private async prepareGameInstanceImage(): Promise<void> {
@@ -107,18 +144,26 @@ export class SpawnerService implements OnModuleInit {
     const ExposedPorts = { "3002/tcp": {} };
     const PortBindings = { '3002/tcp': [{ 'HostPort': `${options.port}` }] };
 
-    const ret = this.dockerService.client.run(
+    const unloaded = this.dockerService.client.run(
       this.gameInstanceImageName,
       [],
       [],
-      { name: options.host, ExposedPorts, HostConfig: { AutoRemove: true, NetworkMode: 'dev', Binds, PortBindings }, Env }
+      { name: options.hostname, ExposedPorts, HostConfig: { AutoRemove: true, NetworkMode: 'dev', Binds, PortBindings }, Env }
     );
 
-    for(let retries = 0; retries < 5; ++retries) {
+    const host = {
+      external: `${options.hostname}:${options.port}`,
+      internal: `${options.hostname}:3002`
+    };
+
+    this.instancesHost.add(host);
+    unloaded.then(() => this.instancesHost.delete(host));
+
+    for (let retries = 0; retries < 5; ++retries) {
       try {
-        await this.dockerService.client.getContainer(options.host).inspect();
+        await this.dockerService.client.getContainer(options.hostname).inspect();
         return;
-      }catch(e) {
+      } catch (e) {
         await new Promise<void>(ok => setTimeout(() => ok(), 1000))
       }
     }

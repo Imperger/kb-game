@@ -7,6 +7,9 @@
         <v-col md="auto" class="pa-1">
             <v-btn @click="newCustomGame" class="btn-tile" plain>Custom game</v-btn>
         </v-col>
+        <v-col md="auto" class="pa-1">
+            <v-btn @click="openServerBrowser" class="btn-tile" plain>Browse servers</v-btn>
+        </v-col>
     </v-row>
 </v-container>
 </template>
@@ -44,6 +47,10 @@ export default class MainMenuPlay extends Mixins(ApiServiceMixin, GameMixin) {
       case AuthResult.Unauthorized:
         break;
     }
+  }
+
+  openServerBrowser (): void {
+    this.$router.push({ name: 'MainMenuServerBrowser' });
   }
 }
 </script>

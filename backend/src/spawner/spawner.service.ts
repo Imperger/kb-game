@@ -8,7 +8,7 @@ import { MongoError } from 'mongodb';
 import { Spawner } from './schemas/spawner.schema';
 import { isAxiosError } from '../common/typeguards/axios-typeguard';
 import { RejectedResponseException } from '../common/types/rejected-response';
-import { spawnerHostNotFound, spawnerHostNotResponse, spawnerRequestInstanceFailed, spawnerUnknownError, spawnerWrongSecret } from './types/rejected-reason';
+import { spawnerHostNotFound, spawnerHostNotResponse, spawnerListGamesFailed, spawnerRequestInstanceFailed, spawnerUnknownError, spawnerWrongSecret } from './types/rejected-reason';
 import { SpawnerAlreadyAdded } from './exceptions/spawner-already-added';
 import { ConfigHelperService } from 'src/config/config-helper.service';
 import { firstValueFrom } from 'rxjs';
@@ -33,6 +33,15 @@ export interface GameInstanceDescriptor {
   instanceUrl: string;
   instanceId: string;
   spawnerSecret: string;
+}
+
+type Nickname = string;
+export interface ServerDescription {
+  url: string;
+  owner: Nickname;
+  capacity: number;
+  occupancy: number;
+  started: boolean;
 }
 
 @Injectable()
@@ -99,6 +108,18 @@ export class SpawnerService {
     }
 
     return null;
+  }
+
+  async listSpawnerInstancesInfo(spawnerUrl: string, secret: string): Promise<ServerDescription[]> {
+    try {
+      return (await firstValueFrom(this.http.get<ServerDescription[]>(
+        `${spawnerUrl}/game/list`,
+        this.useAuthorization(secret)))).data;
+    } catch (e) {
+      if (isAxiosError(e)) {
+        throw new RejectedResponseException(spawnerListGamesFailed);
+      }
+    }
   }
 
   private async requestCustomInstance(spawnerUrl: string, secret: string, ownerId: string): Promise<InstanceDescriptor> {

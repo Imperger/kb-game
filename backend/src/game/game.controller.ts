@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards } from '@nestjs/common';
 
 import { HasScopes } from 'src/auth/decorators/has-scopes.decorator';
 import { JwtGuard } from 'src/jwt/decorators/jwt.guard';
@@ -16,5 +16,12 @@ export class GameController {
   @Post('new_custom')
   async new_custom(@Player() player: PlayerSchema) {
     return await this.gameService.newCustom({ playerId: player.id, nickname: player.nickname });
+  }
+
+  @HasScopes(Scope.PlayGame)
+  @UseGuards(JwtGuard)
+  @Get('list')
+  async listGames() {
+    return await this.gameService.listGames();
   }
 }

@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { InstanceRequestResult, SpawnerService } from './spawner/spawner.service';
+import { InstanceRequestResult, ServerDescription, SpawnerService } from './spawner/spawner.service';
 
 import { JwtGuard } from './jwt/decorators/jwt.guard';
 
@@ -28,5 +28,11 @@ export class AppController {
   @Post('game/new_quick')
   async newQuickGame(@JwtPassthrough() options: NewQuickGameDto): Promise<InstanceRequestResult> {
     return this.spawnerService.createQuickGame(options);
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('game/list')
+  game_list(): Promise<ServerDescription[]> {
+    return this.spawnerService.listInstances();
   }
 }

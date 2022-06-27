@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { SpawnerService } from 'src/spawner/spawner.service';
+import { ServerDescription, SpawnerService } from 'src/spawner/spawner.service';
 
 export interface CustomGameDescriptor {
   instanceUrl: string;
@@ -11,7 +11,6 @@ export interface PlayerDescriptor {
   playerId: string;
   nickname: string;
 }
-
 
 @Injectable()
 export class GameService {
@@ -31,5 +30,18 @@ export class GameService {
       { expiresIn: "3m", secret: instance.spawnerSecret });
 
     return { instanceUrl: instance.instanceUrl, playerToken };
+  }
+
+  async listGames(): Promise<ServerDescription[]> {
+    const ret: ServerDescription[] = [];
+
+    for(const spawner of await this.spawnerService.listAll()) {
+      try {
+        ret.push(...await this.spawnerService.listSpawnerInstancesInfo(spawner.url, spawner.secret));
+      } catch(e) {
+      }
+    }
+
+    return ret;
   }
 }

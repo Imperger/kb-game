@@ -34,6 +34,14 @@ export interface LobbyState {
   scenarios: Scenario[];
 }
 
+type Nickname = string;
+export interface ServerDescription {
+  owner: Nickname;
+  capacity: number;
+  occupancy: number;
+  started: boolean;
+}
+
 export interface GameState {
   field: {
     textImg: string; // base64
@@ -203,6 +211,19 @@ export class GameService {
         slot: x.slot,
       })),
       scenarios: this.scenarios,
+    };
+  }
+
+  serverDescription(): ServerDescription {
+    const owner =
+      [...this.players.values()].find((p) => p.id === process.env.OWNER_ID)
+        ?.nickname ?? 'Unknown';
+
+    return {
+      owner,
+      capacity: 10,
+      occupancy: this.players.size,
+      started: this._gameStarted,
     };
   }
 
