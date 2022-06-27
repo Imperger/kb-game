@@ -116,7 +116,7 @@ export class SpawnerService implements OnModuleInit {
 
     for(let retries = 0; retries < 5; ++retries) {
       try {
-        await this.dockerService.client.getContainer(this.gameInstanceImageName).inspect();
+        await this.dockerService.client.getContainer(options.host).inspect();
         return;
       }catch(e) {
         await new Promise<void>(ok => setTimeout(() => ok(), 1000))
