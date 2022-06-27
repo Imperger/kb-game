@@ -101,8 +101,8 @@ export class SpawnerService implements OnModuleInit {
     ];
 
     const Binds = [
-      '/home/vitaly/Projects/kb-game/certs:/app/certs:rw',
-      '/home/vitaly/Projects/kb-game/ca:/app/ca:rw'];
+      `${Config.tls.certs}:/app/certs:rw`,
+      `${Config.tls.ca}:/app/ca:rw`];
 
     const ExposedPorts = { "3002/tcp": {} };
     const PortBindings = { '3002/tcp': [{ 'HostPort': `${options.port}` }] };

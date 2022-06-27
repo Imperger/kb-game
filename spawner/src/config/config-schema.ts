@@ -1,4 +1,15 @@
-import { IsString, IsDefined, IsNumber, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsString, IsDefined, IsNumber, IsOptional, ValidateNested } from 'class-validator';
+
+class Tls {
+  @IsDefined({ message: "missing 'tls.certs' property" })
+  @IsString()
+  readonly certs: string;
+
+  @IsDefined({ message: "missing 'tls.ca' property" })
+  @IsString()
+  readonly ca: string;
+}
 
 export class ConfigSchema {
   @IsDefined({ message: "missing 'name' property" })
@@ -20,4 +31,9 @@ export class ConfigSchema {
   @IsDefined({ message: "missing 'secret' property" })
   @IsString()
   readonly secret: string;
+
+  @IsDefined({ message: "missing 'tls' scope" })
+  @ValidateNested()
+  @Type(() => Tls)
+  readonly tls: Tls;
 }
