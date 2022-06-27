@@ -131,7 +131,11 @@ export class SpawnerService implements OnModuleInit {
 
   private port = 3100;
   private get devPortHack() {
-    return this.port++;
+    const port = this.port;
+
+    this.port = this.port >= 3999 ? 0 : this.port + 1;
+
+    return port;
   }
 
   private static generateInstanceId(): string {
