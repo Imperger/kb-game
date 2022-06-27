@@ -11,6 +11,9 @@
                 "-r",
                 "tsconfig-paths/register"
             ],
+            "env": { 
+                "NODE_EXTRA_CA_CERTS": "./.vscode/certs/root.crt",
+            },
             "args": [
                 "${workspaceFolder}/src/main.ts",
                 "-c",
