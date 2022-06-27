@@ -178,7 +178,7 @@ export class SpawnerService implements OnModuleInit {
   private get devPortHack() {
     const port = this.port;
 
-    this.port = this.port >= 3999 ? 0 : this.port + 1;
+    this.port = this.port >= 3999 ? 3100 : this.port + 1;
 
     return port;
   }
