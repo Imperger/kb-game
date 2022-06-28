@@ -103,7 +103,9 @@ export class SpawnerService implements OnModuleInit {
         this.http.get<ServerDescription>(`https://${instance.internal}/info`, this.useAuthorization())
           .pipe(catchError(x => Promise.resolve(null)))
           .subscribe(game => {
-            observer.next({ ...game.data, url: instance.external });
+            if (game)
+              observer.next({ ...game.data, url: instance.external });
+
             observer.complete();
           });
       }));
@@ -159,7 +161,7 @@ export class SpawnerService implements OnModuleInit {
     };
 
     this.instancesHost.add(host);
-    unloaded.then(() => this.instancesHost.delete(host));
+    unloaded.then(() => this.unloadInstance(host, options.backendApi));
 
     let retries = 20;
     for (; retries > 0; --retries) {
@@ -171,18 +173,33 @@ export class SpawnerService implements OnModuleInit {
       }
     }
 
-    for(; retries > 0; --retries) {
+    for (; retries > 0; --retries) {
       try {
         await firstValueFrom(this.http.get<ServerDescription>(`https://${host.internal}/info`, this.useAuthorization()));
         break;
-      }catch(e) {
+      } catch (e) {
         await new Promise<void>(ok => setTimeout(() => ok(), 1000))
       }
     }
   }
 
+  private async unloadInstance(instance: InstanceHost, backendApi: string) {
+    this.instancesHost.delete(instance);
+
+    await firstValueFrom(this.http.post(
+      `${backendApi}/api/game/end_custom`,
+      { instanceUrl: `wss://${instance.external}` },
+      this.useSpawnerAuthorization()));
+  }
+
   private useAuthorization() {
     const token = this.jwtService.sign({}, {});
+
+    return { headers: { Authorization: `Bearer ${token}` } };
+  }
+
+  private useSpawnerAuthorization() {
+    const token = this.jwtService.sign({ spawner: Config.entry });
 
     return { headers: { Authorization: `Bearer ${token}` } };
   }

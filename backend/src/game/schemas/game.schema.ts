@@ -3,8 +3,14 @@ import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Game extends Document {
+  @Prop({ required: true, unique: true })
+  instanceUrl: string;
+
   @Prop({ required: true })
-  description: string;
+  instanceId: string;
+
+  @Prop({ required: true })
+  spawnerUrl: string;
 
   @Prop()
   createdAt?: Date;
@@ -14,5 +20,3 @@ export class Game extends Document {
 }
 
 export const GameSchema = SchemaFactory.createForClass(Game);
-
-GameSchema.index({ nickname: 1, discriminator: 1 }, { unique: true });

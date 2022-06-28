@@ -21,12 +21,13 @@
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
 
-import { ApiServiceMixin } from '@/mixins';
+import { ApiServiceMixin, GameMixin } from '@/mixins';
 import { ServerDescription } from '@/services/api-service/game/game-api';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
+import { AuthResult } from '@/gameplay/strategies/auth-strategy';
 
 @Component
-export default class ServerBrowser extends Mixins(ApiServiceMixin) {
+export default class ServerBrowser extends Mixins(ApiServiceMixin, GameMixin) {
   private readonly headers = [
     { text: 'Owner', value: 'owner' },
     { text: 'Players', value: 'players' },
@@ -44,6 +45,21 @@ export default class ServerBrowser extends Mixins(ApiServiceMixin) {
   }
 
   async connect (url: string): Promise<void> {
+    const connstr = `wss://${url}`;
+
+    const descriptor = await this.api.game.connect(connstr);
+
+    if (isRejectedResponse(descriptor)) { return; }
+
+    switch (await this.gameClient.connect(connstr, descriptor.playerToken)) {
+      case AuthResult.CustomGame:
+        this.$router.push({ name: 'GameLobby' });
+        break;
+      case AuthResult.QuickGame:
+        break;
+      case AuthResult.Unauthorized:
+        break;
+    }
   }
 }
 </script>

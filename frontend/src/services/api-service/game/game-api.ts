@@ -6,6 +6,10 @@ export interface NewGameDescriptor {
   playerToken: string;
 }
 
+export interface ConnectGameDescriptor {
+  playerToken: string;
+}
+
 type Nickname = string;
 export interface ServerDescription {
   url: string;
@@ -24,6 +28,10 @@ export default class GameApi {
 
   async newCustom (): Promise<NewGameDescriptor | RejectedResponse> {
     return (await this.http.post<NewGameDescriptor | RejectedResponse>('game/new_custom')).data;
+  }
+
+  async connect (instanceUrl: string): Promise<ConnectGameDescriptor | RejectedResponse> {
+    return (await this.http.post<ConnectGameDescriptor | RejectedResponse>('game/connect', { instanceUrl })).data;
   }
 
   async listGames (): Promise<ServerDescription[] | RejectedResponse> {

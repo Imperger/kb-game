@@ -32,6 +32,7 @@ export interface InstanceDescriptor {
 export interface GameInstanceDescriptor {
   instanceUrl: string;
   instanceId: string;
+  spawnerUrl: string;
   spawnerSecret: string;
 }
 
@@ -102,6 +103,7 @@ export class SpawnerService {
       try {
         return {
           ...await this.requestCustomInstance(s.url, s.secret, ownerId),
+          spawnerUrl: s.url,
           spawnerSecret: s.secret
         };
       } catch (e) { }
