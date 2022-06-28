@@ -161,11 +161,21 @@ export class SpawnerService implements OnModuleInit {
     this.instancesHost.add(host);
     unloaded.then(() => this.instancesHost.delete(host));
 
-    for (let retries = 0; retries < 5; ++retries) {
+    let retries = 20;
+    for (; retries > 0; --retries) {
       try {
         await this.dockerService.client.getContainer(options.hostname).inspect();
-        return;
+        break;
       } catch (e) {
+        await new Promise<void>(ok => setTimeout(() => ok(), 1000));
+      }
+    }
+
+    for(; retries > 0; --retries) {
+      try {
+        await firstValueFrom(this.http.get<ServerDescription>(`https://${host.internal}/info`, this.useAuthorization()));
+        break;
+      }catch(e) {
         await new Promise<void>(ok => setTimeout(() => ok(), 1000))
       }
     }
