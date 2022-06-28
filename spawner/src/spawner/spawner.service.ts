@@ -5,6 +5,7 @@ import Config from '../config';
 import { DockerService } from './docker.service';
 import { HttpService } from '@nestjs/axios';
 import { catchError, firstValueFrom, forkJoin, map, Observable, tap } from 'rxjs';
+import { JwtService } from '@nestjs/jwt';
 
 export interface CustomGameOptions {
   ownerId: string;
@@ -60,7 +61,8 @@ export class SpawnerService implements OnModuleInit {
 
   constructor(
     private readonly dockerService: DockerService,
-    private readonly http: HttpService) { }
+    private readonly http: HttpService,
+    private readonly jwtService: JwtService) { }
 
   async onModuleInit(): Promise<void> {
     await this.prepareGameInstanceImage();
@@ -98,7 +100,7 @@ export class SpawnerService implements OnModuleInit {
 
     const requests = [...this.instancesHost.values()]
       .map(instance => new Observable<any>(observer => {
-        this.http.get<ServerDescription>(`https://${instance.internal}/info`)
+        this.http.get<ServerDescription>(`https://${instance.internal}/info`, this.useAuthorization())
           .pipe(catchError(x => Promise.resolve(null)))
           .subscribe(game => {
             observer.next({ ...game.data, url: instance.external });
@@ -167,6 +169,12 @@ export class SpawnerService implements OnModuleInit {
         await new Promise<void>(ok => setTimeout(() => ok(), 1000))
       }
     }
+  }
+
+  private useAuthorization() {
+    const token = this.jwtService.sign({}, {});
+
+    return { headers: { Authorization: `Bearer ${token}` } };
   }
 
   private nextHostname: number = 0;
