@@ -1,5 +1,6 @@
 import * as Crypto from 'crypto';
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import type { AxiosResponse } from 'axios';
 
 import Config from '../config';
 import { DockerService } from './docker.service';
@@ -99,9 +100,9 @@ export class SpawnerService implements OnModuleInit {
       return [];
 
     const requests = [...this.instancesHost.values()]
-      .map(instance => new Observable<any>(observer => {
+      .map(instance => new Observable<ServerDescription>(observer => {
         this.http.get<ServerDescription>(`https://${instance.internal}/info`, this.useAuthorization())
-          .pipe(catchError(x => Promise.resolve(null)))
+          .pipe<AxiosResponse<ServerDescription>>(catchError(x => Promise.resolve(null)))
           .subscribe(game => {
             if (game)
               observer.next({ ...game.data, url: instance.external });
