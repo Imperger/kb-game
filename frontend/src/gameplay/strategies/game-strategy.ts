@@ -28,7 +28,7 @@ interface PlayersProgressEvent {
 
 type PlayerId = string;
 
-interface PlayerStats {
+export interface PlayerStats {
   id: PlayerId;
   accuracy: number;
   cpm: number[]; // Each number describe cpm on 5 seconds interval
