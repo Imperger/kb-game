@@ -1,18 +1,26 @@
 <template>
-<v-col>
-    <v-row justify="center">
-        <v-data-table :headers="headers" :items="games">
-          <template v-slot:[`item.players`]="{ item }">
-            {{ item.occupancy }} / {{ item.capacity }}
-          </template>
-          <template v-slot:[`item.action`]="{ item }">
-            <v-btn @click="connect(item.url)" color="#003c8f" icon>
-              <v-icon>mdi-connection</v-icon>
-            </v-btn>
-          </template>
-        </v-data-table>
+<v-row justify="center">
+  <v-col md="6">
+    <v-data-table :headers="headers" :items="games">
+      <template v-slot:[`item.players`]="{ item }">
+        {{ item.occupancy }} / {{ item.capacity }}
+      </template>
+      <template v-slot:[`item.action`]="{ item }">
+        <v-btn @click="connect(item.url)" color="#003c8f" icon>
+          <v-icon>mdi-connection</v-icon>
+        </v-btn>
+      </template>
+    </v-data-table>
+  </v-col>
+  <v-col md="1">
+    <v-row>
+      <v-btn @click="goToMainMenuPlay()" icon><v-icon>mdi-close</v-icon></v-btn>
     </v-row>
-</v-col>
+    <v-row>
+      <v-btn @click="fetchServerList()" icon><v-icon>mdi-refresh</v-icon></v-btn>
+    </v-row>
+  </v-col>
+</v-row>
 </template>
 
 <style scoped>
@@ -37,11 +45,7 @@ export default class ServerBrowser extends Mixins(ApiServiceMixin, GameMixin) {
   private games: ServerDescription[] = [];
 
   async created (): Promise<void> {
-    const games = await this.api.game.listGames();
-
-    if (isRejectedResponse(games)) return;
-
-    this.games = games;
+    this.fetchServerList();
   }
 
   async connect (url: string): Promise<void> {
@@ -60,6 +64,18 @@ export default class ServerBrowser extends Mixins(ApiServiceMixin, GameMixin) {
       case AuthResult.Unauthorized:
         break;
     }
+  }
+
+  goToMainMenuPlay (): void {
+    this.$router.push({ name: 'MainMenuPlay' });
+  }
+
+  private async fetchServerList (): Promise<void> {
+    const games = await this.api.game.listGames();
+
+    if (isRejectedResponse(games)) return;
+
+    this.games = games;
   }
 }
 </script>
