@@ -4,4 +4,4 @@ export interface RejectedResponse {
 }
 
 export const isRejectedResponse =
-    (response: unknown): response is RejectedResponse => typeof (response as RejectedResponse).code === 'number';
+    (response: unknown): response is RejectedResponse => typeof (response as RejectedResponse)?.code === 'number';
