@@ -1,5 +1,5 @@
 import * as Crypto from 'crypto';
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, OnModuleInit } from '@nestjs/common';
 import type { AxiosResponse } from 'axios';
 
 import Config from '../config';
@@ -78,6 +78,10 @@ export class SpawnerService implements OnModuleInit {
   }
 
   async createCustomGame(options: CustomGameOptions): Promise<InstanceRequestResult | null> {
+    if (this.instancesHost.size >= Config.capacity) {
+      throw new HttpException('The maximum capacity of the spawner has been reached', HttpStatus.CONFLICT);
+    }
+
     const instanceId = SpawnerService.generateInstanceId();
 
     const instanceHost = this.generateInstanceHostname();
