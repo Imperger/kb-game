@@ -2,7 +2,7 @@ import * as fs from 'fs';
 
 import { ConfigValidator } from './config-validator';
 import { ConfigSchema } from './config-schema';
-import { LogException } from '../common/logger-exception';
+import { LogException } from '@/common/logger-exception';
 
 export class ConfigLoader {
   private readonly ex = new LogException('ConfigLoader');

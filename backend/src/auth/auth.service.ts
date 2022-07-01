@@ -6,24 +6,24 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { MongoError } from 'mongodb';
 import { Model } from 'mongoose';
+import ms from 'ms';
 
-import { User } from '../common/schemas/user.schema';
-import { EmailService } from '../email/email.service';
-import { UserService } from '../user/user.service';
-import { ExtractDuplicateKey } from '../common/util/mongo-error-parser';
+import { User } from '@/user/schemas/user.schema';
+import { EmailService } from '@/email/email.service';
+import { UserService } from '@/user/user.service';
+import { ExtractDuplicateKey } from '@/common/util/mongo-error-parser';
 import { UsernameIsTakenException } from './exceptions/username-is-taken.exception';
 import { EmailIsTakenException } from './exceptions/email-is-taken.exception';
-import { InternalException } from '../common/exceptions/internal.exception';
+import { UnknownRegistrationException } from '@/auth/exceptions/unknown-registration.exception';
 import { RegistrationAlreadyConfirmedException } from './exceptions/registration-already-confirmed.exception';
 import { UnknownUserForConfirmRegistrationException } from './exceptions/object-of-confirmation-missing.exception';
 import { InvalidCredentialsException } from './exceptions/invalid-credentials.exception';
 import { RegistrationNotConfirmedException } from './exceptions/registration-not-confirmed-exception';
-import Config from '../config';
-import { timeDiff } from 'src/common/util/time-diff';
-import ms from 'ms';
+import Config from '@/config';
+import { timeDiff } from '@/common/util/time-diff';
 import { RegistrationConfirmExpiredException } from './exceptions/registration-confirm-expired-exception';
-import { PlayerService } from 'src/player/player.service';
-import { ConfigHelperService } from 'src/config/config-helper.service';
+import { PlayerService } from '@/player/player.service';
+import { ConfigHelperService } from '@/config/config-helper.service';
 
 @Injectable()
 export class AuthService {
@@ -60,7 +60,7 @@ export class AuthService {
           else if (k.startsWith('email'))
             throw new EmailIsTakenException();
 
-          throw new InternalException();
+          throw new UnknownRegistrationException();
         }
 
       }

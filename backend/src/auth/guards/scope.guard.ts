@@ -1,8 +1,9 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
-import { User } from 'src/common/schemas/user.schema';
-import { Scope, scopeMetaId } from '../scopes';
+
+import { User } from '@/user/schemas/user.schema';
+import { Scope, scopeMetaId } from '@/auth/scopes';
 
 @Injectable()
 export class ScopeGuard implements CanActivate {

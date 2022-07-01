@@ -1,6 +1,7 @@
 import { JwtService } from "@nestjs/jwt";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
-import { SpawnerService } from "../spawner.service";
+
+import { SpawnerService } from "@/spawner/spawner.service";
 
 interface GameInstanceToken {
   spawner: string;

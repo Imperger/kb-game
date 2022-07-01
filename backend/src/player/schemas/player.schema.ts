@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Type } from 'class-transformer/decorators';
 import mongoose, { Document } from 'mongoose';
 
-import { Game } from 'src/game/schemas/game.schema';
+import { Game } from '@/game/schemas/game.schema';
 
 @Schema({ timestamps: true, id: true })
 export class Player extends Document {

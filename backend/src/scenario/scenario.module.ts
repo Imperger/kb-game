@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ScenarioService } from './scenario.service';
 import { ScenarioController } from './scenario.controller';
 import { Scenario, ScenarioSchema } from './schemas/scenario.schema';
-import { SpawnerModule } from 'src/spawner/spawner.module';
+import { SpawnerModule } from '@/spawner/spawner.module';
 
 @Module({
   imports: [

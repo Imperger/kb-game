@@ -3,8 +3,8 @@ import { HttpStatus } from '@nestjs/common';
 import { AppException } from '@/common/filters/app-exception/app-exception';
 import { StatusCode } from '@/common/types/status-code';
 
-export class RegistrationNotConfirmedException extends AppException {
-  code = StatusCode.PendingConfirmRegistration;
+export class InvalidRecaptchaException extends AppException {
+  code = StatusCode.CaptchaFailed;
   httpCode = HttpStatus.UNAUTHORIZED;
-  message = 'Pending confirm registration.';
+  message = 'Invalid recaptcha.';
 }

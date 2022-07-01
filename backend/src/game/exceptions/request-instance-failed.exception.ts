@@ -3,8 +3,8 @@ import { HttpStatus } from '@nestjs/common';
 import { StatusCode } from '@/game/status-code';
 import { AppException } from '@/common/filters/app-exception/app-exception';
 
-export class ConnectionFailedException extends AppException {
-  code = StatusCode.ConnectionFailed;
+export class RequestInstanceFailedException extends AppException {
+  code = StatusCode.RequestInstanceFailed;
   httpCode = HttpStatus.BAD_REQUEST;
-  message = 'Connection failed';
+  message = 'Cant\'t request game instance';
 }

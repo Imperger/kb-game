@@ -2,8 +2,8 @@ import { plainToClass } from 'class-transformer';
 import { validateSync, ValidationError } from 'class-validator';
 
 import { ConfigSchema } from './config-schema';
-import MapTree from '../common/util/map-tree';
-import { LogException } from '../common/logger-exception';
+import MapTree from '@/common/util/map-tree';
+import { LogException } from '@/common/logger-exception';
 
 export class ConfigValidator {
   private readonly ex = new LogException('ConfigLoader');

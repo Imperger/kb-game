@@ -4,19 +4,19 @@ import { GoogleRecaptchaModule } from '@imperger/google-recaptcha';
 
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { EmailModule } from '../email/email.module';
-import { User, UserSchema } from '../common/schemas/user.schema';
-import { UserModule } from '../user/user.module';
+import { EmailModule } from '@/email/email.module';
+import { User, UserSchema } from '@/user/schemas/user.schema';
+import { UserModule } from '@/user/user.module';
 import { LoginByEmailStrategy, LoginByUsernameStrategy, RegistrationConfirmStrategy } from './strategies';
-import { RecaptchaException } from '../common/exceptions/recaptcha-exception';
-import Config from '../config';
-import { PlayerModule } from 'src/player/player.module';
-import { ConfigHelperModule } from 'src/config/config-helper.module';
+import { InvalidRecaptchaException } from '@/auth/exceptions/invalid-recaptcha.exception';
+import Config from '@/config';
+import { PlayerModule } from '@/player/player.module';
+import { ConfigHelperModule } from '@/config/config-helper.module';
 @Module({
   imports: [
     GoogleRecaptchaModule.forRoot({
       secretKey: Config.reCaptcha.secret,
-      exceptionType: RecaptchaException,
+      exceptionType: InvalidRecaptchaException,
       response: req => req.headers.recaptcha,
     }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),

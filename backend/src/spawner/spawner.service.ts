@@ -4,14 +4,18 @@ import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
 import { MongoError } from 'mongodb';
+import { firstValueFrom } from 'rxjs';
 
 import { Spawner } from './schemas/spawner.schema';
-import { isAxiosError } from '../common/typeguards/axios-typeguard';
-import { RejectedResponseException } from '../common/types/rejected-response';
-import { spawnerHostNotFound, spawnerHostNotResponse, spawnerListGamesFailed, spawnerRequestInstanceFailed, spawnerUnknownError, spawnerWrongSecret } from './types/rejected-reason';
+import { isAxiosError } from '@/common/typeguards/axios-typeguard';
 import { SpawnerAlreadyAdded } from './exceptions/spawner-already-added';
-import { ConfigHelperService } from 'src/config/config-helper.service';
-import { firstValueFrom } from 'rxjs';
+import { ConfigHelperService } from '@/config/config-helper.service';
+import { HostNotResponseException } from './exceptions/host-not-response.exception';
+import { HostNotFoundException } from './exceptions/host-not-found.exception';
+import { WrongSecretException } from './exceptions/wrong-secret.exception';
+import { UnknownException } from './exceptions/unknown.exception';
+import { ListGameFailedException } from './exceptions/list-game-failed.exception';
+import { RequestInstanceFailedException } from './exceptions/request-instance-failed.exception';
 
 export interface RequestedSpawnerInfo {
   name: string;
@@ -71,13 +75,13 @@ export class SpawnerService {
       if (isAxiosError(e)) {
         switch (e.code) {
           case 'ECONNREFUSED':
-            throw new RejectedResponseException(spawnerHostNotResponse);
+            throw new HostNotResponseException();
           case 'ENOTFOUND':
-            throw new RejectedResponseException(spawnerHostNotFound);
+            throw new HostNotFoundException();
           case 'ERR_BAD_REQUEST':
-            throw new RejectedResponseException(spawnerWrongSecret);
+            throw new WrongSecretException();
           default:
-            throw new RejectedResponseException(spawnerUnknownError);
+            throw new UnknownException();
         }
       } else if (e instanceof MongoError) {
         if (e.code === 11000) {
@@ -119,7 +123,7 @@ export class SpawnerService {
         this.useAuthorization(secret)))).data;
     } catch (e) {
       if (isAxiosError(e)) {
-        throw new RejectedResponseException(spawnerListGamesFailed);
+        throw new ListGameFailedException();
       }
     }
   }
@@ -132,7 +136,7 @@ export class SpawnerService {
         this.useAuthorization(secret)))).data;
     } catch (e) {
       if (isAxiosError(e)) {
-        throw new RejectedResponseException(spawnerRequestInstanceFailed);
+        throw new RequestInstanceFailedException();
       }
     }
   }

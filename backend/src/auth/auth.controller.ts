@@ -6,10 +6,10 @@ import { AuthService } from './auth.service';
 import { LoginByEmailGuard } from './decorators/login-by-email.guard';
 import { RegistrationConfirmGuard } from './decorators/registration-confirm.guard';
 import { UserId } from './decorators/user-id';
-import { StatusCode } from '../common/types/status-code';
+import { StatusCode } from '@/common/types/status-code';
 import { LoginByUsernameGuard } from './decorators/login-by-username.guard';
 import { User } from './decorators/user';
-import { User as UserSchema } from '../common/schemas/user.schema'
+import { User as UserSchema } from '@/user/schemas/user.schema'
 
 @Controller('auth')
 export class AuthController {

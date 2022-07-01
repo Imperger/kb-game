@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as mongoose from 'mongoose';
 
-import { Player } from '../../player/schemas/player.schema';
+import { Player } from '@/player/schemas/player.schema';
 
 @Schema({ timestamps: { createdAt: false } })
 class UserSecret {

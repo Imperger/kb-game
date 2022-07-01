@@ -4,7 +4,7 @@ import { GameController } from './game.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { Game, GameSchema } from './schemas/game.schema';
-import { SpawnerModule } from 'src/spawner/spawner.module';
+import { SpawnerModule } from '@/spawner/spawner.module';
 
 @Module({
   imports: [

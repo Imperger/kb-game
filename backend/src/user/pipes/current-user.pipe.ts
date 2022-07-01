@@ -1,7 +1,7 @@
 import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
 
-import { CurrentUser } from '../interfaces/current-user';
-import { User as UserSchema } from '../../common/schemas/user.schema'
+import { CurrentUser } from '@/user/interfaces/current-user';
+import { User as UserSchema } from '@/user/schemas/user.schema'
 
 @Injectable()
 export class CurrentUserPipe implements PipeTransform {

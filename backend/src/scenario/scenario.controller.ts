@@ -1,9 +1,10 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
-import { HasScopes } from 'src/auth/decorators/has-scopes.decorator';
-import { ScopeGuard } from 'src/auth/guards/scope.guard';
-import { JwtGuard } from 'src/jwt/decorators/jwt.guard';
-import { JwtKnownSpawnerGuard } from 'src/spawner/decorators/jwt-known-spawner.guard';
-import { Scope } from '../auth/scopes';
+
+import { HasScopes } from '@/auth/decorators/has-scopes.decorator';
+import { ScopeGuard } from '@/auth/guards/scope.guard';
+import { JwtGuard } from '@/jwt/decorators/jwt.guard';
+import { JwtKnownSpawnerGuard } from '@/spawner/decorators/jwt-known-spawner.guard';
+import { Scope } from '@/auth/scopes';
 import { NewScenarioDto } from './dto/new-scenario.dto';
 import { ScenarioService } from './scenario.service';
 

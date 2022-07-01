@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import ms from 'ms';
 
-import { User } from '../common/schemas/user.schema';
+import { User } from './schemas/user.schema';
 
 @Injectable()
 export class UserService {

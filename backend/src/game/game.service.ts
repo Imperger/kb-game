@@ -3,9 +3,10 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { ServerDescription, SpawnerService } from '../spawner/spawner.service';
+import { ServerDescription, SpawnerService } from '@/spawner/spawner.service';
 import { ConnectionFailedException } from './exceptions/connection-failed.exception';
 import { Game } from './schemas/game.schema';
+import { RequestInstanceFailedException } from './exceptions/request-instance-failed.exception';
 
 export interface CustomGameDescriptor {
   instanceUrl: string;
@@ -32,7 +33,7 @@ export class GameService {
     const instance = await this.spawnerService.findCustomInstance(player.playerId);
 
     if (instance === null) {
-      return null;
+      throw new RequestInstanceFailedException();
     }
 
     await new this.gameModel({
