@@ -1,0 +1,10 @@
+entryPoints:
+  websecure:
+    address: ":443"
+providers:
+  docker:
+    defaultRule: "Host(`{{ trimPrefix `/` .Name }}.docker.localhost`)"
+  file:
+    filename: "/etc/traefik/certs.yml"
+api:
+  insecure: true

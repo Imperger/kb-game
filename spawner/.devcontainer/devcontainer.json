@@ -1,22 +1,10 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.224.3/containers/javascript-node
 {
-	"name": "Node.js",
-	"build": {
-		"dockerfile": "Dockerfile",
-		// Update 'VARIANT' to pick a Node version: 16, 14, 12.
-		// Append -bullseye or -buster to pin to an OS version.
-		// Use -bullseye variants on local arm64/Apple Silicon.
-		"args": { "VARIANT": "16-bullseye" }
-	},
-	"runArgs": ["--name=spawner.dev.wsl", "--network=dev"],
-
-	"mounts": ["source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind,consistency=default",
-		       "source=${localWorkspaceFolder}/../certs,target=${containerWorkspaceFolder}/certs,type=bind,consistency=default",
-			   "source=${localWorkspaceFolder}/../game_instance,target=${containerWorkspaceFolder}/../game_instance,type=bind,consistency=default"],
-			   
-	"postStartCommand": "target=${containerWorkspaceFolder}/.devcontainer/scripts/postStartCommand.sh && chmod +x $target && $target",
-
+	"name": "Node.js & Traefik",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "spawner",
+	"workspaceFolder": "/workspace/spawner",
 	// Set *default* container specific settings.json values on container create.
 	"settings": {},
 

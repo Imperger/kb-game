@@ -11,8 +11,6 @@
 	},
 	"runArgs": ["--name=game_instance_dev.dev.wsl", "--network=dev"],
 	
-	"mounts": ["source=${localWorkspaceFolder}/../certs,target=${containerWorkspaceFolder}/certs,type=bind,consistency=default"],
-	
 	"postCreateCommand": "target=${containerWorkspaceFolder}/.devcontainer/scripts/postCreateCommand.sh && chmod +x $target && $target",
 	// Set *default* container specific settings.json values on container create.
 	"settings": {},

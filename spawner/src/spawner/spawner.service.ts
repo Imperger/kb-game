@@ -31,7 +31,6 @@ export interface InstanceRequestResult {
 
 interface GameInstanceOptions {
   hostname: string;
-  port: number;
   instanceId: string;
   owner: string;
   backendApi: string;
@@ -47,18 +46,13 @@ export interface ServerDescription {
   started: boolean;
 }
 
-interface InstanceHost {
-  external: string;
-  internal: string;
-}
-
 @Injectable()
 export class SpawnerService implements OnModuleInit {
   private network: string = '';
 
   private readonly gameInstanceImageName = 'game_instance';
 
-  private readonly instancesHost = new Set<InstanceHost>();
+  private readonly instancesHost = new Set<string>();
 
   constructor(
     private readonly dockerService: DockerService,
@@ -85,18 +79,16 @@ export class SpawnerService implements OnModuleInit {
     const instanceId = SpawnerService.generateInstanceId();
 
     const instanceHost = this.generateInstanceHostname();
-    const instancePort = this.devPortHack;
 
     await this.spawnGameInstance({
       hostname: instanceHost,
-      port: instancePort,
       instanceId,
       owner: options.ownerId,
       backendApi: options.backendApi,
       type: 'custom'
     });
 
-    return { instanceId, instanceUrl: `wss://${instanceHost}:${instancePort}` }
+    return { instanceId, instanceUrl: `wss://${instanceHost}` }
   }
 
   async listInstances(): Promise<ServerDescription[]> {
@@ -105,11 +97,11 @@ export class SpawnerService implements OnModuleInit {
 
     const requests = [...this.instancesHost.values()]
       .map(instance => new Observable<ServerDescription>(observer => {
-        this.http.get<ServerDescription>(`https://${instance.internal}/info`, this.useAuthorization())
+        this.http.get<ServerDescription>(`http://${instance}/info`, this.useAuthorization())
           .pipe<AxiosResponse<ServerDescription>>(catchError(x => Promise.resolve(null)))
           .subscribe(game => {
             if (game)
-              observer.next({ ...game.data, url: instance.external });
+              observer.next({ ...game.data, url: instance });
 
             observer.complete();
           });
@@ -147,26 +139,27 @@ export class SpawnerService implements OnModuleInit {
     ];
 
     const Binds = [
-      `${Config.tls.certs}:/app/certs:rw`,
       `${Config.tls.ca}:/app/ca:rw`];
 
-    const ExposedPorts = { "3002/tcp": {} };
-    const PortBindings = { '3002/tcp': [{ 'HostPort': `${options.port}` }] };
+    const service = options.hostname.split('.').join('_');
+
+    const Labels = {
+      'traefik.enable': 'true',
+      [`traefik.http.routers.${service}.rule`]: `Host(\`${options.hostname}\`)`,
+      [`traefik.http.services.${service}.loadbalancer.server.port`]: '80',
+      [`traefik.http.routers.${service}.entrypoints`]: 'websecure',
+      [`traefik.http.routers.${service}.tls`]: 'true'
+    };
 
     const unloaded = this.dockerService.client.run(
       this.gameInstanceImageName,
       [],
       [],
-      { name: options.hostname, ExposedPorts, HostConfig: { AutoRemove: true, NetworkMode: 'dev', Binds, PortBindings }, Env }
+      { name: options.hostname, Labels, HostConfig: { AutoRemove: true, NetworkMode: 'dev', Binds/* , PortBindings */ }, Env }
     );
 
-    const host = {
-      external: `${options.hostname}:${options.port}`,
-      internal: `${options.hostname}:3002`
-    };
-
-    this.instancesHost.add(host);
-    unloaded.then(() => this.unloadInstance(host, options.backendApi));
+    this.instancesHost.add(options.hostname);
+    unloaded.then(() => this.unloadInstance(options.hostname, options.backendApi));
 
     let retries = 20;
     for (; retries > 0; --retries) {
@@ -180,7 +173,7 @@ export class SpawnerService implements OnModuleInit {
 
     for (; retries > 0; --retries) {
       try {
-        await firstValueFrom(this.http.get<ServerDescription>(`https://${host.internal}/info`, this.useAuthorization()));
+        await firstValueFrom(this.http.get<ServerDescription>(`http://${options.hostname}/info`, this.useAuthorization()));
         break;
       } catch (e) {
         await new Promise<void>(ok => setTimeout(() => ok(), 1000))
@@ -188,12 +181,12 @@ export class SpawnerService implements OnModuleInit {
     }
   }
 
-  private async unloadInstance(instance: InstanceHost, backendApi: string) {
+  private async unloadInstance(instance: string, backendApi: string) {
     this.instancesHost.delete(instance);
 
     await firstValueFrom(this.http.post(
       `${backendApi}/api/game/end_custom`,
-      { instanceUrl: `wss://${instance.external}` },
+      { instanceUrl: `wss://${instance}` },
       this.useSpawnerAuthorization()));
   }
 
@@ -212,15 +205,6 @@ export class SpawnerService implements OnModuleInit {
   private nextHostname: number = 0;
   private generateInstanceHostname() {
     return `game_instance_${this.nextHostname++}.dev.wsl`;
-  }
-
-  private port = 3100;
-  private get devPortHack() {
-    const port = this.port;
-
-    this.port = this.port >= 3999 ? 3100 : this.port + 1;
-
-    return port;
   }
 
   private static generateInstanceId(): string {
