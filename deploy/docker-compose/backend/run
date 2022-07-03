@@ -1,0 +1,7 @@
+#!/bin/sh
+
+docker build --no-cache -t frontend_builder -f ./frontend/Dockerfile ../../../frontend && \
+docker run --rm --name frontend_builder -it \
+    --env-file ./config/frontend.env \
+    -v frontend_static:/build/dist frontend_builder && \
+docker compose up

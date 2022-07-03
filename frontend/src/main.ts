@@ -13,7 +13,7 @@ import vuetify from './plugins/vuetify';
 
 Vue.config.productionTip = false;
 
-Vue.use(VueReCaptcha, { siteKey: '6Leieh8gAAAAADN8D62k8ShXnlAtCGZjQTrtnVxp' });
+Vue.use(VueReCaptcha, { siteKey: process.env.VUE_APP_RECAPTHA_SITE_KEY });
 
 Vue.use(VeeValidate);
 populateFakeLocales();

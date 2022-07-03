@@ -1,0 +1,8 @@
+.devcontainer
+.vscode
+certs
+config
+doc
+node_modules
+repl.mongodb
+rest.http

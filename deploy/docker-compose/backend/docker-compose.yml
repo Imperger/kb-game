@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+
+  backend:
+    build: 
+      context: ../../../backend
+      dockerfile: Dockerfile
+    command: [ "-c", "/app/config/backend.json" ]
+    configs:
+      - source: backend
+        target: /app/config/backend.json
+    networks:
+      - edge
+      - db
+
+  db:
+    image: mongo:focal
+    volumes:
+      - mongodb-data-prod:/data/db
+    networks:
+      - db
+
+  proxy:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    volumes:
+      - frontend_static:/frontend:ro
+    configs:
+      - source: nginx
+        target: /etc/nginx/nginx.conf
+    secrets:
+      - source: certs
+        target: /etc/nginx/ssl/server.cert
+    networks:
+      - edge
+    ports:
+        - "443:443"
+
+volumes:
+  mongodb-data-prod: {}
+  frontend_static:
+    external: true
+configs:
+  backend:
+    file: ./config/backend.json 
+  nginx:
+    file: ./nginx/nginx.conf
+secrets:
+  certs:
+    file: ./config/server.cert
+networks:
+  edge: {}
+  db: {}

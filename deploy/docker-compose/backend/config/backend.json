@@ -1,0 +1,21 @@
+{
+    "domain": "backend.dev.wsl",
+    "port": 80,
+    "ssl": false,
+    "api": {
+        "jwtSecret": "12345"
+    },
+    "mongo": {
+        "connectionURI": "mongodb://db:27017"
+    },
+    "auth": {
+        "confirmCodeTtl": "10m",
+        "google": {
+            "clientId": "[clientId]",
+            "secret": "[secret]"
+        }
+    },
+    "reCaptcha": {
+        "secret": "[secret]"
+    }
+}
