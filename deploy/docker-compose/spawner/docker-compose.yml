@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  spawner:
+    build: 
+      context: ../../../spawner
+      dockerfile: Dockerfile
+    environment: 
+      - NODE_EXTRA_CA_CERTS=/app/config/root.crt
+    command: [ "-c", "/app/config/spawner.json" ]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../../../game_instance:/game_instance
+    configs:
+      - source: spawner_config
+        target: /app/config/spawner.json
+    secrets:
+      - source: ca
+        target: /app/config/root.crt
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.spawner.rule=Host(`spawner.dev.wsl`)"
+      - "traefik.http.services.spawner.loadbalancer.server.port=80"
+      - "traefik.http.routers.spawner.entrypoints=websecure"
+      - "traefik.http.routers.spawner.tls=true"
+    networks:
+       - spawner
+  proxy_spawner:
+    hostname: spawner.dev.wsl
+    image: traefik:2.8.0
+    restart: unless-stopped
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    configs:
+      - source: certs_provider
+        target: /etc/traefik/certs.yml
+      - source: traefik
+        target: /etc/traefik/traefik.yml
+    secrets:
+      - source: certs
+        target: /certs/server.cert
+    networks:
+        - spawner
+        - backend_spawner
+    ports:
+        - "3001:3001"
+        - "8081:8080"
+configs:
+  spawner_config:
+    file: ./config/settings.json
+  certs_provider:
+    file: ./traefik/certs.yml
+  traefik:
+    file: ./traefik/traefik.yml
+secrets:
+  certs:
+    file: ./config/server.cert
+  ca:
+    file: ./config/root.crt
+networks:
+  spawner: {}
+  backend_spawner:
+    external: true

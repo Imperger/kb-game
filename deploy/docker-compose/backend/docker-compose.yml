@@ -2,14 +2,19 @@ version: '3.8'
 
 services:
 
-  backend:
+  backend_api:
     build: 
       context: ../../../backend
       dockerfile: Dockerfile
+    environment: 
+      - NODE_EXTRA_CA_CERTS=/app/config/root.crt
     command: [ "-c", "/app/config/backend.json" ]
     configs:
-      - source: backend
+      - source: backend_config
         target: /app/config/backend.json
+    secrets:
+      - source: ca
+        target: /app/config/root.crt
     networks:
       - edge
       - db
@@ -22,6 +27,7 @@ services:
       - db
 
   proxy:
+    hostname: backend.dev.wsl
     build:
       context: ./nginx
       dockerfile: Dockerfile
@@ -35,6 +41,7 @@ services:
         target: /etc/nginx/ssl/server.cert
     networks:
       - edge
+      - backend_spawner
     ports:
         - "443:443"
 
@@ -43,13 +50,17 @@ volumes:
   frontend_static:
     external: true
 configs:
-  backend:
+  backend_config:
     file: ./config/backend.json 
   nginx:
     file: ./nginx/nginx.conf
 secrets:
   certs:
     file: ./config/server.cert
+  ca:
+    file: ./config/root.crt
 networks:
   edge: {}
   db: {}
+  backend_spawner:
+    external: true

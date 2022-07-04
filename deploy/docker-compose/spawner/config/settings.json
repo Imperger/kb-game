@@ -1,0 +1,10 @@
+{
+    "name": "dev_spawner#1",
+    "host": "spawner.dev.wsl:3001",
+    "capacity": 3,
+    "secret": "12345",
+    "tls": {
+        "certs": "/home/vitaly/Projects/kb-game/certs",
+        "ca": "/home/vitaly/Projects/kb-game/ca"
+    }
+}
