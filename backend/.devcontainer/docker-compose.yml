@@ -1,8 +1,7 @@
 version: '3.8'
 
 services:
-  app:
-    container_name: backend.dev.wsl
+  backend_api:
     build: 
       context: .
       dockerfile: Dockerfile
@@ -43,6 +42,17 @@ services:
 
     # Add "forwardPorts": ["27017"] to **devcontainer.json** to forward MongoDB locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
+
+  proxy:
+    hostname: backend.dev.wsl
+    image: nginx:1.23
+    volumes:
+      - ./nginx:/etc/nginx
+      - ../../certs:/etc/nginx/ssl
+    networks:
+      - dev
+    ports:
+        - "3000:443"
 
 volumes:
   mongodb-data:

@@ -9,6 +9,7 @@
 		// Use -bullseye variants on local arm64/Apple Silicon.
 		"args": { "VARIANT": "16-bullseye" }
 	},
+	"runArgs": ["--network=dev"],
 
 	"mounts": ["source=${localWorkspaceFolder}/../certs,target=${containerWorkspaceFolder}/certs,type=bind,consistency=default"],
 

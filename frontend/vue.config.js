@@ -10,7 +10,7 @@ const devServerConfig = () => process.env.NODE_ENV === 'production'
     },
     proxy: {
       '^/api/+.': {
-        target: 'https://backend.dev.wsl:3000'
+        target: 'https://backend.dev.wsl'
       }
     }
   };

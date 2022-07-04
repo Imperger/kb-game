@@ -42,15 +42,7 @@ class ReCaptcha {
 export class ConfigSchema {
   @IsDefined({ message: 'missing \'domain\' property' })
   @IsString()
-  readonly domain: string;
-
-  @IsDefined({ message: 'missing \'port\' property' })
-  @IsNumber()
-  readonly port: number;
-
-  @IsDefined({ message: 'missing \'ssl\' property' })
-  @IsBoolean()
-  readonly ssl: boolean;
+  readonly hostname: string;
 
   @IsDefined({ message: 'missing \'api\' scope' })
   @ValidateNested()

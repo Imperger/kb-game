@@ -9,7 +9,6 @@ import { AppModule } from './app.module';
 import { DtoValidationPipe } from './common/pipes/dto-validation.pipe';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { AppExceptionFilter } from './common/filters/app-exception/app-exception.filter';
-import Config from './config'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
@@ -18,6 +17,6 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalFilters(new AppExceptionFilter());
   app.useGlobalPipes(new DtoValidationPipe());
-  await app.listen(Config.port, '0.0.0.0');
+  await app.listen(80, '0.0.0.0');
 }
 bootstrap();
