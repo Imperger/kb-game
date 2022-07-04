@@ -101,7 +101,7 @@ export class SpawnerService implements OnModuleInit {
           .pipe<AxiosResponse<ServerDescription>>(catchError(x => Promise.resolve(null)))
           .subscribe(game => {
             if (game)
-              observer.next({ ...game.data, url: instance });
+              observer.next({ ...game.data, url: `${instance}:3001` });
 
             observer.complete();
           });
@@ -186,7 +186,7 @@ export class SpawnerService implements OnModuleInit {
 
     await firstValueFrom(this.http.post(
       `${backendApi}/api/game/end_custom`,
-      { instanceUrl: `wss://${instance}` },
+      { instanceUrl: `wss://${instance}:3001` },
       this.useSpawnerAuthorization()));
   }
 
