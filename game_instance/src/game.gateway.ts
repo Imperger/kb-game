@@ -57,14 +57,13 @@ export class GameGateway
   ): AuthResult {
     if (
       playerToken.exp * 1000 > Date.now() &&
-      playerToken.instanceId === process.env.INSTANCE_ID
-    ) {
+      playerToken.instanceId === process.env.INSTANCE_ID &&
       this.game.addPlayer({
         socket: client,
         id: playerToken.playerId,
         nickname: playerToken.nickname,
-      });
-
+      })
+    ) {
       switch (process.env.GAME_TYPE.toLowerCase()) {
         case 'custom':
           return AuthResult.CustomGame;

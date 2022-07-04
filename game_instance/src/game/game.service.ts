@@ -171,7 +171,7 @@ export class GameService {
     }
   }
 
-  addPlayer(player: PlayerDesc) {
+  addPlayer(player: PlayerDesc): boolean {
     if (
       this.players.size < this.roomCapacity &&
       ![...this.players.values()].find((x) => x.id === player.id)
@@ -189,6 +189,12 @@ export class GameService {
         type: LobbyEventType.PlayerJoined,
         data: { id: player.id, nickname: player.nickname, slot: p.slot },
       });
+
+      return true;
+    } else {
+      setImmediate(() => player.socket.disconnect());
+
+      return false;
     }
   }
 
