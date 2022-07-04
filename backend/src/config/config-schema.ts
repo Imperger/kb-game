@@ -40,7 +40,7 @@ class ReCaptcha {
   readonly secret: string;
 }
 export class ConfigSchema {
-  @IsDefined({ message: 'missing \'domain\' property' })
+  @IsDefined({ message: 'missing \'hostname\' property' })
   @IsString()
   readonly hostname: string;
 
