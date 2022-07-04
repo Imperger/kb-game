@@ -4,7 +4,7 @@ type DeepWriteable<T> = { -readonly [P in keyof T]: DeepWriteable<T[P]> };
 
 export const ConfigPopulateOptionals = (config: DeepWriteable<ConfigSchema>) => {
   if (!config.entry)
-    config.entry = `https://${config.hostname}`;
+    config.entry = `https://${config.host}`;
 
   return config;
 };

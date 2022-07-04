@@ -88,7 +88,7 @@ export class SpawnerService implements OnModuleInit {
       type: 'custom'
     });
 
-    return { instanceId, instanceUrl: `wss://${instanceHost}` }
+    return { instanceId, instanceUrl: `wss://${instanceHost}:3001` }
   }
 
   async listInstances(): Promise<ServerDescription[]> {

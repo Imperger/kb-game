@@ -18,7 +18,7 @@ export class ConfigSchema {
 
   @IsDefined({ message: "missing 'hostname' property" })
   @IsString()
-  readonly hostname: string;
+  readonly host: string;
 
   @IsOptional()
   @IsString()
