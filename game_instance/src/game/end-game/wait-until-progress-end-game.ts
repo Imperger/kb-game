@@ -5,7 +5,7 @@ import { Player } from '../Player';
 import { EndGameHandle, EndGameStrategy } from './end-game-strategy';
 
 /**
- * The strategy wait for the winner and then wait other players until
+ * The strategy waits for the winner and then wait other players until
  * they has progress. If no any progress with some timeout game has ended
  */
 export class WaitUntilProgressEndGame implements EndGameStrategy {
