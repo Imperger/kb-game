@@ -20,6 +20,10 @@ export class ConfigSchema {
   @IsString()
   readonly hostname: string;
 
+  @IsDefined({ message: "missing 'network' property" })
+  @IsString()
+  readonly network: string;
+
   @IsDefined({ message: "missing 'port' property" })
   @IsNumber()
   readonly port: number;

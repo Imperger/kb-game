@@ -161,7 +161,12 @@ export class SpawnerService implements OnModuleInit {
       this.gameInstanceImageName,
       [],
       [],
-      { name: hostname, Labels, HostConfig: { AutoRemove: true, NetworkMode: 'dev', Binds }, Env }
+      {
+        name: hostname,
+        Labels,
+        HostConfig: { AutoRemove: true, NetworkMode: this.configService.get<string>('network'), Binds },
+        Env
+      }
     );
 
     this.instancesHost.add(hostname);
