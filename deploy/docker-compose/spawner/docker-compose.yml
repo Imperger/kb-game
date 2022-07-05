@@ -19,12 +19,13 @@ services:
         target: /app/config/root.crt
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.spawner.rule=Host(`spawner.dev.wsl`)"
+      - "traefik.http.routers.spawner.rule=PathPrefix(`/`)"
       - "traefik.http.services.spawner.loadbalancer.server.port=80"
       - "traefik.http.routers.spawner.entrypoints=websecure"
       - "traefik.http.routers.spawner.tls=true"
     networks:
        - spawner
+       - backend_spawner
   proxy_spawner:
     hostname: spawner.dev.wsl
     image: traefik:2.8.0
@@ -40,8 +41,10 @@ services:
       - source: certs
         target: /certs/server.cert
     networks:
-        - spawner
-        - backend_spawner
+        spawner: {}
+        backend_spawner:
+          aliases:
+            - spawner.dev.lan
     ports:
         - "3001:3001"
         - "8081:8080"

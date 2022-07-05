@@ -18,6 +18,7 @@ services:
     networks:
       - edge
       - db
+      - backend_spawner
 
   db:
     image: mongo:focal
