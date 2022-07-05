@@ -18,7 +18,7 @@ services:
       - "traefik.http.routers.spawner.entrypoints=websecure"
       - "traefik.http.routers.spawner.tls=true"
 
-    command: sleep infinity
+    command: /bin/sh -c "/workspace/spawner/.devcontainer/scripts/postStartCommand.sh"
     
     networks:
        - dev

@@ -1,3 +1,4 @@
 #/bin/sh
 
-sudo chown node:node /var/run/docker.sock
+sudo chown node:node /var/run/docker.sock && \
+sleep infinity
