@@ -8,9 +8,4 @@ export class ConfigHelperService {
   get apiEntry(): string {
     return `https://${this.configService.get<string>('hostname')}`;
   }
-
-  static isPortRequired(port: number, ssl: boolean) {
-    return ssl && port !== 443 ||
-            !ssl && port !== 80;
-  }
 }

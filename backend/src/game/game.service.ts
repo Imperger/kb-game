@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 
 import { ServerDescription, SpawnerService } from '@/spawner/spawner.service';
 import { ConnectionFailedException } from './exceptions/connection-failed.exception';
-import { Game } from './schemas/game.schema';
 import { RequestInstanceFailedException } from './exceptions/request-instance-failed.exception';
 
 export interface CustomGameDescriptor {
@@ -26,8 +23,7 @@ export interface PlayerDescriptor {
 export class GameService {
   constructor(
     private readonly spawnerService: SpawnerService,
-    private readonly jwtService: JwtService,
-    @InjectModel(Game.name) private readonly gameModel: Model<Game>) { }
+    private readonly jwtService: JwtService) { }
 
   async newCustom(player: PlayerDescriptor): Promise<CustomGameDescriptor | null> {
     const instance = await this.spawnerService.findCustomInstance(player.playerId);
@@ -36,42 +32,28 @@ export class GameService {
       throw new RequestInstanceFailedException();
     }
 
-    await new this.gameModel({
-      instanceUrl: instance.instanceUrl,
-      instanceId: instance.instanceId,
-      spawnerUrl: instance.spawnerUrl
-    }).save();
-
     const playerToken = this.jwtService.sign(
-      { instanceId: instance.instanceId, ...player },
+      { instanceId: GameService.instanceIdFromUrl(instance.instanceUrl), ...player },
       { expiresIn: "3m", secret: instance.spawnerSecret });
 
     return { instanceUrl: instance.instanceUrl, playerToken };
   }
 
   async connect(player: PlayerDescriptor, instanceUrl: string): Promise<ConnectionDescriptor> {
-    const game = await this.gameModel.findOne({ instanceUrl });
-
-    if (game === null) {
-      throw new ConnectionFailedException();
-    }
 
     const spawners = await this.spawnerService.listAll();
-    const spawner = spawners.find(x => x.url === game.spawnerUrl);
+    const spawnerEntry = GameService.spawnerEntryFromUrl(instanceUrl);
+    const spawner = spawners.find(x => x.url === spawnerEntry);
 
     if (!spawner)
       throw new ConnectionFailedException();
 
     const playerToken = this.jwtService.sign(
-      { instanceId: game.instanceId, ...player },
+      { instanceId: GameService.instanceIdFromUrl(instanceUrl), ...player },
       { expiresIn: "3m", secret: spawner.secret });
 
     return { playerToken };
 
-  }
-
-  async endCustom(instanceUrl: string): Promise<boolean> {
-    return (await this.gameModel.deleteOne({ instanceUrl })).deletedCount > 0;
   }
 
   async listGames(): Promise<ServerDescription[]> {
@@ -85,5 +67,13 @@ export class GameService {
     }
 
     return ret;
+  }
+
+  static instanceIdFromUrl(instanceUrl: string): string {
+    return new URL(instanceUrl).pathname.slice(1);
+  }
+
+  static spawnerEntryFromUrl(instanceUrl: string): string {
+    return `https://${new URL(instanceUrl).host}`;
   }
 }

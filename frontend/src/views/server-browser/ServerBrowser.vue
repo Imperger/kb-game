@@ -49,13 +49,11 @@ export default class ServerBrowser extends Mixins(ApiServiceMixin, GameMixin) {
   }
 
   async connect (url: string): Promise<void> {
-    const connstr = `wss://${url}`;
-
-    const descriptor = await this.api.game.connect(connstr);
+    const descriptor = await this.api.game.connect(url);
 
     if (isRejectedResponse(descriptor)) { return; }
 
-    switch (await this.gameClient.connect(connstr, descriptor.playerToken)) {
+    switch (await this.gameClient.connect(url, descriptor.playerToken)) {
       case AuthResult.CustomGame:
         this.$router.push({ name: 'GameLobby' });
         break;

@@ -35,10 +35,4 @@ export class GameController {
   async listGames() {
     return await this.gameService.listGames();
   }
-
-  @UseGuards(JwtKnownSpawnerGuard)
-  @Post('end_custom')
-  async endCustom(@Body() desc: EndCustomGameDto) {
-    return this.gameService.endCustom(desc.instanceUrl);
-  }
 }

@@ -21,7 +21,7 @@ export class AppController {
   @UseGuards(JwtGuard)
   @Post('game/new_custom')
   async newCustomGame(@Body() options: NewCustomGameDto): Promise<InstanceRequestResult> {
-    return this.spawnerService.createCustomGame(options)
+    return this.spawnerService.createCustomGame(options);
   }
 
   @UseGuards(JwtGuard)

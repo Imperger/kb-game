@@ -30,12 +30,10 @@ export interface SpawnerInfo {
 
 export interface InstanceDescriptor {
   instanceUrl: string;
-  instanceId: string;
 }
 
 export interface GameInstanceDescriptor {
   instanceUrl: string;
-  instanceId: string;
   spawnerUrl: string;
   spawnerSecret: string;
 }

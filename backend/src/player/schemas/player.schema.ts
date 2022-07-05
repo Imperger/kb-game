@@ -1,8 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Type } from 'class-transformer/decorators';
-import mongoose, { Document } from 'mongoose';
-
-import { Game } from '@/game/schemas/game.schema';
+import { Document } from 'mongoose';
 
 @Schema({ timestamps: true, id: true })
 export class Player extends Document {
@@ -11,10 +8,6 @@ export class Player extends Document {
 
   @Prop({ required: true , min: 1, max: 999 })
   discriminator: number;
-
-  /* @Prop({ type: mongoose.Types.ObjectId, ref: 'Game', default: null })
-  @Type(() => Game)
-  game: Game | null; */
 
   @Prop()
   createdAt?: Date;

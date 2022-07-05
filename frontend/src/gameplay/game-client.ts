@@ -13,7 +13,8 @@ export class GameClient {
   private authResult!: (s: AuthResult) => void;
 
   async connect (instanceUrl: string, playerToken: string): Promise<AuthResult> {
-    this.socket = io(instanceUrl);
+    const url = new URL(instanceUrl);
+    this.socket = io(url.origin, { path: `${url.pathname}/socket.io` });
 
     const s = new AuthStrategy();
     s.playerToken = playerToken;

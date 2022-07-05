@@ -2,11 +2,12 @@ import * as Crypto from 'crypto';
 import { HttpException, HttpStatus, Injectable, OnModuleInit } from '@nestjs/common';
 import type { AxiosResponse } from 'axios';
 
-import Config from '../config';
 import { DockerService } from './docker.service';
 import { HttpService } from '@nestjs/axios';
 import { catchError, firstValueFrom, forkJoin, map, Observable, tap } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { InstanceNameResolverService } from './instance-name-resolver.service';
 
 export interface CustomGameOptions {
   ownerId: string;
@@ -25,12 +26,10 @@ export interface SpawnerInfo {
 }
 
 export interface InstanceRequestResult {
-  instanceId: string;
   instanceUrl: string;
 };
 
 interface GameInstanceOptions {
-  hostname: string;
   instanceId: string;
   owner: string;
   backendApi: string;
@@ -55,40 +54,42 @@ export class SpawnerService implements OnModuleInit {
   private readonly instancesHost = new Set<string>();
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly dockerService: DockerService,
     private readonly http: HttpService,
-    private readonly jwtService: JwtService) { }
+    private readonly jwtService: JwtService,
+    private readonly instanceNameResolver: InstanceNameResolverService) { }
 
   async onModuleInit(): Promise<void> {
     await this.prepareGameInstanceImage();
   }
 
   info(): SpawnerInfo {
-    return { name: Config.name, capacity: Config.capacity };
+    return {
+      name: this.configService.get<string>('name'),
+      capacity: this.configService.get<number>('capacity')
+    };
   }
 
   async createQuickGame(options: QuickGameOptions): Promise<InstanceRequestResult | null> {
-    return { instanceId: SpawnerService.generateInstanceId(), instanceUrl: 'wss://game.dev.wsl:3002' }
+    return { instanceUrl: 'wss://game.dev.wsl:3002' }
   }
 
-  async createCustomGame(options: CustomGameOptions): Promise<InstanceRequestResult | null> {
-    if (this.instancesHost.size >= Config.capacity) {
+  async createCustomGame(options: CustomGameOptions): Promise<InstanceRequestResult> {
+    if (this.instancesHost.size >= this.configService.get<number>('capacity')) {
       throw new HttpException('The maximum capacity of the spawner has been reached', HttpStatus.CONFLICT);
     }
 
     const instanceId = SpawnerService.generateInstanceId();
 
-    const instanceHost = this.generateInstanceHostname();
-
     await this.spawnGameInstance({
-      hostname: instanceHost,
       instanceId,
       owner: options.ownerId,
       backendApi: options.backendApi,
       type: 'custom'
     });
 
-    return { instanceId, instanceUrl: `wss://${instanceHost}:3001` }
+    return { instanceUrl: this.instanceNameResolver.buildInstanceUrl(instanceId) }
   }
 
   async listInstances(): Promise<ServerDescription[]> {
@@ -96,12 +97,15 @@ export class SpawnerService implements OnModuleInit {
       return [];
 
     const requests = [...this.instancesHost.values()]
-      .map(instance => new Observable<ServerDescription>(observer => {
-        this.http.get<ServerDescription>(`http://${instance}/info`, this.useAuthorization())
+      .map(hostname => new Observable<ServerDescription>(observer => {
+        this.http.get<ServerDescription>(`http://${hostname}/info`, this.useAuthorization())
           .pipe<AxiosResponse<ServerDescription>>(catchError(x => Promise.resolve(null)))
           .subscribe(game => {
             if (game)
-              observer.next({ ...game.data, url: `${instance}:3001` });
+              observer.next({
+                ...game.data,
+                url: this.instanceNameResolver.buildInstanceUrl(this.instanceNameResolver.toInstanceId(hostname))
+              });
 
             observer.complete();
           });
@@ -133,38 +137,40 @@ export class SpawnerService implements OnModuleInit {
       `INSTANCE_ID=${options.instanceId}`,
       `OWNER_ID=${options.owner}`,
       `BACKEND_API=${options.backendApi}`,
-      `SPAWNER_API=${Config.entry}`,
-      `SPAWNER_SECRET=${Config.secret}`,
+      `SPAWNER_API=${this.configService.get<string>('entry')}`,
+      `SPAWNER_SECRET=${this.configService.get<string>('secret')}`,
       `GAME_TYPE=${options.type}`
     ];
 
     const Binds = [
-      `${Config.tls.ca}:/app/ca:rw`];
+      `${this.configService.get<string>('tls.ca')}:/app/ca:rw`];
 
-    const service = options.hostname.split('.').join('_');
+    const hostname = this.instanceNameResolver.toHostname(options.instanceId);
 
     const Labels = {
       'traefik.enable': 'true',
-      [`traefik.http.routers.${service}.rule`]: `Host(\`${options.hostname}\`)`,
-      [`traefik.http.services.${service}.loadbalancer.server.port`]: '80',
-      [`traefik.http.routers.${service}.entrypoints`]: 'websecure',
-      [`traefik.http.routers.${service}.tls`]: 'true'
+      [`traefik.http.routers.${hostname}.rule`]: `PathPrefix(\`/${options.instanceId}\`)`,
+      [`traefik.http.routers.${hostname}.middlewares`]: 'instance-strip-prefix',
+      [`traefik.http.middlewares.instance-strip-prefix.stripprefix.prefixes`]: `/${options.instanceId}`,
+      [`traefik.http.services.${hostname}.loadbalancer.server.port`]: '80',
+      [`traefik.http.routers.${hostname}.entrypoints`]: 'websecure',
+      [`traefik.http.routers.${hostname}.tls`]: 'true'
     };
 
     const unloaded = this.dockerService.client.run(
       this.gameInstanceImageName,
       [],
       [],
-      { name: options.hostname, Labels, HostConfig: { AutoRemove: true, NetworkMode: 'dev', Binds/* , PortBindings */ }, Env }
+      { name: hostname, Labels, HostConfig: { AutoRemove: true, NetworkMode: 'dev', Binds }, Env }
     );
 
-    this.instancesHost.add(options.hostname);
-    unloaded.then(() => this.unloadInstance(options.hostname, options.backendApi));
+    this.instancesHost.add(hostname);
+    unloaded.then(() => this.instancesHost.delete(hostname));
 
     let retries = 20;
     for (; retries > 0; --retries) {
       try {
-        await this.dockerService.client.getContainer(options.hostname).inspect();
+        await this.dockerService.client.getContainer(hostname).inspect();
         break;
       } catch (e) {
         await new Promise<void>(ok => setTimeout(() => ok(), 1000));
@@ -173,21 +179,12 @@ export class SpawnerService implements OnModuleInit {
 
     for (; retries > 0; --retries) {
       try {
-        await firstValueFrom(this.http.get<ServerDescription>(`http://${options.hostname}/info`, this.useAuthorization()));
+        await firstValueFrom(this.http.get<ServerDescription>(`http://${hostname}/info`, this.useAuthorization()));
         break;
       } catch (e) {
         await new Promise<void>(ok => setTimeout(() => ok(), 1000))
       }
     }
-  }
-
-  private async unloadInstance(instance: string, backendApi: string) {
-    this.instancesHost.delete(instance);
-
-    await firstValueFrom(this.http.post(
-      `${backendApi}/api/game/end_custom`,
-      { instanceUrl: `wss://${instance}:3001` },
-      this.useSpawnerAuthorization()));
   }
 
   private useAuthorization() {
@@ -197,17 +194,12 @@ export class SpawnerService implements OnModuleInit {
   }
 
   private useSpawnerAuthorization() {
-    const token = this.jwtService.sign({ spawner: Config.entry });
+    const token = this.jwtService.sign({ spawner: this.configService.get<string>('entry') });
 
     return { headers: { Authorization: `Bearer ${token}` } };
   }
 
-  private nextHostname: number = 0;
-  private generateInstanceHostname() {
-    return `game_instance_${this.nextHostname++}.dev.wsl`;
-  }
-
   private static generateInstanceId(): string {
-    return Crypto.randomBytes(16).toString('base64');
+    return Crypto.randomBytes(16).toString('hex');
   }
 }

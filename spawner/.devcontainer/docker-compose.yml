@@ -13,7 +13,7 @@ services:
       - ../../game_instance:/workspace/game_instance
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.spawner.rule=Host(`spawner.dev.wsl`)"
+      - "traefik.http.routers.spawner.rule=PathPrefix(`/`)"
       - "traefik.http.services.spawner.loadbalancer.server.port=80"
       - "traefik.http.routers.spawner.entrypoints=websecure"
       - "traefik.http.routers.spawner.tls=true"
