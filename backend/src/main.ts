@@ -9,9 +9,11 @@ import { AppModule } from './app.module';
 import { DtoValidationPipe } from './common/pipes/dto-validation.pipe';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { AppExceptionFilter } from './common/filters/app-exception/app-exception.filter';
+import { LoggerService } from './logger/logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+  app.useLogger(app.get(LoggerService));
   app.enableCors();
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new HttpExceptionFilter());

@@ -13,6 +13,7 @@ import { GameModule } from './game/game.module';
 import { PlayerModule } from './player/player.module';
 import { ConfigHelperModule } from './config/config-helper.module';
 import { ScenarioModule } from './scenario/scenario.module';
+import { LoggerModule } from './logger/logger.module';
 import Config from './config'
 
 @Module({
@@ -32,7 +33,8 @@ import Config from './config'
     GameModule,
     PlayerModule,
     ConfigHelperModule,
-    ScenarioModule],
+    ScenarioModule,
+    LoggerModule],
   controllers: [AppController]
 })
 export class AppModule { }

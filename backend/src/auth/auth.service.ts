@@ -19,11 +19,11 @@ import { RegistrationAlreadyConfirmedException } from './exceptions/registration
 import { UnknownUserForConfirmRegistrationException } from './exceptions/object-of-confirmation-missing.exception';
 import { InvalidCredentialsException } from './exceptions/invalid-credentials.exception';
 import { RegistrationNotConfirmedException } from './exceptions/registration-not-confirmed-exception';
-import Config from '@/config';
 import { timeDiff } from '@/common/util/time-diff';
 import { RegistrationConfirmExpiredException } from './exceptions/registration-confirm-expired-exception';
 import { PlayerService } from '@/player/player.service';
 import { ConfigHelperService } from '@/config/config-helper.service';
+import { LoggerService } from '@/logger/logger.service';
 
 @Injectable()
 export class AuthService {
@@ -34,9 +34,10 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly configHelperService: ConfigHelperService,
     private readonly jwtService: JwtService,
+    private readonly logger: LoggerService,
     @InjectModel(User.name) private readonly userModel: Model<User>) { }
 
-  async registerUser(username: string, email: string, password: string) {
+  async registerUser(username: string, email: string, password: string): Promise<string> {
     const createUser = new this.userModel({ username, email, confirmed: false, secret: await AuthService.buildSecret(password), scopes: {} });
 
     try {
@@ -49,17 +50,26 @@ export class AuthService {
         subject: 'new_user',
         html: `<span>${this.buildConfirmURL(userId)}</span>`
       });
+
+      return userId;
     }
     catch (e) {
       if (e instanceof MongoError) {
         if (e.code === 11000) {
           const k = ExtractDuplicateKey(e.message);
 
-          if (k.startsWith('username'))
-            throw new UsernameIsTakenException();
-          else if (k.startsWith('email'))
-            throw new EmailIsTakenException();
+          if (k.startsWith('username')) {
+            this.logger.warn(`Username already taken '${username}'`, 'AuthService::SignUp');
 
+            throw new UsernameIsTakenException();
+          }
+          else if (k.startsWith('email')) {
+            this.logger.warn(`Email already taken '${email}'`, 'AuthService::SignUp');
+
+            throw new EmailIsTakenException();
+          }
+
+          this.logger.error(`Unrecognized error with credentials '${username}:${email}:${password}'`, 'AuthService::SignUp');
           throw new UnknownRegistrationException();
         }
 
@@ -74,14 +84,20 @@ export class AuthService {
   async confirmRegistration(userId: string) {
     const user = await this.userService.findById(userId);
 
-    if (!user)
-      throw new UnknownUserForConfirmRegistrationException();
+    if (!user) {
+      this.logger.warn(`Can't find user '${userId}' for the confirmation request`, 'AuthService::SignUp');
 
-    if (user.confirmed)
+      throw new UnknownUserForConfirmRegistrationException();
+    }
+
+    if (user.confirmed) {
+      this.logger.warn(`The confirmation has already happened for the user '${userId}'`, 'AuthService::SignUp');
+
       throw new RegistrationAlreadyConfirmedException();
+    }
 
     const player = await this.playerService.newPlayer(user.username);
-    
+
     user.player = player;
     user.confirmed = true;
 
@@ -91,7 +107,7 @@ export class AuthService {
   async validateByEmail(email: string, password: string) {
     const user = await this.userService.findByEmail(email);
 
-    await AuthService.validateUser(user, password);
+    await this.validateUser(user, password);
 
     return user;
   }
@@ -99,16 +115,19 @@ export class AuthService {
   async validateByUsername(username: string, password: string) {
     const user = await this.userService.findByUsername(username);
 
-    await AuthService.validateUser(user, password);
+    await this.validateUser(user, password);
 
     return user;
   }
 
   private buildConfirmURL(userId: string) {
     const confirmCode = this.jwtService.sign(
-      { id: userId }, 
-      { expiresIn: Config.auth.confirmCodeTtl, secret: Config.auth.registrationConfirmJwtSecret });
-      
+      { id: userId },
+      {
+        expiresIn: this.configService.get<string>('auth.confirmCodeTtl'),
+        secret: this.configService.get<string>('auth.registrationConfirmJwtSecret')
+      });
+
     return `${this.configHelperService.apiEntry}/registration/confirm/${confirmCode}`;
   }
 
@@ -116,15 +135,22 @@ export class AuthService {
     return this.jwtService.signAsync({ id: userId });
   }
 
-  static async validateUser(user: User, password: string) {
-    if (user === null || await AuthService.hashPassword(password, user.secret.salt) !== user.secret.hash)
+  private async validateUser(user: User, password: string) {
+    if (user === null || await AuthService.hashPassword(password, user.secret.salt) !== user.secret.hash) {
+      this.logger.warn(`Invalid credentials for a user '${user?.id ?? '??'}:${user?.username ?? '??'}'`, 'AuthService::SignIn');
+
       throw new InvalidCredentialsException();
+    }
 
     if (!user.confirmed) {
-      if (timeDiff(new Date(), user.createdAt) > ms(Config.auth.confirmCodeTtl)) {
+      if (timeDiff(new Date(), user.createdAt) > ms(this.configService.get<string>('auth.confirmCodeTtl'))) {
+        this.logger.warn(`Expired the confirmation time '${user.id}:${user.username}'`, 'AuthService::SignIn');
+
         throw new RegistrationConfirmExpiredException();
       }
-            
+
+      this.logger.warn(`Pending the confirmation '${user.id}:${user.username}'`, 'AuthService::SignIn');
+
       throw new RegistrationNotConfirmedException();
     }
   }
