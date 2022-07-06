@@ -3,7 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 
-import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { EmailModule } from './email/email.module';
@@ -35,6 +34,6 @@ import Config from './config'
     ConfigHelperModule,
     ScenarioModule,
     LoggerModule],
-  controllers: [AppController]
+  controllers: []
 })
 export class AppModule { }
