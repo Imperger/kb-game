@@ -14,9 +14,9 @@
             "env": { 
                 "NODE_EXTRA_CA_CERTS": "./.vscode/certs/root.crt",
                 "INSTANCE_ID": "random_generated_instance_id",
-                "OWNER_ID": "62924fc28d952ccf7085dd46",
-                "BACKEND_API": "https://backend.dev.wsl:3000",
-                "SPAWNER_API": "https://spawner.dev.wsl",
+                "OWNER_ID": "62924fa78d952ccf7085dd3d",
+                "BACKEND_API": "https://backend.dev.wsl",
+                "SPAWNER_API": "https://spawner.dev.wsl:3001",
                 "SPAWNER_SECRET": "12345",
                 "GAME_TYPE": "custom"
              },
