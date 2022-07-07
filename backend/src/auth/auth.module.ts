@@ -18,6 +18,7 @@ import { ConfigHelperModule } from '@/config/config-helper.module';
       secretKey: Config.reCaptcha.secret,
       exceptionType: InvalidRecaptchaException,
       response: req => req.headers.recaptcha,
+      skipIf: () => process.env.NODE_ENV === 'test'
     }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     EmailModule,
