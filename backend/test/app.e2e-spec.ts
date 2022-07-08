@@ -37,6 +37,8 @@ describe('AppController (e2e)', () => {
     await userModel.deleteOne({ username: user.username });
   });
 
+  afterAll(() => app.close());
+
   it('/api/auth/register (POST)', () => {
     return request(app.getHttpServer())
       .post('/api/auth/register')
