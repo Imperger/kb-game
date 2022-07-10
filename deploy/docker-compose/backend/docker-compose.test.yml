@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  backend_api:
+    build: 
+      context: ../../../backend
+      dockerfile: Dockerfile.test
+    environment:
+      - NODE_ENV=test
+    volumes:
+      - ../../../backend/coverage:/backend/coverage

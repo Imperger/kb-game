@@ -1,0 +1,12 @@
+flags:
+ backend:
+   paths:
+     - ./backend
+ spawner:
+   paths:
+     - ./spawner
+codecov:
+  disable_default_path_fixes: true
+fixes:
+  - "backend/coverage/::backend/"
+  - "spawner/coverage/::spawner/"

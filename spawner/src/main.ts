@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import { NestFactory } from '@nestjs/core';
 import {
   FastifyAdapter,
@@ -10,9 +9,13 @@ import { DtoValidationPipe } from './common/pipes/dto-validation.pipe';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
-  
+
   app.enableCors();
   app.useGlobalPipes(new DtoValidationPipe());
+
+  process.once('SIGTERM', () => {
+    app.close();
+  });
 
   await app.listen(80, '0.0.0.0');
 }

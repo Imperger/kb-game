@@ -24,14 +24,13 @@ services:
       - "traefik.http.routers.spawner.entrypoints=websecure"
       - "traefik.http.routers.spawner.tls=true"
     networks:
-       - spawner
-       - backend_spawner
+      - backend_spawner
   proxy_spawner:
     hostname: spawner.dev.wsl
     image: traefik:2.8.0
     restart: unless-stopped
     volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock
     configs:
       - source: certs_provider
         target: /etc/traefik/certs.yml
@@ -41,13 +40,10 @@ services:
       - source: certs
         target: /certs/server.cert
     networks:
-        spawner: {}
-        backend_spawner:
-          aliases:
-            - spawner.dev.lan
+      - backend_spawner
     ports:
-        - "3001:3001"
-        - "8081:8080"
+      - "3001:3001"
+      - "8081:8080"
 configs:
   spawner_config:
     file: ./config/settings.json
@@ -61,6 +57,5 @@ secrets:
   ca:
     file: ./config/root.crt
 networks:
-  spawner: {}
   backend_spawner:
     external: true

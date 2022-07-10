@@ -1,0 +1,49 @@
+#!/bin/sh
+
+set -eu
+
+KB_GAME_TEST_DIR="$PWD"
+
+npm i -g c8
+
+mkdir -p -- ./spawner/coverage ./backend/coverage
+
+# Setup backend
+echo "$SSL_CA" > '../deploy/docker-compose/backend/config/root.crt'
+echo "$SSL_CERTS" > '../deploy/docker-compose/backend/config/server.cert'
+
+# Setup spawner
+echo "$SSL_CA" > '../deploy/docker-compose/spawner/config/root.crt'
+echo "$SSL_CERTS" > '../deploy/docker-compose/spawner/config/server.cert'
+
+cp ./spawner/settings.json ../deploy/docker-compose/spawner/config/settings.json && \
+    sed -i -e "s|\[CA_PATH\]|${PWD}/../deploy/docker-compose/spawner/config/root.crt|g" \
+    ../deploy/docker-compose/spawner/config/settings.json
+
+# Setup docker environment
+docker network create backend_spawner
+
+# Start backend
+cd ../deploy/docker-compose/backend && \
+    chmod +x ./run_test && \
+    ./run_test
+
+# Start spawner
+cd "$KB_GAME_TEST_DIR" && \
+    cd ../deploy/docker-compose/spawner && \
+    chmod +x ./run_test && \
+    ./run_test
+
+cd "$KB_GAME_TEST_DIR" && \
+docker build --no-cache \
+    --build-arg SSL_CA="$SSL_CA" \
+    -t tester . && \
+docker run --rm --name tester \
+    --network backend_spawner -t \
+    tester
+
+docker stop spawner-spawner-1
+docker stop backend-backend_api-1
+
+sudo chown -R $(id -u):$(id -g) ../spawner/coverage && \
+sudo chown -R $(id -u):$(id -g) ../backend/coverage

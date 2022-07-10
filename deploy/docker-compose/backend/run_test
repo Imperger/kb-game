@@ -6,4 +6,7 @@ docker build --no-cache \
 docker run --rm --name frontend_builder -t \
     --env-file ./config/frontend.env \
     -v frontend_static:/build/dist frontend_builder && \
-docker compose up -d --build
+docker compose \
+    -f ./docker-compose.yml \
+    -f ./docker-compose.test.yml \
+    up -d --build

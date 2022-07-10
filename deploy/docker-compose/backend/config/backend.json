@@ -1,7 +1,5 @@
 {
-    "domain": "backend.dev.wsl",
-    "port": 80,
-    "ssl": false,
+    "hostname": "backend.dev.wsl",
     "api": {
         "jwtSecret": "12345"
     },

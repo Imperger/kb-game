@@ -1,0 +1,15 @@
+FROM node:18.4.0-alpine3.15
+
+ENV NPM_CONFIG_PREFIX=/home/node/.npm-global
+ENV PATH=$PATH:/home/node/.npm-global/bin
+
+WORKDIR /spawner
+
+RUN npm i -g c8
+
+COPY . .
+
+RUN npm i && \
+    npm run build
+
+ENTRYPOINT ["c8", "-r", "lcov", "node", "dist/main"]

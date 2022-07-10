@@ -13,6 +13,11 @@ import { LoggerService } from './logger/logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+
+  process.once('SIGTERM', () => {
+    app.close();
+  });
+
   app.useLogger(app.get(LoggerService));
   app.enableCors();
   app.setGlobalPrefix('api');

@@ -1,0 +1,20 @@
+name: integration-test
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run
+        env:
+          SSL_CA: ${{ secrets.SSL_CA }}
+          SSL_CERTS: ${{ secrets.SSL_CERTS }}
+        run: cd test && chmod +x ./run && ./run
+      - name: Upload backend codecov
+        uses: codecov/codecov-action@v3
+        with:
+          flags: backend
+      - name: Upload spawner codecov
+        uses: codecov/codecov-action@v3
+        with:
+          flags: spawner

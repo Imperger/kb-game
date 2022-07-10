@@ -1,8 +1,10 @@
 entryPoints:
   websecure:
     address: ":3001"
+accessLog: {}
 providers:
   docker:
+    exposedByDefault: false
     defaultRule: "Host(`{{ trimPrefix `/` .Name }}.docker.localhost`)"
   file:
     filename: "/etc/traefik/certs.yml"

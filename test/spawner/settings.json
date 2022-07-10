@@ -1,0 +1,12 @@
+{
+    "name": "dev_spawner#1",
+    "hostname": "spawner.dev.wsl",
+    "port": 3001,
+    "network": "backend_spawner",
+    "capacity": 3,
+    "secret": "12345",
+    "tls": {
+        "certs": "",
+        "ca": "[CA_PATH]"
+    }
+}
