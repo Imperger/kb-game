@@ -12,7 +12,7 @@
 		}
 	},
 
-	"runArgs": ["--network=backend_spawner"],
+	"runArgs": ["--network=dev"],
 
 	// Configure tool-specific properties.
 	"customizations": {
