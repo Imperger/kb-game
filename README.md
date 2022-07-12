@@ -1,5 +1,6 @@
 # Typing game
 
+[![codecov](https://codecov.io/gh/Imperger/kb-game/branch/master/graph/badge.svg?token=7RZYOF5A7E)](https://codecov.io/gh/Imperger/kb-game)
 
 # Projects
 
