@@ -1,7 +1,7 @@
 import colors from 'colors';
 
 import { SpawnerApi } from './api/spawner-api';
-import { isAxiosError } from './axios-error-guard';
+import { isAxiosError } from './guards/axios-error-guard';
 import { testBackend } from './backend-test';
 import { delay } from './delay';
 import { Logger } from './logger';
@@ -34,15 +34,19 @@ void async function Main() {
     const logger = new Logger('Main');
     const spawnerApi = new SpawnerApi('https://spawner.dev.wsl:3001', '12345');
 
+    let success = true;
     try {
         logger.log('Awaiting for spawner initialization');
         await awaitSpawner(spawnerApi, 600);
         logger.log('Spawner is ready. Lets go');
 
-        await testBackend({ spawner: spawnerApi });
-        await testSpawner({ spawner: spawnerApi });
+        success = await testBackend({ spawner: spawnerApi }) && success;
+        success = await testSpawner({ spawner: spawnerApi }) && success;
     } catch (e: any) {
         logger.error(e);
         process.exit(1);
+    } finally {
+        if (!success)
+            process.exit(1);
     }
 }();

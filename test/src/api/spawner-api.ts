@@ -15,6 +15,11 @@ export interface ServerDescription {
     started: boolean;
 }
 
+export interface NewCustomGameOptions {
+    ownerId: string;
+    backendApi: string;
+}
+
 export interface InstanceDescriptor {
     instanceUrl: string;
 }
@@ -46,8 +51,14 @@ export class SpawnerApi {
         return this.http.get<ServerDescription>('/game/list');
     }
 
-    async requestCustomInstance(ownerId: string): Promise<AxiosResponse<InstanceDescriptor>> {
-        return this.http.post<InstanceDescriptor>('/game/new_custom');
+    async requestCustomInstance(options: NewCustomGameOptions): Promise<AxiosResponse<InstanceDescriptor>> {
+        return this.http.post<InstanceDescriptor>('/game/new_custom', options);
+    }
+
+    useAuthorization(use: boolean): void {
+        use ?
+            this.updateAuthorizationHeader() :
+            delete this.http.defaults.headers.common.Authorization;
     }
 
     private updateAuthorizationHeader() {
