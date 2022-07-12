@@ -13,8 +13,4 @@ jobs:
       - name: Upload backend codecov
         uses: codecov/codecov-action@v3
         with:
-          flags: backend
-      - name: Upload spawner codecov
-        uses: codecov/codecov-action@v3
-        with:
-          flags: spawner
+          flags: backend,spawner
