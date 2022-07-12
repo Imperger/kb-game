@@ -15,11 +15,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(token: BackendToken) {
-
-    if (token.iat * 1000 > Date.now()) {
-      throw new UnauthorizedException();
-    }
-
     return token;
   }
 }
