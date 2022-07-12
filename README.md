@@ -1,5 +1,6 @@
 # Typing game
 
+![integration tests](https://github.com/Imperger/kb-game/actions/workflows/integration-test.yml/badge.svg)
 [![codecov](https://codecov.io/gh/Imperger/kb-game/branch/master/graph/badge.svg?token=7RZYOF5A7E)](https://codecov.io/gh/Imperger/kb-game)
 
 # Projects
