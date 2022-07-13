@@ -7,6 +7,7 @@ import { delay } from './delay';
 import { Logger } from './logger';
 import { testSpawner } from './spawner-test';
 import { TestError } from './test-error';
+import { BackendApi } from './api/backend-api';
 
 type seconds = number;
 
@@ -33,6 +34,7 @@ void async function Main() {
 
     const logger = new Logger('Main');
     const spawnerApi = new SpawnerApi('https://spawner.dev.wsl:3001', '12345');
+    const backendAPi = new BackendApi('https://backend.dev.wsl/api');
 
     let success = true;
     try {
@@ -40,8 +42,8 @@ void async function Main() {
         await awaitSpawner(spawnerApi, 600);
         logger.log('Spawner is ready. Lets go');
 
-        success = await testBackend({ spawner: spawnerApi }) && success;
-        success = await testSpawner({ spawner: spawnerApi }) && success;
+        success = await testBackend({ backend: backendAPi, spawner: spawnerApi }) && success;
+        success = await testSpawner({ backend: backendAPi, spawner: spawnerApi }) && success;
     } catch (e: any) {
         logger.error(e);
         process.exit(1);
