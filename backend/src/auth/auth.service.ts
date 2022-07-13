@@ -9,7 +9,6 @@ import { Model } from 'mongoose';
 import ms from 'ms';
 
 import { User } from '@/user/schemas/user.schema';
-import { EmailService } from '@/email/email.service';
 import { UserService } from '@/user/user.service';
 import { ExtractDuplicateKey } from '@/common/util/mongo-error-parser';
 import { UsernameIsTakenException } from './exceptions/username-is-taken.exception';
@@ -24,11 +23,12 @@ import { RegistrationConfirmExpiredException } from './exceptions/registration-c
 import { PlayerService } from '@/player/player.service';
 import { ConfigHelperService } from '@/config/config-helper.service';
 import { LoggerService } from '@/logger/logger.service';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly emailService: EmailService,
+    private readonly mailerService: MailerService,
     private readonly userService: UserService,
     private readonly playerService: PlayerService,
     private readonly configService: ConfigService,
@@ -44,8 +44,8 @@ export class AuthService {
       this.userService.clearExpiredRegistrations(username, email);
 
       const userId = (await createUser.save()).id;
-      this.emailService.send({
-        from: `no-reply@${this.configService.get<string>('domain')}`,
+      this.mailerService.sendMail({
+        from: `no-reply@${this.configService.get<string>('hostname')}`,
         to: email,
         subject: 'new_user',
         html: `<span>${this.buildConfirmURL(userId)}</span>`

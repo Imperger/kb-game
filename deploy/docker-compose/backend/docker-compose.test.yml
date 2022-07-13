@@ -9,3 +9,10 @@ services:
       - NODE_ENV=test
     volumes:
       - ../../../backend/coverage:/backend/coverage
+  mail:
+    hostname: mail.dev.wsl
+    image: maildev/maildev
+    networks:
+      - backend_spawner
+    ports:
+      - "1080:1080" # web/api interface

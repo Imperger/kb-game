@@ -1,10 +1,19 @@
-import { IsString, ValidateNested, IsDefined, IsBoolean, IsNumber, IsOptional } from 'class-validator';
+import { IsString, ValidateNested, IsDefined, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class Api {
   @IsDefined({ message: 'missing property \'api.jwtSecret\'' })
   @IsString()
   readonly jwtSecret: string;
+}
+class Mail {
+  @IsDefined({ message: 'missing property \'mail.transport\'' })
+  @IsString()
+  readonly transport: string;
+
+  @IsDefined({ message: 'missing property \'mail.from\'' })
+  @IsString()
+  readonly from: string;
 }
 class Mongo {
   @IsDefined({ message: 'missing property \'mongo.connectionURI\'' })
@@ -48,6 +57,12 @@ export class ConfigSchema {
   @ValidateNested()
   @Type(() => Api)
   readonly api: Api;
+
+  @IsDefined({ message: 'missing \'mail\' scope' })
+  @ValidateNested()
+  @Type(() => Mail)
+  readonly mail: Mail;
+  
 
   @IsDefined({ message: 'missing \'mongo\' scope' })
   @ValidateNested()

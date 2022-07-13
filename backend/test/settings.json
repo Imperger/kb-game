@@ -3,6 +3,10 @@
     "api": {
         "jwtSecret": "12345"
     },
+    "mail": {
+        "transport": "smtp://mail.dev.wsl:1025",
+        "from": "\"kb-game\" <no-reply@mail.dev.wsl>"
+    },
     "mongo": {
         "connectionURI": "mongodb://db:27017"
     },
