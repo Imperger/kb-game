@@ -23,7 +23,12 @@ import Config from './config'
       ignoreEnvFile: true,
       load: [() => Config]
     }),
-    MongooseModule.forRoot(Config.mongo.connectionURI),
+    MongooseModule.forRootAsync({
+      useFactory: (config: ConfigService) => ({
+        uri: config.get<string>('mongo.connectionURI')
+      }),
+      inject: [ConfigService]
+    }),
     PassportModule.register({}),
     MailerModule.forRootAsync({
       useFactory: (config: ConfigService) => ({
