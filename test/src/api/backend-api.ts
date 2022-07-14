@@ -12,6 +12,11 @@ export interface NewUser {
     password: string;
 }
 
+export interface LoginResponse {
+    code: StatusCode;
+    token: string;
+}
+
 export class BackendApi {
     private http!: AxiosInstance;
     constructor(
@@ -26,5 +31,13 @@ export class BackendApi {
 
     confirmRegistration(token: string): Promise<AxiosResponse<AuthResponse>> {
         return this.http.patch<AuthResponse>('/auth/registration/confirm', { code: token });
+    }
+
+    loginUsername(username: string, password: string): Promise<AxiosResponse<LoginResponse>> {
+        return this.http.post<LoginResponse>('/auth/login/username', { username, password });
+    }
+
+    loginEmail(email: string, password: string): Promise<AxiosResponse<LoginResponse>> {
+        return this.http.post<LoginResponse>('/auth/login/email', { email, password });
     }
 }
