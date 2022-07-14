@@ -10,6 +10,7 @@ import { DtoValidationPipe } from './common/pipes/dto-validation.pipe';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { AppExceptionFilter } from './common/filters/app-exception/app-exception.filter';
 import { LoggerService } from './logger/logger.service';
+import { GoogleRecaptchaFilter } from './common/filters/recaptcha-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
@@ -23,6 +24,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalFilters(new AppExceptionFilter());
+  app.useGlobalFilters(new GoogleRecaptchaFilter());
   app.useGlobalPipes(new DtoValidationPipe());
   await app.listen(80, '0.0.0.0');
 }

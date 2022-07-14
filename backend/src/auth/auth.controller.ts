@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Patch, UseGuards } from '@nestjs/common';
-import { Recaptcha } from '@imperger/google-recaptcha';
+import { Recaptcha } from '@nestlab/google-recaptcha';
 
 import { CreateUserDto } from './dto/create-user.dto'
 import { AuthService } from './auth.service';
@@ -18,7 +18,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly logger: LoggerService) { }
 
-  @Recaptcha(0.7)
+  @Recaptcha()
   @Post('register')
   async register(@Body() user: CreateUserDto) {
     const userId = await this.authService.registerUser(user.username, user.email, user.password);
@@ -39,7 +39,7 @@ export class AuthController {
   }
 
   @UseGuards(LoginByEmailGuard)
-  @Recaptcha(0.7)
+  @Recaptcha()
   @Post('login/email')
   async loginEmail(@User() user: UserSchema) {
 
@@ -49,7 +49,7 @@ export class AuthController {
   }
 
   @UseGuards(LoginByUsernameGuard)
-  @Recaptcha(0.7)
+  @Recaptcha()
   @Post('login/username')
   async loginUsername(@User() user: UserSchema) {
 
