@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Patch, UseGuards, HttpCode } from '@nestjs/common';
 import { Recaptcha } from '@nestlab/google-recaptcha';
 
 import { CreateUserDto } from './dto/create-user.dto'
@@ -40,6 +40,7 @@ export class AuthController {
 
   @UseGuards(LoginByEmailGuard)
   @Recaptcha()
+  @HttpCode(200)
   @Post('login/email')
   async loginEmail(@User() user: UserSchema) {
 
@@ -50,6 +51,7 @@ export class AuthController {
 
   @UseGuards(LoginByUsernameGuard)
   @Recaptcha()
+  @HttpCode(200)
   @Post('login/username')
   async loginUsername(@User() user: UserSchema) {
 
