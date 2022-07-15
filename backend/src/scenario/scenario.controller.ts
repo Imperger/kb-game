@@ -7,6 +7,7 @@ import { JwtKnownSpawnerGuard } from '@/spawner/decorators/jwt-known-spawner.gua
 import { Scope } from '@/auth/scopes';
 import { NewScenarioDto } from './dto/new-scenario.dto';
 import { ScenarioService } from './scenario.service';
+import { ParseObjectIdPipe } from '@/common/pipes/parse-object-id.pipe';
 
 @Controller('scenario')
 export class ScenarioController {
@@ -22,8 +23,8 @@ export class ScenarioController {
   @HasScopes(Scope.EditScenario)
   @UseGuards(JwtGuard, ScopeGuard)
   @Delete('remove/:id')
-  async remove(@Param('id') id: string) {
-    this.scenarioService.remove(id);
+  async remove(@Param('id', ParseObjectIdPipe) id: string) {
+    return this.scenarioService.remove(id);
   }
 
   @UseGuards(JwtGuard)
@@ -32,7 +33,7 @@ export class ScenarioController {
     const page = await this.scenarioService.list(offset, limit);
     return { 
       total: page.total, 
-      scenarios: page.scenarios.map(({ id, title, text }) => ({ id, title, text }))};
+      scenarios: page.scenarios.map(({ _id, title, text }) => ({ id: _id, title, text }))};
   }
 
   @UseGuards(JwtKnownSpawnerGuard)

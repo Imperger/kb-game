@@ -23,6 +23,10 @@ export default class ScenarioApi {
     return !isRejectedResponse((await this.http.post('scenario/add', { title, text })).data);
   }
 
+  async remove (id: string): Promise<boolean | RejectedResponse> {
+    return (await this.http.delete<boolean>(`scenario/remove/${id}`)).data;
+  }
+
   async list (offset: number, limit: number): Promise<ScenarioPage | RejectedResponse> {
     return (await this.http.get<ScenarioPage>(`scenario/list?offset=${offset}&limit=${limit}`)).data;
   }
