@@ -17,7 +17,23 @@ export interface LoginResponse {
     token: string;
 }
 
+export interface CurrentUser {
+    username: string;
+    email: string;
+    avatar: string;
+    registeredAt: Date;
+    scopes: {
+        assignScope: boolean;
+        serverMaintainer: boolean;
+        blockedUntil: Date;
+        editScenario: boolean;
+        moderateChat: boolean;
+        mutedUntil: Date;
+    }
+}
+
 export class BackendApi {
+    private token!: string;
     private http!: AxiosInstance;
     constructor(
         public entry: string
@@ -34,10 +50,24 @@ export class BackendApi {
     }
 
     loginUsername(username: string, password: string): Promise<AxiosResponse<LoginResponse>> {
-        return this.http.post<LoginResponse>('/auth/login/username', { username, password });
+        return this.handleAuthToken(() => this.http.post<LoginResponse>('/auth/login/username', { username, password }));
     }
 
     loginEmail(email: string, password: string): Promise<AxiosResponse<LoginResponse>> {
-        return this.http.post<LoginResponse>('/auth/login/email', { email, password });
+        return this.handleAuthToken(() => this.http.post<LoginResponse>('/auth/login/email', { email, password }));
+    }
+
+    me(): Promise<AxiosResponse<CurrentUser>> {
+        return this.http.get<CurrentUser>('/user/me')
+    }
+
+    private async handleAuthToken(signin: () => Promise<AxiosResponse<LoginResponse>>): Promise<AxiosResponse<LoginResponse>> {
+        const ret = await signin();
+
+        this.token = ret.data.token;
+
+        this.http.defaults.headers.common.Authorization = `Bearer ${this.token}`;
+
+        return ret;
     }
 }

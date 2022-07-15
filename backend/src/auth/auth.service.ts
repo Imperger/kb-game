@@ -170,8 +170,4 @@ export class AuthService {
   static genSalt() {
     return crypto.randomBytes(16).toString('base64');
   }
-
-  static genConfirmCode() {
-    return crypto.randomBytes(32).toString('base64');
-  }
 }
