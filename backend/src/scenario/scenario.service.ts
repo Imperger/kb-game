@@ -23,7 +23,7 @@ export class ScenarioService {
   }
 
   async remove(id: string): Promise<boolean> {
-    return (await this.scenarioModel.remove({ id })).deletedCount > 0;
+    return (await this.scenarioModel.deleteOne({ _id: id })).deletedCount > 0;
   }
 
   async list(offset: number, limit: number): Promise<ScenarioPage> {

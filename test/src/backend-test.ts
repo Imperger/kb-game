@@ -311,6 +311,33 @@ async function fetchUserInfo(api: Api, logger: Logger): Promise<boolean> {
     return fetchUserInfoPass;
 }
 
+async function listGames(api: Api, logger: Logger): Promise<boolean> {
+    const tester = new ApiTester(logger, 'Backend');
+
+    const gameListPass = await tester.test(
+        () => api.backend.listGames(),
+        {
+            done: [
+                {
+                    If: x => x.status === 200 && Array.isArray(x.data),
+                    Done: () => 'PASSED /game/list returns game list'
+                },
+                {
+                    If: () => true,
+                    Throw: x => `FAILED /game/list should return game list. Given: '${x.data}'`
+                }
+            ],
+            error: [
+                {
+                    If: () => true,
+                    Throw: x => `FAILED /game/list should return 200. Given: ${x.response?.status}`
+                }
+            ]
+        });
+
+    return gameListPass;
+}
+
 export async function testBackend(api: Api,): Promise<boolean> {
     const logger = new Logger('Backend');
 
@@ -320,7 +347,10 @@ export async function testBackend(api: Api,): Promise<boolean> {
     success = await signinFlow(api, logger) && success;
     success = await registerWithSameCreds(api, logger) && success
     success = await confirmRegistrationUnsuccess(api, logger) && success;
+
     success = await fetchUserInfo(api, logger) && success;
+
+    success = await listGames(api, logger) && success;
 
     return success;
 }

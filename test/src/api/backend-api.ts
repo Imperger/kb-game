@@ -32,6 +32,15 @@ export interface CurrentUser {
     }
 }
 
+type Nickname = string;
+export interface ServerDescription {
+    url: string;
+    owner: Nickname;
+    capacity: number;
+    occupancy: number;
+    started: boolean;
+}
+
 export class BackendApi {
     private token!: string;
     private http!: AxiosInstance;
@@ -59,6 +68,10 @@ export class BackendApi {
 
     me(): Promise<AxiosResponse<CurrentUser>> {
         return this.http.get<CurrentUser>('/user/me')
+    }
+
+    listGames(): Promise<AxiosResponse<ServerDescription[]>> {
+        return this.http.get<ServerDescription[]>('/game/list');
     }
 
     private async handleAuthToken(signin: () => Promise<AxiosResponse<LoginResponse>>): Promise<AxiosResponse<LoginResponse>> {

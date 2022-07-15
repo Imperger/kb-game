@@ -13,7 +13,14 @@
                     </v-list-item-subtitle>
                 </v-list-item-content>
                 <v-list-item-action>
+                  <v-row>
+                  <v-col class="pa-1">
                     <v-btn icon><v-icon>mdi-pencil</v-icon></v-btn>
+                  </v-col>
+                  <v-col class="pa-1">
+                    <v-btn @click="remove(s.id)" color="red" icon><v-icon>mdi-close</v-icon></v-btn>
+                  </v-col>
+                  </v-row>
                 </v-list-item-action>
             </v-list-item>
         </v-list>
@@ -68,14 +75,22 @@ export default class ScenarioEditor extends Mixins(ApiServiceMixin) {
     this.$router.push({ name: 'NewScenario' });
   }
 
+  async remove (id: string): Promise<void> {
+    const removed = await this.api.scenario.remove(id);
+
+    if (!isRejectedResponse(removed) && removed) {
+      this.syncView(this.page, true);
+    }
+  }
+
   async changePage (page: number): Promise<void> {
     if (await this.syncView(page)) {
       this.page = page;
     }
   }
 
-  async syncView (page: number): Promise<boolean> {
-    if (page === this.page && this.scenarioPage.scenarios.length) {
+  async syncView (page: number, force = false): Promise<boolean> {
+    if (!force && page === this.page && this.scenarioPage.scenarios.length) {
       return false;
     }
 
