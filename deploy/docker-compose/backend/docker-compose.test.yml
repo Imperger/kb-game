@@ -16,3 +16,6 @@ services:
       - backend_spawner
     ports:
       - "1080:1080" # web/api interface
+  db:
+    networks:
+      - backend_spawner

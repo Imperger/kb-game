@@ -92,6 +92,34 @@ async function registrationFlow(api: Api, logger: Logger): Promise<boolean> {
             ]
         });
 
+    // Make user confirmation time expire
+    await api.mongo.collection('users').updateOne({ email: user.cred.email }, { $set: { createdAt: new Date(0) } });
+
+    const loginUsernamePass = await tester.test(
+        () => api.backend.loginUsername(user.cred.username, user.cred.password),
+        {
+            done: [
+                {
+                    If: () => true,
+                    Throw: x => `FAILED /auth/login/username should return 401. Given: '${x.status}'`
+                }
+            ],
+            error: [
+                {
+                    If: x => x.response?.status === 401,
+                    Done: () => 'PASSED /auth/login/username returns 401 for user that has expired confirmation'
+                },
+                {
+                    If: () => true,
+                    Throw: x => `FAILED /auth/login/username should return 401. Given: ${x.response?.status}`
+                }
+            ]
+        });
+
+    // Make confirmation time valid again
+    await api.mongo.collection('users').updateOne({ email: user.cred.email }, { $set: { createdAt: new Date() } });
+
+
     const mailbox = new Mailbox('http://mail.dev.wsl:1080');
 
     let confirmLetter = null;
@@ -338,6 +366,126 @@ async function listGames(api: Api, logger: Logger): Promise<boolean> {
     return gameListPass;
 }
 
+async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
+    const tester = new ApiTester(logger, 'Backend');
+
+    await api.mongo.collection('users')
+        .updateOne({ email: user.cred.email }, { $set: { 'scopes.editScenario': true } });
+
+    const scenario = { id: '', title: 'Sample title', text: 'Scenario content' };
+
+    const addScenarioPass = await tester.test(async () => {
+        const ret = api.backend.addScenario(scenario.title, scenario.text);
+        scenario.id = (await ret).data
+        return ret;
+    }, {
+        done: [
+            {
+                If: x => x.status === 201 && typeof x.data === 'string',
+                Done: () => 'PASSED /scenario/add returns id'
+            },
+            {
+                If: () => true,
+                Throw: x => `FAILED /scenario/add should return scenario id. Given '${x.data}'`
+            }
+        ],
+        error: [
+            {
+                If: () => true,
+                Throw: x => `FAILED /scenario/add should return 201. Given '${x.response?.status}'`
+            }
+        ]
+    });
+
+    const updatedScenario = { title: 'Updated title', text: 'Updated scenario content' };
+
+    const updateScenarioPass = await tester.test(() => api.backend.updateScenario(scenario.id, updatedScenario), {
+        done: [
+            {
+                If: x => x.status === 200 && x.data === true,
+                Done: () => 'PASSED /scenario/update returns \'true\''
+            },
+            {
+                If: () => true,
+                Throw: x => `FAILED /scenario/update should return 'true'. Given '${x.data}'`
+            }
+        ],
+        error: [
+            {
+                If: () => true,
+                Throw: x => `FAILED /scenario/update should return 200. Given '${x.response?.status}'`
+            }
+        ]
+    });
+
+    const contentScenarioPass = await tester.test(() => api.backend.getScenarioContent(scenario.id), {
+        done: [
+            {
+                If: x => x.status === 200 &&
+                    x.data.title === updatedScenario.title &&
+                    x.data.text === updatedScenario.text,
+                Done: () => 'PASSED /scenario/content returns scenario content'
+            },
+            {
+                If: () => true,
+                Throw: x => `FAILED /scenario/content should return scenario content. Given '${x.data}'`
+            }
+        ],
+        error: [
+            {
+                If: () => true,
+                Throw: x => `FAILED /scenario/content should return 200. Given '${x.response?.status}'`
+            }
+        ]
+    });
+
+    const listScenariosPass = await tester.test(() => api.backend.listScenario(0, 25), {
+        done: [
+            {
+                If: x => x.status === 200 &&
+                    x.data.total >= 1 &&
+                    (x.data.total > 25 || x.data.scenarios.some(x => x.title === updatedScenario.title && x.text === updatedScenario.text)),
+                Done: () => 'PASSED /scenario/list returns scenario list'
+            },
+            {
+                If: () => true,
+                Throw: x => `FAILED /scenario/list should return scenario list. Given '${x.data}'`
+            }
+        ],
+        error: [
+            {
+                If: () => true,
+                Throw: x => `FAILED /scenario/list should return 200. Given '${x.response?.status}'`
+            }
+        ]
+    });
+
+    const removeScenarioPass = await tester.test(() => api.backend.removeScenario(scenario.id), {
+        done: [
+            {
+                If: x => x.status === 200 && x.data === true,
+                Done: () => 'PASSED /scenario/remove returns \'true\''
+            },
+            {
+                If: () => true,
+                Throw: x => `FAILED /scenario/remove should return 'true'. Given '${x.data}'`
+            }
+        ],
+        error: [
+            {
+                If: () => true,
+                Throw: x => `FAILED /scenario/remove should return 200. Given '${x.response?.status}'`
+            }
+        ]
+    });
+
+    return updateScenarioPass &&
+        updateScenarioPass &&
+        contentScenarioPass &&
+        listScenariosPass &&
+        removeScenarioPass;
+}
+
 export async function testBackend(api: Api,): Promise<boolean> {
     const logger = new Logger('Backend');
 
@@ -351,6 +499,8 @@ export async function testBackend(api: Api,): Promise<boolean> {
     success = await fetchUserInfo(api, logger) && success;
 
     success = await listGames(api, logger) && success;
+
+    success = await scenarioFlow(api, logger) && success;
 
     return success;
 }

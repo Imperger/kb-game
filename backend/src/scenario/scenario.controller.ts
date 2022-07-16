@@ -30,7 +30,7 @@ export class ScenarioController {
   @UseGuards(JwtGuard, ScopeGuard)
   @Post('add')
   async add(@Body() scenario: NewScenarioDto) {
-    this.scenarioService.add(scenario.title, scenario.text);
+    return this.scenarioService.add(scenario.title, scenario.text);
   }
 
   @HasScopes(Scope.EditScenario)
