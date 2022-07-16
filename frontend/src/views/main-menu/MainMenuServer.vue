@@ -5,7 +5,7 @@
       <spawner-manager />
     </v-col>
     <v-col cols="6">
-      <scenario-editor />
+      <scenario-list />
     </v-col>
   </v-row>
 </v-container>
@@ -18,12 +18,12 @@
 import { Component, Vue } from 'vue-property-decorator';
 
 import SpawnerManager from '@/components/spawner/SpawnerManager.vue';
-import ScenarioEditor from '@/components/scenario-editor/ScenarioEditor.vue';
+import ScenarioList from '@/components/scenario-editor/ScenarioList.vue';
 
 @Component({
   components: {
     SpawnerManager,
-    ScenarioEditor
+    ScenarioList
   }
 })
 export default class MainMenuServer extends Vue {

@@ -15,7 +15,7 @@
                 <v-list-item-action>
                   <v-row>
                   <v-col class="pa-1">
-                    <v-btn icon><v-icon>mdi-pencil</v-icon></v-btn>
+                    <v-btn :to="edit(s.id)" icon><v-icon>mdi-pencil</v-icon></v-btn>
                   </v-col>
                   <v-col class="pa-1">
                     <v-btn @click="remove(s.id)" color="red" icon><v-icon>mdi-close</v-icon></v-btn>
@@ -26,7 +26,7 @@
         </v-list>
         <v-row class="actions">
           <v-col cols="11"><v-pagination :value="page" @input="changePage" :length="pages" circle /></v-col>
-          <v-col cols="1"><v-btn @click="add" icon large elevation="2" class="add-scenario-btn"><v-icon>mdi-plus</v-icon></v-btn></v-col>
+          <v-col cols="1"><v-btn :to="add" icon large elevation="2" class="add-scenario-btn"><v-icon>mdi-plus</v-icon></v-btn></v-col>
         </v-row>
     </v-card-text>
 </v-card>
@@ -51,16 +51,18 @@
 </style>
 
 <script lang="ts">
+import { Location } from 'vue-router/types/router';
+import { Component, Mixins } from 'vue-property-decorator';
+
 import { ApiServiceMixin } from '@/mixins';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
 import { ScenarioPage } from '@/services/api-service/scenario/scenario-api';
-import { Component, Mixins } from 'vue-property-decorator';
 
 @Component({
   components: {
   }
 })
-export default class ScenarioEditor extends Mixins(ApiServiceMixin) {
+export default class ScenarioList extends Mixins(ApiServiceMixin) {
   page = 1;
   pages = 4;
   perPage = 4;
@@ -71,8 +73,12 @@ export default class ScenarioEditor extends Mixins(ApiServiceMixin) {
     this.syncView(this.page);
   }
 
-  add (): void {
-    this.$router.push({ name: 'NewScenario' });
+  get add (): Location {
+    return { name: 'NewScenario' };
+  }
+
+  edit (id: string): Location {
+    return { name: 'EditScenario', params: { id } };
   }
 
   async remove (id: string): Promise<void> {

@@ -12,6 +12,11 @@ export interface ScenarioPage {
   scenarios: Scenario[];
 }
 
+export interface ScenarioContent {
+  title: string;
+  text: string;
+}
+
 export default class ScenarioApi {
   private http!: AxiosInstance;
 
@@ -23,8 +28,16 @@ export default class ScenarioApi {
     return !isRejectedResponse((await this.http.post('scenario/add', { title, text })).data);
   }
 
+  async update (id: string, content: ScenarioContent): Promise<boolean> {
+    return !isRejectedResponse((await this.http.put<boolean>(`scenario/update/${id}`, { ...content })));
+  }
+
   async remove (id: string): Promise<boolean | RejectedResponse> {
     return (await this.http.delete<boolean>(`scenario/remove/${id}`)).data;
+  }
+
+  async content (id: string): Promise<ScenarioContent | RejectedResponse> {
+    return (await this.http.get<ScenarioContent>(`scenario/content/${id}`)).data;
   }
 
   async list (offset: number, limit: number): Promise<ScenarioPage | RejectedResponse> {

@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { NewScenarioDto } from './dto/new-scenario.dto';
 
 import { Scenario } from './schemas/scenario.schema';
 
 export interface ScenarioPage {
   total: number;
   scenarios: Scenario[];
+}
+
+export interface ScenarioContent {
+  title: string;
+  text: string;
 }
 
 @Injectable()
@@ -20,6 +26,19 @@ export class ScenarioService {
       .join('');
 
     return (await new this.scenarioModel({ title, text }).save()).id;
+  }
+
+  async update(id: string, content: NewScenarioDto): Promise<boolean> {
+    const scenario = await this.scenarioModel.findById(id);
+
+    if (!scenario)
+      return false;
+
+    scenario.title = content.title;
+    scenario.text = content.text;
+    await scenario.save();
+
+    return true;
   }
 
   async remove(id: string): Promise<boolean> {
@@ -60,6 +79,10 @@ export class ScenarioService {
   async all_titles() {
     return (await this.scenarioModel.find({}, { title: 1 }))
       .map(({ id, title }) => ({ id, title }));
+  }
+
+  async content(id: string): Promise<ScenarioContent> {
+    return (({ title, text }) => ({title, text}))(await this.scenarioModel.findById(id));
   }
 
   async text(id: string): Promise<string> {
