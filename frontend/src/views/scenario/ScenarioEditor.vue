@@ -14,11 +14,16 @@
 </style>
 
 <script lang="ts">
+import { Component, Mixins, Prop } from 'vue-property-decorator';
+
 import { ApiServiceMixin } from '@/mixins';
-import { Component, Mixins } from 'vue-property-decorator';
+import { isRejectedResponse } from '@/services/api-service/rejected-response';
 
 @Component
-export default class NewScenario extends Mixins(ApiServiceMixin) {
+export default class ScenarioEditor extends Mixins(ApiServiceMixin) {
+  @Prop({ type: String })
+  private readonly id!: string;
+
   title = '';
   text = '';
   savePending = false;
@@ -26,10 +31,25 @@ export default class NewScenario extends Mixins(ApiServiceMixin) {
   readonly titleBounds = { min: 3, max: 50 };
   readonly textBounds = { min: 10, max: 100000 };
 
+  async created (): Promise<void> {
+    if (this.isEditMode) {
+      const content = await this.api.scenario.content(this.id);
+
+      if (!isRejectedResponse(content)) {
+        this.title = content.title;
+        this.text = content.text;
+      }
+    }
+  }
+
   async save (): Promise<void> {
     this.savePending = true;
 
-    await this.api.scenario.add(this.title, this.text);
+    if (this.isEditMode) {
+      await this.api.scenario.update(this.id, { title: this.title, text: this.text });
+    } else {
+      await this.api.scenario.add(this.title, this.text);
+    }
 
     this.savePending = false;
   }
@@ -47,6 +67,10 @@ export default class NewScenario extends Mixins(ApiServiceMixin) {
   get canSave (): boolean {
     return this.validateTitle(this.title) === true &&
      this.validateText(this.text) === true;
+  }
+
+  get isEditMode (): boolean {
+    return this.id !== undefined;
   }
 }
 </script>

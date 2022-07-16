@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Query,
+  UseGuards
+} from '@nestjs/common';
 
 import { HasScopes } from '@/auth/decorators/has-scopes.decorator';
 import { ScopeGuard } from '@/auth/guards/scope.guard';
@@ -8,6 +20,7 @@ import { Scope } from '@/auth/scopes';
 import { NewScenarioDto } from './dto/new-scenario.dto';
 import { ScenarioService } from './scenario.service';
 import { ParseObjectIdPipe } from '@/common/pipes/parse-object-id.pipe';
+import { Catch } from '@/common/decorators/catch.decorator';
 
 @Controller('scenario')
 export class ScenarioController {
@@ -22,6 +35,13 @@ export class ScenarioController {
 
   @HasScopes(Scope.EditScenario)
   @UseGuards(JwtGuard, ScopeGuard)
+  @Put('update/:id')
+  async update(@Param('id', ParseObjectIdPipe) id: string, @Body() content: NewScenarioDto) {
+    return this.scenarioService.update(id, content);
+  }
+
+  @HasScopes(Scope.EditScenario)
+  @UseGuards(JwtGuard, ScopeGuard)
   @Delete('remove/:id')
   async remove(@Param('id', ParseObjectIdPipe) id: string) {
     return this.scenarioService.remove(id);
@@ -31,9 +51,18 @@ export class ScenarioController {
   @Get('list')
   async list(@Query('offset', ParseIntPipe) offset: number, @Query('limit', ParseIntPipe) limit: number) {
     const page = await this.scenarioService.list(offset, limit);
-    return { 
-      total: page.total, 
-      scenarios: page.scenarios.map(({ _id, title, text }) => ({ id: _id, title, text }))};
+    return {
+      total: page.total,
+      scenarios: page.scenarios.map(({ _id, title, text }) => ({ id: _id, title, text }))
+    };
+  }
+
+  @HasScopes(Scope.EditScenario)
+  @UseGuards(JwtGuard, ScopeGuard)
+  @Catch(NotFoundException)
+  @Get('content/:id')
+  content(@Param('id') id: string) {
+    return this.scenarioService.content(id);
   }
 
   @UseGuards(JwtKnownSpawnerGuard)
@@ -43,6 +72,7 @@ export class ScenarioController {
   }
 
   @UseGuards(JwtKnownSpawnerGuard)
+  @Catch(NotFoundException)
   @Get('text/:id')
   async text(@Param('id') id: string) {
     return { text: await this.scenarioService.text(id) };
