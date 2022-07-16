@@ -60,7 +60,7 @@ import { Component, Mixins } from 'vue-property-decorator';
   components: {
   }
 })
-export default class ScenarioEditor extends Mixins(ApiServiceMixin) {
+export default class ScenarioList extends Mixins(ApiServiceMixin) {
   page = 1;
   pages = 4;
   perPage = 4;
