@@ -1,4 +1,5 @@
 import colors from 'colors';
+import { MongoClient } from 'mongodb';
 
 import { SpawnerApi } from './api/spawner-api';
 import { isAxiosError } from './guards/axios-error-guard';
@@ -35,19 +36,23 @@ void async function Main() {
     const logger = new Logger('Main');
     const spawnerApi = new SpawnerApi('https://spawner.dev.wsl:3001', '12345');
     const backendAPi = new BackendApi('https://backend.dev.wsl/api');
+    const mongo = new MongoClient('mongodb://db:27017');
 
     let success = true;
     try {
+        await mongo.connect();
+
         logger.log('Awaiting for spawner initialization');
         await awaitSpawner(spawnerApi, 600);
         logger.log('Spawner is ready. Lets go');
 
-        success = await testBackend({ backend: backendAPi, spawner: spawnerApi }) && success;
-        success = await testSpawner({ backend: backendAPi, spawner: spawnerApi }) && success;
+        success = await testBackend({ backend: backendAPi, spawner: spawnerApi, mongo: mongo.db('test') }) && success;
+        //success = await testSpawner({ backend: backendAPi, spawner: spawnerApi, mongo }) && success;
     } catch (e: any) {
         logger.error(e);
         process.exit(1);
     } finally {
+        await mongo.close();
         if (!success)
             process.exit(1);
     }

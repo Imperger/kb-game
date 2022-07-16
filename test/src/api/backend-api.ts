@@ -41,6 +41,24 @@ export interface ServerDescription {
     started: boolean;
 }
 
+export interface ScenarioContent {
+    title: string;
+    text: string;
+}
+
+export interface Scenario {
+    id: string;
+    title: string;
+    text: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface ScenarioPage {
+    total: number;
+    scenarios: Scenario[];
+}
+
 export class BackendApi {
     private token!: string;
     private http!: AxiosInstance;
@@ -72,6 +90,26 @@ export class BackendApi {
 
     listGames(): Promise<AxiosResponse<ServerDescription[]>> {
         return this.http.get<ServerDescription[]>('/game/list');
+    }
+
+    addScenario(title: string, text: string): Promise<AxiosResponse<string>> {
+        return this.http.post<string>('/scenario/add', { title, text });
+    }
+
+    updateScenario(id: string, content: ScenarioContent): Promise<AxiosResponse<boolean>> {
+        return this.http.put<boolean>(`/scenario/update/${id}`, content);
+    }
+
+    removeScenario(id: string): Promise<AxiosResponse<boolean>> {
+        return this.http.delete<boolean>(`/scenario/remove/${id}`);
+    }
+
+    listScenario(offset: number, limit: number): Promise<AxiosResponse<ScenarioPage>> {
+        return this.http.get<ScenarioPage>(`/scenario/list?offset=${offset}&limit=${limit}`);
+    }
+
+    getScenarioContent(id: string): Promise<AxiosResponse<ScenarioContent>> {
+        return this.http.get<ScenarioContent>(`/scenario/content/${id}`);
     }
 
     private async handleAuthToken(signin: () => Promise<AxiosResponse<LoginResponse>>): Promise<AxiosResponse<LoginResponse>> {
