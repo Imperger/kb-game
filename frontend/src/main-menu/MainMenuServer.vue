@@ -18,7 +18,7 @@
 import { Component, Vue } from 'vue-property-decorator';
 
 import SpawnerManager from '@/components/spawner/SpawnerManager.vue';
-import ScenarioList from '@/components/scenario-editor/ScenarioList.vue';
+import ScenarioList from '@/scenario/ScenarioList.vue';
 
 @Component({
   components: {

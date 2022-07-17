@@ -18,8 +18,9 @@
 </style>
 
 <script lang="ts">
-import { Player } from '@/gameplay/strategies/lobby-strategy';
 import { Component, Vue, Prop } from 'vue-property-decorator';
+
+import { Player } from './gameplay/strategies/lobby-strategy';
 
 interface PlayerSlot {
   id: string;

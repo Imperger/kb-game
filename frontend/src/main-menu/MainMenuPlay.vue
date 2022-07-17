@@ -28,7 +28,7 @@ import { Component, Mixins } from 'vue-property-decorator';
 
 import { ApiServiceMixin, GameMixin } from '@/mixins';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
-import { AuthResult } from '@/gameplay/strategies/auth-strategy';
+import { AuthResult } from '@/game/gameplay/strategies/auth-strategy';
 
 @Component
 export default class MainMenuPlay extends Mixins(ApiServiceMixin, GameMixin) {

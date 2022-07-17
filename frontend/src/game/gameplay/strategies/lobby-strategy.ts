@@ -1,8 +1,8 @@
 import { Subject } from 'rxjs';
 import { Socket } from 'socket.io-client';
+
 import { remoteCall } from '../remote-call';
 import { GameStrategy } from './game-strategy';
-
 import { Strategy } from './strategy';
 
 export interface Player {

@@ -1,8 +1,8 @@
 import { io, Socket } from 'socket.io-client';
+
 import { AuthResult, AuthStrategy } from './strategies/auth-strategy';
 import { GameStrategy } from './strategies/game-strategy';
 import { LobbyStrategy } from './strategies/lobby-strategy';
-
 import { Strategy } from './strategies/strategy';
 
 export class GameClient {

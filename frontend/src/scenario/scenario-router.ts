@@ -1,6 +1,6 @@
 import { RouteConfig } from 'vue-router';
 
-import ScenarioEditor from '@/views/scenario/ScenarioEditor.vue';
+import ScenarioEditor from './ScenarioEditor.vue';
 
 export const scenario: Array<RouteConfig> = [
   {

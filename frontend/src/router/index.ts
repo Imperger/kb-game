@@ -3,11 +3,11 @@ import VueRouter, { NavigationGuardNext, Route, RouteConfig } from 'vue-router';
 import { getModule } from 'vuex-module-decorators';
 
 import store, { App } from '@/store';
-import MainMenu from '../views/MainMenu.vue';
-import { auth } from './auth';
-import { mainMenu } from './main-menu';
-import { game } from './game';
-import { scenario } from './scenario';
+import MainMenu from '@/main-menu/MainMenu.vue';
+import { auth } from '@/auth/auth-router';
+import { mainMenu } from '@/main-menu/main-menu-router';
+import { game } from '@/game/game-router';
+import { scenario } from '@/scenario/scenario-router';
 import { Role } from './roles';
 
 Vue.use(VueRouter);

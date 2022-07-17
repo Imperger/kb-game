@@ -1,7 +1,7 @@
 import { Observable, Subject } from 'rxjs';
 import { Socket } from 'socket.io-client';
-import { remoteCall } from '../remote-call';
 
+import { remoteCall } from '../remote-call';
 import { Strategy, SwitchStrategy } from './strategy';
 
 type Base64Image = string;

@@ -38,7 +38,7 @@ interface VImg {
 }
 
 @Component
-export default class TypeText extends Vue {
+export default class TypingTextTracker extends Vue {
   @Ref('img')
   readonly img!: VImg;
 

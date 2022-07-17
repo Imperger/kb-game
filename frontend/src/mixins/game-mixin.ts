@@ -1,5 +1,5 @@
 import { Component, Vue } from 'vue-property-decorator';
-import { GameClient } from '../gameplay/game-client';
+import { GameClient } from '../game/gameplay/game-client';
 
 let gameClient: GameClient | null = null;
 

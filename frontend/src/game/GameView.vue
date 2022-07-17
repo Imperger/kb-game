@@ -1,6 +1,6 @@
 <template>
 <v-container>
-  <type-text :textImage="fieldImg" :scroll="scroll" :carriage="carriage" />
+  <typing-text-tracker :textImage="fieldImg" :scroll="scroll" :carriage="carriage" />
   <players-progress-panel :progress="playersProgress" />
   <game-summary-dlg v-model="summaryDlgShow" :summary="gameSummary" />
 </v-container>
@@ -10,19 +10,20 @@
 </style>
 
 <script lang="ts">
-import { GameMixin } from '@/mixins';
 import { Subscription } from 'rxjs';
+import { first } from 'rxjs/operators';
 import { Component, Mixins } from 'vue-property-decorator';
+
+import { GameMixin } from '@/mixins';
 import KeyboardInputMixin from './KeyboardInputMixin';
-import TypeText from './TypeText.vue';
+import TypingTextTracker from './TypingTextTracker.vue';
 import PlayersProgressPanel from './PlayersProgressPanel.vue';
 import GameSummaryDlg from './GameSummaryDlg.vue';
-import { GameSummary, PlayerProgress } from '@/gameplay/strategies/game-strategy';
-import { first } from 'rxjs/operators';
+import { GameSummary, PlayerProgress } from './gameplay/strategies/game-strategy';
 
 @Component({
   components: {
-    TypeText,
+    TypingTextTracker,
     PlayersProgressPanel,
     GameSummaryDlg
   }
