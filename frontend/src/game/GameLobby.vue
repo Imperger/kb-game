@@ -22,9 +22,9 @@ import { Component, Mixins } from 'vue-property-decorator';
 import { first } from 'rxjs/operators';
 
 import { GameMixin } from '@/mixins';
-import { Player, Scenario } from '@/gameplay/strategies/lobby-strategy';
-import LobbyFfaPlayerList from '@/components/game/LobbyFfaPlayerList.vue';
-import LobbyScenarioList from '@/components/game/LobbyScenarioList.vue';
+import { Player, Scenario } from './gameplay/strategies/lobby-strategy';
+import LobbyFfaPlayerList from './LobbyFfaPlayerList.vue';
+import LobbyScenarioList from './LobbyScenarioList.vue';
 
 @Component({
   components: {

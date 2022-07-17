@@ -32,7 +32,7 @@ import { Component, Mixins } from 'vue-property-decorator';
 import { ApiServiceMixin, GameMixin } from '@/mixins';
 import { ServerDescription } from '@/services/api-service/game/game-api';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
-import { AuthResult } from '@/gameplay/strategies/auth-strategy';
+import { AuthResult } from '@/game/gameplay/strategies/auth-strategy';
 
 @Component
 export default class ServerBrowser extends Mixins(ApiServiceMixin, GameMixin) {

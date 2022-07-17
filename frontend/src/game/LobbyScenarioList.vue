@@ -22,7 +22,7 @@
 <script lang="ts">
 import { Component, Emit, Mixins } from 'vue-property-decorator';
 
-import { Scenario } from '@/gameplay/strategies/lobby-strategy';
+import { Scenario } from './gameplay/strategies/lobby-strategy';
 import { GameMixin } from '@/mixins';
 
 @Component

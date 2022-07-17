@@ -19,8 +19,8 @@
 <script lang="ts">
 import { Component, Prop, Mixins } from 'vue-property-decorator';
 
-import { PlayerProgress } from '@/gameplay/strategies/game-strategy';
 import { GameMixin } from '@/mixins';
+import { PlayerProgress } from './gameplay/strategies/game-strategy';
 
 @Component
 export default class PlayersProgressPanel extends Mixins(GameMixin) {

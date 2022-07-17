@@ -34,7 +34,7 @@
 import { Component, Prop, Model, Emit, Mixins } from 'vue-property-decorator';
 
 import { GameMixin } from '@/mixins';
-import { GameSummary, PlayerStats } from '@/gameplay/strategies/game-strategy';
+import { GameSummary, PlayerStats } from './gameplay/strategies/game-strategy';
 
 interface Participants {
   nickname: string;

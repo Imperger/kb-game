@@ -1,7 +1,7 @@
 import { RouteConfig } from 'vue-router';
 
-import GameLobby from '@/views/game/GameLobby.vue';
-import GameView from '@/views/game/GameView.vue';
+import GameLobby from './GameLobby.vue';
+import GameView from './GameView.vue';
 
 export const game: Array<RouteConfig> = [
   {
