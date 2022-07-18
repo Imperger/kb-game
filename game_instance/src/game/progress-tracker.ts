@@ -24,14 +24,10 @@ export class ProgressTracker {
     this.record(char, correct);
 
     if (correct) {
-      if (this.inTrackIdx === 0 && char === ' ') {
-        ++this.inScenarionIdx;
-        return 0;
-      }
-
       const width = this.tracks[this.line].widths[this.inTrackIdx];
 
       ++this.inScenarionIdx;
+
       this.inTrackIdx =
         (this.inTrackIdx + 1) % this.tracks[this.line].widths.length;
 
@@ -39,7 +35,7 @@ export class ProgressTracker {
         ++this.line;
       }
 
-      return width;
+      return this.inTrackIdx === 0 ? 0 : width;
     }
 
     return WrongChar;

@@ -29,8 +29,11 @@ export class GameFieldRenderer {
     this.setupContext(ctx);
 
     let y = this.options.lineHeight >> 1;
+    let begin = 0;
     for (const line of content.description) {
-      ctx.fillText(content.text.substring(line.begin, line.end), 0, y);
+      const end = begin + line.widths.length;
+      ctx.fillText(content.text.substring(begin, end), 0, y);
+      begin = end;
       y += this.options.lineHeight;
     }
 

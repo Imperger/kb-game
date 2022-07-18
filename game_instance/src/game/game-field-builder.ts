@@ -7,8 +7,6 @@ export interface BuildOptions {
 }
 
 export interface PopulatedLine {
-  begin: number;
-  end: number;
   height: number;
   widths: number[];
 }
@@ -41,8 +39,7 @@ export class GameFieldBuilder {
    *
    * @param ctx canvas context
    * @param begin index in text point to start of a word
-   * @returns A substring that does not exceed the given width and
-   * an array of widths from the beginning to each character
+   * @returns Text line height and an array containing the width of the string, including the corresponding character
    */
   private calculateLineMetrics(
     ctx: NodeCanvasRenderingContext2D,
@@ -51,14 +48,7 @@ export class GameFieldBuilder {
     let height = 0;
     const widths: number[] = [];
 
-    // Trim space at begin
-    if (this.text[begin] === ' ') {
-      ++begin;
-    }
-
-    let n = begin + 1;
-
-    for (; n <= this.text.length; ++n) {
+    for (let n = begin + 1; n <= this.text.length; ++n) {
       const metrics = ctx.measureText(this.text.substring(begin, n));
       height = Math.max(
         height,
@@ -66,19 +56,27 @@ export class GameFieldBuilder {
       );
 
       const paddingRight = 5;
-      if (metrics.width <= this._options.width - paddingRight) {
-        widths.push(metrics.width);
-      } else {
+      if (metrics.width > this._options.width - paddingRight) {
         break;
       }
+
+      widths.push(metrics.width);
     }
 
     // Prevent word breaking
-    if (--n < this.text.length) {
-      for (; n >= 0 && !' '.includes(this.text[n]); --n);
+    let nonBreakingEnd = begin + widths.length - 1;
+    if (begin + widths.length < this.text.length) {
+      while (nonBreakingEnd > begin && this.text[nonBreakingEnd] !== ' ')
+        --nonBreakingEnd;
     }
 
-    return { begin, end: n, height, widths: widths.slice(0, n - begin) };
+    return {
+      height,
+      widths:
+        nonBreakingEnd === begin
+          ? widths
+          : widths.slice(0, nonBreakingEnd - begin + 1),
+    };
   }
 
   get options(): BuildOptions {
@@ -91,12 +89,13 @@ export class GameFieldBuilder {
 
     this.setupContext(ctx);
 
-    let n = 0;
     const ret: PopulatedLine[] = [];
-    while (n < this.text.length) {
+    for (
+      let n = 0;
+      n < this.text.length;
+      n += ret[ret.length - 1].widths.length
+    ) {
       ret.push(this.calculateLineMetrics(ctx, n));
-
-      n = ret[ret.length - 1].end;
     }
 
     return ret;
