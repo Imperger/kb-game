@@ -150,8 +150,8 @@ export class SpawnerService implements OnModuleInit {
     const Labels = {
       'traefik.enable': 'true',
       [`traefik.http.routers.${hostname}.rule`]: `PathPrefix(\`/${options.instanceId}\`)`,
-      [`traefik.http.routers.${hostname}.middlewares`]: 'instance-strip-prefix',
-      [`traefik.http.middlewares.instance-strip-prefix.stripprefix.prefixes`]: `/${options.instanceId}`,
+      [`traefik.http.routers.${hostname}.middlewares`]: `${hostname}-strip-prefix`,
+      [`traefik.http.middlewares.${hostname}-strip-prefix.stripprefix.prefixes`]: `/${options.instanceId}`,
       [`traefik.http.services.${hostname}.loadbalancer.server.port`]: '80',
       [`traefik.http.routers.${hostname}.entrypoints`]: 'websecure',
       [`traefik.http.routers.${hostname}.tls`]: 'true'
