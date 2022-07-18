@@ -16,6 +16,8 @@ export class GameClient {
     const url = new URL(instanceUrl);
     this.socket = io(url.origin, { path: `${url.pathname}/socket.io` });
 
+    await this.waitForConnected();
+
     const s = new AuthStrategy();
     s.playerToken = playerToken;
     this.state = s;
@@ -63,5 +65,9 @@ export class GameClient {
     this.state.deactivate();
     this.state = strategy;
     this.state.use(this.socket, s => this.switchStrategy(s));
+  }
+
+  private waitForConnected (): Promise<void> {
+    return new Promise<void>((resolve, reject) => this.socket.once('connect', () => resolve()));
   }
 }
