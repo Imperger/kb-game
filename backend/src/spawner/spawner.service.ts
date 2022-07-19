@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
@@ -77,7 +77,11 @@ export class SpawnerService {
           case 'ENOTFOUND':
             throw new HostNotFoundException();
           case 'ERR_BAD_REQUEST':
-            throw new WrongSecretException();
+          {
+            if (e.response?.status === HttpStatus.UNAUTHORIZED) {
+              throw new WrongSecretException();
+            }
+          }
           default:
             throw new UnknownException();
         }
