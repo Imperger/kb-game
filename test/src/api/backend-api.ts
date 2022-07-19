@@ -59,6 +59,21 @@ export interface ScenarioPage {
     scenarios: Scenario[];
 }
 
+export interface RequestedSpawnerInfo {
+    name: string;
+    capacity: number;
+}
+
+export interface RejectedResponse {
+    code: number;
+}
+
+export interface SpawnerInfo {
+    url: string;
+    name: string;
+    capacity: number;
+  }
+
 export class BackendApi {
     private token!: string;
     private http!: AxiosInstance;
@@ -110,6 +125,18 @@ export class BackendApi {
 
     getScenarioContent(id: string): Promise<AxiosResponse<ScenarioContent>> {
         return this.http.get<ScenarioContent>(`/scenario/content/${id}`);
+    }
+
+    addSpawner(url: string, secret: string): Promise<AxiosResponse<RequestedSpawnerInfo | RejectedResponse>> {
+        return this.http.post<RequestedSpawnerInfo>('/spawner/add', { url, secret });
+    }
+
+    removeSpawner(url: string): Promise<AxiosResponse<boolean>> {  
+        return this.http.delete<boolean>(`/spawner/remove/${Buffer.from(url).toString('base64')}`);
+    }
+
+    listSpawners(): Promise<AxiosResponse<SpawnerInfo>> {
+        return this.http.get<SpawnerInfo>('/spawner/list_all');
     }
 
     private async handleAuthToken(signin: () => Promise<AxiosResponse<LoginResponse>>): Promise<AxiosResponse<LoginResponse>> {
