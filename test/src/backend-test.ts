@@ -3,7 +3,7 @@ import { sign } from 'jsonwebtoken';
 
 import { Api } from "./api-interface";
 import { ApiTester } from "./api-tester";
-import { StatusCode } from "./api/backend-api";
+import { RejectedResponse, StatusCode } from "./api/backend-api";
 import { delay } from './delay';
 import { Logger } from "./logger";
 import { Mailbox } from './mailbox';
@@ -486,6 +486,141 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
         removeScenarioPass;
 }
 
+export enum SpawnerStatusCode {
+    Ok = 0,
+    UnknownError = 100,
+    SpawnerAlreadyAdded,
+    HostNotResponse,
+    HostNotFound,
+    WrongSecret,
+    RequestInstanceFailed,
+    ListGameFailed,
+};
+
+interface BadTestcase {
+    name: string,
+    url: string,
+    secret: string,
+    expected: SpawnerStatusCode
+}
+
+async function spawnerFlow(api: Api, logger: Logger): Promise<boolean> {
+    const tester = new ApiTester(logger, 'Backend');
+
+    await api.mongo.collection('users')
+        .updateOne({ email: user.cred.email }, { $set: { 'scopes.serverMaintainer': true } });
+
+
+    const badTestcases: BadTestcase[] = [
+        {
+            name: 'unreachable',
+            url: 'https://unreachable.lan',
+            secret: '',
+            expected: SpawnerStatusCode.HostNotFound
+        },
+        {
+            name: 'reject connection',
+            url: 'https://spawner.dev.wsl:5000',
+            secret: '',
+            expected: SpawnerStatusCode.HostNotResponse
+        },
+        {
+            name: 'wrong secret',
+            url: 'https://spawner.dev.wsl:3001',
+            secret: '11111',
+            expected: SpawnerStatusCode.WrongSecret
+        }
+    ];
+
+    const addSpawnerTest = (test: BadTestcase) =>
+        tester.test(() => api.backend.addSpawner(test.url, test.secret),
+            {
+                done: [
+                    {
+                        If: () => true,
+                        Throw: x => `FAILED /spawner/add '${test.name}' should return 400. Given '${x.status}'`
+                    }
+                ],
+                error: [
+                    {
+                        If: x => x.response?.status === 400 &&
+                            (x.response.data as RejectedResponse).code === test.expected,
+                        Done: () => `PASSED /spawner/add '${test.name}' returns 400`
+                    },
+                    {
+                        If: () => true,
+                        Throw: x => `FAILED /spawner/add '${test.name}' should return 400. Given '${x.response?.status}'`
+                    }
+                ]
+            });
+
+
+    const badPass = (await Promise.allSettled(badTestcases.map(x => addSpawnerTest(x))))
+        .every(x => (x as { value: boolean }).value);
+
+    const validSecretPass = await tester.test(() => api.backend.addSpawner('https://spawner.dev.wsl:3001', '12345'),
+        {
+            done: [
+                {
+                    If: x => x.status === 201,
+                    Done: () => 'PASSED /spawner/add \'valid secret\' returns 201'                
+                },
+                {
+                    If: () => true,
+                    Throw: x => `FAILED /spawner/add 'valid secret' should return 201. Given '${x.status}'`
+                }
+            ],
+            error: [
+                {
+                    If: () => true,
+                    Throw: x => `FAILED /spawner/add 'valid secret' should return 201. Given '${x.response?.status}'`
+                }
+            ]
+        });
+
+        const listPass = await tester.test(() => api.backend.listSpawners(),
+        {
+            done: [
+                {
+                    If: x => x.status === 200 && Array.isArray(x.data) && x.data.length >= 1,
+                    Done: () => 'PASSED /spawner/list_all returns 200'                
+                },
+                {
+                    If: () => true,
+                    Throw: x => `FAILED /spawner/list_all should return 200. Given '${x.status}'`
+                }
+            ],
+            error: [
+                {
+                    If: () => true,
+                    Throw: x => `FAILED /spawner/list_all should return 200. Given '${x.response?.status}'`
+                }
+            ]
+        });
+
+    const removePass = await tester.test(() => api.backend.removeSpawner('https://spawner.dev.wsl:3001'),
+    {
+        done: [
+            {
+                If: x => x.status === 200,
+                Done: () => 'PASSED /spawner/remove returns 200'                
+            },
+            {
+                If: () => true,
+                Throw: x => `FAILED /spawner/remove should return 200. Given '${x.status}'`
+            }
+        ],
+        error: [
+            {
+                If: () => true,
+                Throw: x => `FAILED /spawner/remove should return 200. Given '${x.response?.status}'`
+            }
+        ]
+    });
+
+    return badPass && validSecretPass && listPass && removePass;
+}
+
 export async function testBackend(api: Api,): Promise<boolean> {
     const logger = new Logger('Backend');
 
@@ -501,6 +636,8 @@ export async function testBackend(api: Api,): Promise<boolean> {
     success = await listGames(api, logger) && success;
 
     success = await scenarioFlow(api, logger) && success;
+
+    success = await spawnerFlow(api, logger) && success;
 
     return success;
 }
