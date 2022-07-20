@@ -126,15 +126,15 @@ export class BackendApi {
     }
 
     addSpawner(url: string, secret: string): Promise<AxiosResponse<RequestedSpawnerInfo>> | FailType<RejectedResponse> {
-        return this.http.post<RequestedSpawnerInfo>('/spawner/add', { url, secret });
+        return this.http.post<RequestedSpawnerInfo>('/spawner', { url, secret });
     }
 
     removeSpawner(url: string): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {  
-        return this.http.delete<boolean>(`/spawner/remove/${Buffer.from(url).toString('base64')}`);
+        return this.http.delete<boolean>(`/spawner/${Buffer.from(url).toString('base64')}`);
     }
 
     listSpawners(): Promise<AxiosResponse<SpawnerInfo>> | FailType<RejectedResponse> {
-        return this.http.get<SpawnerInfo>('/spawner/list_all');
+        return this.http.get<SpawnerInfo>('/spawner');
     }
 
     private async handleAuthToken(signin: () => Promise<AxiosResponse<LoginResponse>>): Promise<AxiosResponse<LoginResponse>> {
