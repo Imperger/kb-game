@@ -237,6 +237,32 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
             ))
         .toPromise();
 
+    const knownSpawner = {
+        url: 'https://spawner.dev.wsl:3001',
+        secret: '12345'
+    };
+
+    try {
+        const a = await api.backend.addSpawner(knownSpawner.url, knownSpawner.secret)
+    } catch (e) {
+    }
+
+    const token = sign({ spawner: knownSpawner.url }, knownSpawner.secret);
+
+    const allTitles = await tester.test(
+        () => api.backend.getAllScenarioTitles(token),
+        'Fetch all scenarios')
+        .status(200)
+        .response(x => Array.isArray(x) && x.length >= 1)
+        .toPromise();
+
+    const scenarioText = await tester.test(
+        () => api.backend.getScenarioText(scenario.id, token),
+        'Fetch scenario text')
+        .status(200)
+        .response(x => x.text === updatedScenario.text)
+        .toPromise();
+
     const removeScenario = await tester.test(
         () => api.backend.removeScenario(scenario.id),
         'Remove scenario')
@@ -244,10 +270,18 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
         .response(x => x === true)
         .toPromise();
 
+    try {
+        await api.backend.removeSpawner(knownSpawner.url)
+    } catch (e) {
+
+    }
+
     return newScenario.pass &&
         updateScenario.pass &&
         scenarioContent.pass &&
         scenarioList.pass &&
+        allTitles.pass &&
+        scenarioText.pass &&
         removeScenario.pass;
 }
 
@@ -345,9 +379,9 @@ export async function testBackend(api: Api,): Promise<boolean> {
 
     success = await listGames(api, logger) && success;
 
-    success = await scenarioFlow(api, logger) && success;
-
     success = await spawnerFlow(api, logger) && success;
+
+    success = await scenarioFlow(api, logger) && success;
 
     return success;
 }

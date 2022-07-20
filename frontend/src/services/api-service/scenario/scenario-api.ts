@@ -25,22 +25,22 @@ export default class ScenarioApi {
   }
 
   async add (title: string, text: string): Promise<boolean> {
-    return !isRejectedResponse((await this.http.post('scenario/add', { title, text })).data);
+    return !isRejectedResponse((await this.http.post('scenario', { title, text })).data);
   }
 
   async update (id: string, content: ScenarioContent): Promise<boolean> {
-    return !isRejectedResponse((await this.http.put<boolean>(`scenario/update/${id}`, { ...content })));
+    return !isRejectedResponse((await this.http.put<boolean>(`scenario/${id}`, { ...content })));
   }
 
   async remove (id: string): Promise<boolean | RejectedResponse> {
-    return (await this.http.delete<boolean>(`scenario/remove/${id}`)).data;
+    return (await this.http.delete<boolean>(`scenario/${id}`)).data;
   }
 
   async content (id: string): Promise<ScenarioContent | RejectedResponse> {
-    return (await this.http.get<ScenarioContent>(`scenario/content/${id}`)).data;
+    return (await this.http.get<ScenarioContent>(`scenario/${id}`)).data;
   }
 
   async list (offset: number, limit: number): Promise<ScenarioPage | RejectedResponse> {
-    return (await this.http.get<ScenarioPage>(`scenario/list?offset=${offset}&limit=${limit}`)).data;
+    return (await this.http.get<ScenarioPage>(`scenario?offset=${offset}&limit=${limit}`)).data;
   }
 }
