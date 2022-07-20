@@ -1,4 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
+import type { FailType } from "../api-tester";
+import { RejectedResponse } from "./types";
 
 export enum StatusCode { Ok = 0 }
 
@@ -64,10 +66,6 @@ export interface RequestedSpawnerInfo {
     capacity: number;
 }
 
-export interface RejectedResponse {
-    code: number;
-}
-
 export interface SpawnerInfo {
     url: string;
     name: string;
@@ -83,59 +81,59 @@ export class BackendApi {
         this.http = axios.create({ baseURL: entry });
     }
 
-    register(user: NewUser): Promise<AxiosResponse<AuthResponse>> {
+    register(user: NewUser): Promise<AxiosResponse<AuthResponse>> | FailType<RejectedResponse> {
         return this.http.post<AuthResponse>('/auth/register', user);
     }
 
-    confirmRegistration(token: string): Promise<AxiosResponse<AuthResponse>> {
+    confirmRegistration(token: string): Promise<AxiosResponse<AuthResponse>> | FailType<RejectedResponse> {
         return this.http.patch<AuthResponse>('/auth/registration/confirm', { code: token });
     }
 
-    loginUsername(username: string, password: string): Promise<AxiosResponse<LoginResponse>> {
+    loginUsername(username: string, password: string): Promise<AxiosResponse<LoginResponse>> | FailType<RejectedResponse> {
         return this.handleAuthToken(() => this.http.post<LoginResponse>('/auth/login/username', { username, password }));
     }
 
-    loginEmail(email: string, password: string): Promise<AxiosResponse<LoginResponse>> {
+    loginEmail(email: string, password: string): Promise<AxiosResponse<LoginResponse>> | FailType<RejectedResponse> {
         return this.handleAuthToken(() => this.http.post<LoginResponse>('/auth/login/email', { email, password }));
     }
 
-    me(): Promise<AxiosResponse<CurrentUser>> {
+    me(): Promise<AxiosResponse<CurrentUser>> | FailType<RejectedResponse> {
         return this.http.get<CurrentUser>('/user/me')
     }
 
-    listGames(): Promise<AxiosResponse<ServerDescription[]>> {
+    listGames(): Promise<AxiosResponse<ServerDescription[]>> | FailType<RejectedResponse> {
         return this.http.get<ServerDescription[]>('/game/list');
     }
 
-    addScenario(title: string, text: string): Promise<AxiosResponse<string>> {
+    addScenario(title: string, text: string): Promise<AxiosResponse<string>> | FailType<RejectedResponse> {
         return this.http.post<string>('/scenario/add', { title, text });
     }
 
-    updateScenario(id: string, content: ScenarioContent): Promise<AxiosResponse<boolean>> {
+    updateScenario(id: string, content: ScenarioContent): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
         return this.http.put<boolean>(`/scenario/update/${id}`, content);
     }
 
-    removeScenario(id: string): Promise<AxiosResponse<boolean>> {
+    removeScenario(id: string): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
         return this.http.delete<boolean>(`/scenario/remove/${id}`);
     }
 
-    listScenario(offset: number, limit: number): Promise<AxiosResponse<ScenarioPage>> {
+    listScenario(offset: number, limit: number): Promise<AxiosResponse<ScenarioPage>> | FailType<RejectedResponse> {
         return this.http.get<ScenarioPage>(`/scenario/list?offset=${offset}&limit=${limit}`);
     }
 
-    getScenarioContent(id: string): Promise<AxiosResponse<ScenarioContent>> {
+    getScenarioContent(id: string): Promise<AxiosResponse<ScenarioContent>> | FailType<RejectedResponse> {
         return this.http.get<ScenarioContent>(`/scenario/content/${id}`);
     }
 
-    addSpawner(url: string, secret: string): Promise<AxiosResponse<RequestedSpawnerInfo | RejectedResponse>> {
+    addSpawner(url: string, secret: string): Promise<AxiosResponse<RequestedSpawnerInfo>> | FailType<RejectedResponse> {
         return this.http.post<RequestedSpawnerInfo>('/spawner/add', { url, secret });
     }
 
-    removeSpawner(url: string): Promise<AxiosResponse<boolean>> {  
+    removeSpawner(url: string): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {  
         return this.http.delete<boolean>(`/spawner/remove/${Buffer.from(url).toString('base64')}`);
     }
 
-    listSpawners(): Promise<AxiosResponse<SpawnerInfo>> {
+    listSpawners(): Promise<AxiosResponse<SpawnerInfo>> | FailType<RejectedResponse> {
         return this.http.get<SpawnerInfo>('/spawner/list_all');
     }
 
