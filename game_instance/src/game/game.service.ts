@@ -241,7 +241,7 @@ export class GameService {
     return (
       await firstValueFrom(
         this.http.get(
-          `${process.env.BACKEND_API}/api/scenario/list_all_titles`,
+          `${process.env.BACKEND_API}/api/scenario/titles`,
           this.useAuthorization(),
         ),
       )
