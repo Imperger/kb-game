@@ -95,7 +95,7 @@ export class SpawnerService {
   }
 
   async remove(url: string): Promise<boolean> {
-    return (await this.spawnerModel.remove({ url })).deletedCount > 0;
+    return (await this.spawnerModel.deleteOne({ url })).deletedCount > 0;
   }
 
   async listAll() {
