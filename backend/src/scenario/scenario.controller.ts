@@ -28,28 +28,28 @@ export class ScenarioController {
 
   @HasScopes(Scope.EditScenario)
   @UseGuards(JwtGuard, ScopeGuard)
-  @Post('add')
+  @Post()
   async add(@Body() scenario: NewScenarioDto) {
     return this.scenarioService.add(scenario.title, scenario.text);
   }
 
   @HasScopes(Scope.EditScenario)
   @UseGuards(JwtGuard, ScopeGuard)
-  @Put('update/:id')
+  @Put(':id')
   async update(@Param('id', ParseObjectIdPipe) id: string, @Body() content: NewScenarioDto) {
     return this.scenarioService.update(id, content);
   }
 
   @HasScopes(Scope.EditScenario)
   @UseGuards(JwtGuard, ScopeGuard)
-  @Delete('remove/:id')
+  @Delete(':id')
   async remove(@Param('id', ParseObjectIdPipe) id: string) {
     return this.scenarioService.remove(id);
   }
 
   @UseGuards(JwtGuard)
-  @Get('list')
-  async list(@Query('offset', ParseIntPipe) offset: number, @Query('limit', ParseIntPipe) limit: number) {
+  @Get()
+  async paginate(@Query('offset', ParseIntPipe) offset: number, @Query('limit', ParseIntPipe) limit: number) {
     const page = await this.scenarioService.list(offset, limit);
     return {
       total: page.total,
@@ -60,13 +60,13 @@ export class ScenarioController {
   @HasScopes(Scope.EditScenario)
   @UseGuards(JwtGuard, ScopeGuard)
   @Catch(NotFoundException)
-  @Get('content/:id')
-  content(@Param('id') id: string) {
+  @Get(':id')
+  one(@Param('id') id: string) {
     return this.scenarioService.content(id);
   }
 
   @UseGuards(JwtKnownSpawnerGuard)
-  @Get('list_all_titles')
+  @Get('titles')
   async listAllTitles() {
     return this.scenarioService.all_titles();
   }

@@ -1,5 +1,6 @@
 import { Api } from './api-interface';
 import { ApiTester } from './api-tester';
+import { NewCustomGameOptions } from './api/spawner-api';
 import { Logger } from './logger';
 
 async function info(api: Api, logger: Logger): Promise<boolean> {
@@ -60,14 +61,22 @@ async function createCustomGame(api: Api, logger: Logger): Promise<boolean> {
 
     api.spawner.useAuthorization(true);
 
+    const newGameWithInvalidInput = await tester.test(
+        () => api.spawner.requestCustomInstance({ foo: 1, bar: 2 } as unknown as NewCustomGameOptions),
+        'Request custom instance with invalid input')
+        .status(400)
+        .toPromise();
+
     const newGameWithCreds = await tester.test(
         () => api.spawner.requestCustomInstance({ ownerId: '1234567890', backendApi: 'https://backend.dev.wsl' }),
-        'Request game instance with credentials')
+        'Request custom instance with credentials')
         .status(201)
         .response(x => typeof x === 'object' && typeof x.instanceUrl === 'string')
         .toPromise();
 
-    return newGameWithoutCreds.pass && newGameWithCreds.pass;
+    return newGameWithoutCreds.pass &&
+        newGameWithInvalidInput.pass &&
+        newGameWithCreds.pass;
 }
 
 export async function testSpawner(api: Api): Promise<boolean> {

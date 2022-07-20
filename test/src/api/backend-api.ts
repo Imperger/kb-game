@@ -70,7 +70,16 @@ export interface SpawnerInfo {
     url: string;
     name: string;
     capacity: number;
-  }
+}
+
+export interface ScenarioTitle {
+    id: string;
+    title: string;
+}
+
+export interface ScenarioText {
+    text: string;
+}
 
 export class BackendApi {
     private token!: string;
@@ -106,35 +115,43 @@ export class BackendApi {
     }
 
     addScenario(title: string, text: string): Promise<AxiosResponse<string>> | FailType<RejectedResponse> {
-        return this.http.post<string>('/scenario/add', { title, text });
+        return this.http.post<string>('/scenario', { title, text });
     }
 
     updateScenario(id: string, content: ScenarioContent): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
-        return this.http.put<boolean>(`/scenario/update/${id}`, content);
+        return this.http.put<boolean>(`/scenario/${id}`, content);
     }
 
     removeScenario(id: string): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
-        return this.http.delete<boolean>(`/scenario/remove/${id}`);
+        return this.http.delete<boolean>(`/scenario/${id}`);
     }
 
     listScenario(offset: number, limit: number): Promise<AxiosResponse<ScenarioPage>> | FailType<RejectedResponse> {
-        return this.http.get<ScenarioPage>(`/scenario/list?offset=${offset}&limit=${limit}`);
+        return this.http.get<ScenarioPage>(`/scenario?offset=${offset}&limit=${limit}`);
     }
 
     getScenarioContent(id: string): Promise<AxiosResponse<ScenarioContent>> | FailType<RejectedResponse> {
-        return this.http.get<ScenarioContent>(`/scenario/content/${id}`);
+        return this.http.get<ScenarioContent>(`/scenario/${id}`);
+    }
+
+    getAllScenarioTitles(accessToken: string): Promise<AxiosResponse<ScenarioTitle[]>> | FailType<RejectedResponse> {
+        return this.http.get<ScenarioTitle[]>('/scenario/titles', { headers: { Authorization: `Bearer ${accessToken}` } });
+    }
+
+    getScenarioText(id: string, accessToken: string): Promise<AxiosResponse<ScenarioText>> | FailType<RejectedResponse> {
+        return this.http.get<ScenarioText>(`/scenario/text/${id}`, { headers: { Authorization: `Bearer ${accessToken}` } });
     }
 
     addSpawner(url: string, secret: string): Promise<AxiosResponse<RequestedSpawnerInfo>> | FailType<RejectedResponse> {
-        return this.http.post<RequestedSpawnerInfo>('/spawner/add', { url, secret });
+        return this.http.post<RequestedSpawnerInfo>('/spawner', { url, secret });
     }
 
-    removeSpawner(url: string): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {  
-        return this.http.delete<boolean>(`/spawner/remove/${Buffer.from(url).toString('base64')}`);
+    removeSpawner(url: string): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
+        return this.http.delete<boolean>(`/spawner/${Buffer.from(url).toString('base64')}`);
     }
 
     listSpawners(): Promise<AxiosResponse<SpawnerInfo>> | FailType<RejectedResponse> {
-        return this.http.get<SpawnerInfo>('/spawner/list_all');
+        return this.http.get<SpawnerInfo>('/spawner');
     }
 
     private async handleAuthToken(signin: () => Promise<AxiosResponse<LoginResponse>>): Promise<AxiosResponse<LoginResponse>> {

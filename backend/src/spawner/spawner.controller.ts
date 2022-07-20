@@ -14,21 +14,21 @@ export class SpawnerController {
 
   @HasScopes(Scope.ServerMaintainer)
   @UseGuards(JwtGuard, ScopeGuard)
-  @Post('add')
+  @Post()
   async add(@Body() spawner: AddSpawnerDto) {
     return this.spawnerService.add(spawner.url, spawner.secret);
   }
 
   @HasScopes(Scope.ServerMaintainer)
   @UseGuards(JwtGuard, ScopeGuard)
-  @Delete('remove/:url_base64')
+  @Delete(':url_base64')
   async remove(@Param('url_base64', Base64DecoderPipe) url: string) {
     return this.spawnerService.remove(url);
   }
 
   @HasScopes(Scope.ServerMaintainer)
   @UseGuards(JwtGuard, ScopeGuard)
-  @Get('list_all')
+  @Get()
   async listAll(): Promise<SpawnerInfo[]> {
     return (await this.spawnerService.listAll())
       .map(({ url, name, capacity }) => ({ url, name, capacity }));

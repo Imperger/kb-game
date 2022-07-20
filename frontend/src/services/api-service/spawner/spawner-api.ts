@@ -21,14 +21,14 @@ export class SpawnerApi {
   }
 
   async add (url: string, secret: string): Promise<RequestedSpawnerInfo | RejectedResponse> {
-    return (await this.http.post<RequestedSpawnerInfo>('spawner/add', { url, secret })).data;
+    return (await this.http.post<RequestedSpawnerInfo>('spawner', { url, secret })).data;
   }
 
   async remove (url: string): Promise<boolean | RejectedResponse> {
-    return (await this.http.delete(`spawner/remove/${btoa(url)}`)).data;
+    return (await this.http.delete(`spawner/${btoa(url)}`)).data;
   }
 
   async listAll (): Promise<SpawnerInfo[]> {
-    return (await this.http.get<SpawnerInfo[]>('spawner/list_all')).data;
+    return (await this.http.get<SpawnerInfo[]>('spawner')).data;
   }
 }
