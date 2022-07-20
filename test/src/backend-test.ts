@@ -2,8 +2,9 @@ import Crypto from 'crypto';
 import { sign } from 'jsonwebtoken';
 
 import { Api } from "./api-interface";
-import { ApiTester } from "./api-tester";
-import { RejectedResponse, StatusCode } from "./api/backend-api";
+import { ApiTester, ApiTestResult } from "./api-tester";
+import { StatusCode } from "./api/backend-api";
+import { RejectedResponse } from './api/types';
 import { delay } from './delay';
 import { Logger } from "./logger";
 import { Mailbox } from './mailbox';
@@ -19,102 +20,46 @@ function genUser() {
 async function signinInvalidCreds(api: Api, logger: Logger): Promise<boolean> {
     genUser();
 
-    const tester = new ApiTester(logger, 'Backend');
-
-    const loginUsernamePass = await tester.test(
+    const tester = new ApiTester(logger);
+    const login = await tester.test(
         () => api.backend.loginUsername(user.cred.username, user.cred.password),
-        {
-            done: [
-                {
-                    If: x => true,
-                    Throw: x => `FAILED /auth/login/username should return 401. Given '${x.status}'`
-                },
+        'Signin with invalid credentials')
+        .status(401)
+        .toPromise();
 
-            ],
-            error: [
-                {
-                    If: x => x.response?.status === 401,
-                    Done: x => 'PASSED /auth/login/username returns 401'
-                },
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /auth/login/username should return 401. Given: '${x.response?.status}'`
-                }
-            ]
-        });
-
-    return loginUsernamePass;
+    return login.pass;
 }
 
 async function registrationFlow(api: Api, logger: Logger): Promise<boolean> {
-    const tester = new ApiTester(logger, 'Backend');
-    const registerResourcePass = await tester.test(() => api.backend.register(user.cred), {
-        done: [
-            {
-                If: x => x.status === 201 && x.data?.code === StatusCode.Ok,
-                Done: x => 'PASSED /auth/register returns { code: 0 }'
-            },
-            {
-                If: () => true,
-                Throw: x => `FAILED /auth/register should return { code: 0 }. Given '${x.data}'`
-            }
-        ],
-        error: [
-            {
-                If: () => true,
-                Throw: x => `FAILED /auth/register should return 201. Given '${x.response?.status}'`
-            }
-        ]
-    });
+    const tester = new ApiTester(logger);
 
-    if (!registerResourcePass) {
+    const registered = await tester.test(
+        () => api.backend.register(user.cred),
+        'Register new user')
+        .status(201)
+        .response({ code: StatusCode.Ok })
+        .toPromise();
+
+    if (!registered.pass) {
         return false;
     }
 
-    const loginUsernameUnconfirmedPass = await tester.test(
+    const signinUnconfirmed = await tester.test(
         () => api.backend.loginUsername(user.cred.username, user.cred.password),
-        {
-            done: [
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /auth/login/username should return 401. Given '${x.status}'`
-                }
-            ],
-            error: [
-                {
-                    If: x => x.response?.status === 401,
-                    Done: x => 'PASSED /auth/login/username returns 401'
-                },
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /auth/login/username should return 401. Given: '${x.response?.data}'`
-                }
-            ]
-        });
+        'Signin to unconfirmed account'
+    )
+        .status(401)
+        .toPromise();
 
-    // Make user confirmation time expire
+    // Make user confirmation time expired
     await api.mongo.collection('users').updateOne({ email: user.cred.email }, { $set: { createdAt: new Date(0) } });
 
-    const loginUsernamePass = await tester.test(
+    const signinExpiredConfirmation = await tester.test(
         () => api.backend.loginUsername(user.cred.username, user.cred.password),
-        {
-            done: [
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /auth/login/username should return 401. Given: '${x.status}'`
-                }
-            ],
-            error: [
-                {
-                    If: x => x.response?.status === 401,
-                    Done: () => 'PASSED /auth/login/username returns 401 for user that has expired confirmation'
-                },
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /auth/login/username should return 401. Given: ${x.response?.status}`
-                }
-            ]
-        });
+        'Signin to expired account'
+    )
+        .status(401)
+        .toPromise();
 
     // Make confirmation time valid again
     await api.mongo.collection('users').updateOne({ email: user.cred.email }, { $set: { createdAt: new Date() } });
@@ -126,364 +71,184 @@ async function registrationFlow(api: Api, logger: Logger): Promise<boolean> {
     for (let retries = 20; confirmLetter === null && retries > 0; --retries) {
         confirmLetter = await mailbox.findByDestination(user.cred.email);
 
-        await delay(5000);
+        await delay(2500);
     }
 
     if (confirmLetter === null) {
-        logger.error('FAILED /register should sent confirmation letter');
+        logger.error('FAIL /register should sent confirmation letter');
         return false;
     }
 
     const [, token] = /https*:\/\/.+\/registration\/confirm\/([a-zA-Z0-9\._-]+)/.exec(confirmLetter.html) ?? [null, null];
 
     if (!token) {
-        logger.error('FAILED /register confirmation letter should contain confirm url');
+        logger.error('FAIL /register confirmation letter should contain confirm url');
         return false;
     }
 
     user.token = token;
 
-    const confirmResourcePass = tester.test(() => api.backend.confirmRegistration(token), {
-        done: [
-            {
-                If: x => x.status === 200 && x.data?.code === StatusCode.Ok,
-                Done: () => 'PASSED /auth/registration/confirm registration confirmed successfully'
-            },
-            {
-                If: () => true,
-                Throw: x => `FAILED /auth/registration/confirm should return 200. Given '${x.status}'`
-            }
-        ],
-        error: [
-            {
-                If: () => true,
-                Throw: x => `FAILED /auth/registration/confirm should return 200. Given '${x.response?.status}'`
-            }
-        ]
-    });
+    const confirmRegistration = await tester.test(
+        () => api.backend.confirmRegistration(token),
+        'Confirm registration'
+    )
+        .status(200)
+        .response({ code: StatusCode.Ok })
+        .toPromise();
 
-    return registerResourcePass && loginUsernameUnconfirmedPass && confirmResourcePass;
+    return signinUnconfirmed.pass &&
+        signinExpiredConfirmation.pass &&
+        confirmRegistration.pass;
 }
 
 async function signinFlow(api: Api, logger: Logger): Promise<boolean> {
-    const tester = new ApiTester(logger, 'Backend');
+    const tester = new ApiTester(logger);
 
-    const loginUsernamePass = await tester.test(
+    const signinByUsername = await tester.test(
         () => api.backend.loginUsername(user.cred.username, user.cred.password),
-        {
-            done: [
-                {
-                    If: x => x.status === 200 && x.data?.code === StatusCode.Ok && x.data?.token?.length > 0,
-                    Done: () => 'PASSED /auth/login/username returns user token'
-                },
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /auth/login/username should return user token. Given: '${x.data}'`
-                }
-            ],
-            error: [
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /auth/login/username should return 200. Given: ${x.response?.status}`
-                }
-            ]
-        });
+        'Signin with valid credentials by username')
+        .status(200)
+        .response(x => x.code === StatusCode.Ok && x.token?.length > 0)
+        .toPromise();
 
-    const loginEmailPass = await tester.test(
+    const signinByEmail = await tester.test(
         () => api.backend.loginEmail(user.cred.email, user.cred.password),
-        {
-            done: [
-                {
-                    If: x => x.status === 200 && x.data?.code === StatusCode.Ok && x.data?.token?.length > 0,
-                    Done: () => 'PASSED /auth/login/email returns user token'
-                },
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /auth/login/email should return user token. Given: '${x.data}'`
-                }
-            ],
-            error: [
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /auth/login/email should return 200. Given: ${x.response?.status}`
-                }
-            ]
-        });
+        'Signin with valid credentials by email')
+        .status(200)
+        .response(x => x.code === StatusCode.Ok && x.token?.length > 0)
+        .toPromise();
 
-    return loginUsernamePass && loginEmailPass;
+    return signinByUsername.pass && signinByEmail.pass;
 }
 
 async function registerWithSameCreds(api: Api, logger: Logger): Promise<boolean> {
-    const tester = new ApiTester(logger, 'Backend');
+    const tester = new ApiTester(logger);
 
-    const registerSameUsernamePass = await tester.test(() => api.backend.register(
+    const alreadyTakenUsername = await tester.test(() => api.backend.register(
         {
             username: user.cred.username,
             email: `uniq_${user.cred.email}`,
             password: user.cred.password
-        }), {
-        done: [
-            {
-                If: () => true,
-                Throw: x => `FAILED /auth/register should return 409. Given '${x.status}'`
-            }
-        ],
-        error: [
-            {
-                If: x => x.response?.status === 409,
-                Done: x => 'PASSED /auth/register returns 409'
-            },
-            {
-                If: () => true,
-                Throw: x => `FAILED /auth/register should return 409. Given '${x.response?.status}'`
-            }
-        ]
-    });
+        }),
+        'Signup with already taken username')
+        .status(409)
+        .toPromise();
 
-    const registerSameEmailPass = await tester.test(() => api.backend.register(
+    const alreadyTakenEmail = await tester.test(() => api.backend.register(
         {
             username: `u_${user.cred.username}`,
             email: user.cred.email,
             password: user.cred.password
-        }), {
-        done: [
-            {
-                If: () => true,
-                Throw: x => `FAILED /auth/register should return 409. Given '${x.status}'`
-            }
-        ],
-        error: [
-            {
-                If: x => x.response?.status === 409,
-                Done: x => 'PASSED /auth/register returns 409'
-            },
-            {
-                If: () => true,
-                Throw: x => `FAILED /auth/register should return 409. Given '${x.response?.status}'`
-            }
-        ]
-    });
+        }),
+        'Signup with already taken email')
+        .status(409)
+        .toPromise();
 
-    return registerSameUsernamePass && registerSameEmailPass;
+    return alreadyTakenUsername.pass && alreadyTakenEmail.pass;
 }
 
 async function confirmRegistrationUnsuccess(api: Api, logger: Logger): Promise<boolean> {
-    const tester = new ApiTester(logger, 'Backend');
+    const tester = new ApiTester(logger);
 
     const token = sign({ id: '600000000000000000000000' }, '12345_', { expiresIn: '24h' });
-    const unknownUserIdPass = await tester.test(() => api.backend.confirmRegistration(token), {
-        done: [
-            {
-                If: () => true,
-                Throw: x => `FAILED /auth/registration/confirm should return 409. Given '${x.status}'`
-            }
-        ],
-        error: [
-            {
-                If: x => x.response?.status === 409,
-                Done: () => 'PASSED /auth/registration/confirm returns 409'
-            },
-            {
-                If: () => true,
-                Throw: x => `FAILED /auth/registration/confirm should return 409. Given '${x.response?.status}'`
-            }
-        ]
-    });
 
-    const alreadyConfirmedPass = await tester.test(() => api.backend.confirmRegistration(user.token), {
-        done: [
-            {
-                If: () => true,
-                Throw: x => `FAILED /auth/registration/confirm should return 409. Given '${x.status}'`
-            }
-        ],
-        error: [
-            {
-                If: x => x.response?.status === 409,
-                Done: () => 'PASSED /auth/registration/confirm returns 409'
-            },
-            {
-                If: () => true,
-                Throw: x => `FAILED /auth/registration/confirm should return 409. Given '${x.response?.status}'`
-            }
-        ]
-    });
+    const unexistUserConfirm = await tester.test(
+        () => api.backend.confirmRegistration(token),
+        'Confirm registration for unexist user')
+        .status(409)
+        .toPromise();
 
-    return unknownUserIdPass && alreadyConfirmedPass;
+    const alreadyConfirmed = await tester.test(
+        () => api.backend.confirmRegistration(user.token),
+        'Confirm registration for unexist user')
+        .status(409)
+        .toPromise();
+
+    return unexistUserConfirm.pass && alreadyConfirmed.pass;
 }
 
 async function fetchUserInfo(api: Api, logger: Logger): Promise<boolean> {
-    const tester = new ApiTester(logger, 'Backend');
+    const tester = new ApiTester(logger);
 
-    const fetchUserInfoPass = await tester.test(
+    const userInfo = await tester.test(
         () => api.backend.me(),
-        {
-            done: [
-                {
-                    If: x => x.status === 200 && x.data?.username === user.cred.username && x.data?.email === user.cred.email,
-                    Done: () => 'PASSED /user/me returns user info'
-                },
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /user/me should return user info. Given: '${x.data}'`
-                }
-            ],
-            error: [
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /user/me should return 200. Given: ${x.response?.status}`
-                }
-            ]
-        });
+        'Fetch current user info')
+        .status(200)
+        .response(x => x.username === user.cred.username && x.email === user.cred.email)
+        .toPromise();
 
-    return fetchUserInfoPass;
+    return userInfo.pass;
 }
 
 async function listGames(api: Api, logger: Logger): Promise<boolean> {
-    const tester = new ApiTester(logger, 'Backend');
+    const tester = new ApiTester(logger);
 
-    const gameListPass = await tester.test(
+    const gameList = await tester.test(
         () => api.backend.listGames(),
-        {
-            done: [
-                {
-                    If: x => x.status === 200 && Array.isArray(x.data),
-                    Done: () => 'PASSED /game/list returns game list'
-                },
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /game/list should return game list. Given: '${x.data}'`
-                }
-            ],
-            error: [
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /game/list should return 200. Given: ${x.response?.status}`
-                }
-            ]
-        });
+        'Fetch game list')
+        .status(200)
+        .response(x => Array.isArray(x))
+        .toPromise();
 
-    return gameListPass;
+    return gameList.pass;
 }
 
 async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
-    const tester = new ApiTester(logger, 'Backend');
+    const tester = new ApiTester(logger);
 
     await api.mongo.collection('users')
         .updateOne({ email: user.cred.email }, { $set: { 'scopes.editScenario': true } });
 
     const scenario = { id: '', title: 'Sample title', text: 'Scenario content' };
 
-    const addScenarioPass = await tester.test(async () => {
-        const ret = api.backend.addScenario(scenario.title, scenario.text);
-        scenario.id = (await ret).data
-        return ret;
-    }, {
-        done: [
-            {
-                If: x => x.status === 201 && typeof x.data === 'string',
-                Done: () => 'PASSED /scenario/add returns id'
-            },
-            {
-                If: () => true,
-                Throw: x => `FAILED /scenario/add should return scenario id. Given '${x.data}'`
-            }
-        ],
-        error: [
-            {
-                If: () => true,
-                Throw: x => `FAILED /scenario/add should return 201. Given '${x.response?.status}'`
-            }
-        ]
-    });
+    const newScenario = await tester.test(
+        () => api.backend.addScenario(scenario.title, scenario.text),
+        'Add new scenario')
+        .status(201)
+        .response(x => typeof x === 'string')
+        .toPromise();
+
+    scenario.id = newScenario.data;
 
     const updatedScenario = { title: 'Updated title', text: 'Updated scenario content' };
 
-    const updateScenarioPass = await tester.test(() => api.backend.updateScenario(scenario.id, updatedScenario), {
-        done: [
-            {
-                If: x => x.status === 200 && x.data === true,
-                Done: () => 'PASSED /scenario/update returns \'true\''
-            },
-            {
-                If: () => true,
-                Throw: x => `FAILED /scenario/update should return 'true'. Given '${x.data}'`
-            }
-        ],
-        error: [
-            {
-                If: () => true,
-                Throw: x => `FAILED /scenario/update should return 200. Given '${x.response?.status}'`
-            }
-        ]
-    });
+    const updateScenario = await tester.test(
+        () => api.backend.updateScenario(scenario.id, updatedScenario),
+        'Update scenario')
+        .status(200)
+        .response(x => x === true)
+        .toPromise();
 
-    const contentScenarioPass = await tester.test(() => api.backend.getScenarioContent(scenario.id), {
-        done: [
-            {
-                If: x => x.status === 200 &&
-                    x.data.title === updatedScenario.title &&
-                    x.data.text === updatedScenario.text,
-                Done: () => 'PASSED /scenario/content returns scenario content'
-            },
-            {
-                If: () => true,
-                Throw: x => `FAILED /scenario/content should return scenario content. Given '${x.data}'`
-            }
-        ],
-        error: [
-            {
-                If: () => true,
-                Throw: x => `FAILED /scenario/content should return 200. Given '${x.response?.status}'`
-            }
-        ]
-    });
+    const scenarioContent = await tester.test(
+        () => api.backend.getScenarioContent(scenario.id),
+        'Fetch scenario content')
+        .status(200)
+        .response(x => x.title === updatedScenario.title && x.text === updatedScenario.text)
+        .toPromise();
 
-    const listScenariosPass = await tester.test(() => api.backend.listScenario(0, 25), {
-        done: [
-            {
-                If: x => x.status === 200 &&
-                    x.data.total >= 1 &&
-                    (x.data.total > 25 || x.data.scenarios.some(x => x.title === updatedScenario.title && x.text === updatedScenario.text)),
-                Done: () => 'PASSED /scenario/list returns scenario list'
-            },
-            {
-                If: () => true,
-                Throw: x => `FAILED /scenario/list should return scenario list. Given '${x.data}'`
-            }
-        ],
-        error: [
-            {
-                If: () => true,
-                Throw: x => `FAILED /scenario/list should return 200. Given '${x.response?.status}'`
-            }
-        ]
-    });
+    const scenarioList = await tester.test(
+        () => api.backend.listScenario(0, 25),
+        'List scenarios')
+        .status(200)
+        .response(x => x.total >= 1 &&
+            (
+                x.total > 25 ||
+                x.scenarios.some(x => x.title === updatedScenario.title && x.text === updatedScenario.text)
+            ))
+        .toPromise();
 
-    const removeScenarioPass = await tester.test(() => api.backend.removeScenario(scenario.id), {
-        done: [
-            {
-                If: x => x.status === 200 && x.data === true,
-                Done: () => 'PASSED /scenario/remove returns \'true\''
-            },
-            {
-                If: () => true,
-                Throw: x => `FAILED /scenario/remove should return 'true'. Given '${x.data}'`
-            }
-        ],
-        error: [
-            {
-                If: () => true,
-                Throw: x => `FAILED /scenario/remove should return 200. Given '${x.response?.status}'`
-            }
-        ]
-    });
+    const removeScenario = await tester.test(
+        () => api.backend.removeScenario(scenario.id),
+        'Remove scenario')
+        .status(200)
+        .response(x => x === true)
+        .toPromise();
 
-    return updateScenarioPass &&
-        updateScenarioPass &&
-        contentScenarioPass &&
-        listScenariosPass &&
-        removeScenarioPass;
+    return newScenario.pass &&
+        updateScenario.pass &&
+        scenarioContent.pass &&
+        scenarioList.pass &&
+        removeScenario.pass;
 }
 
 export enum SpawnerStatusCode {
@@ -505,7 +270,7 @@ interface BadTestcase {
 }
 
 async function spawnerFlow(api: Api, logger: Logger): Promise<boolean> {
-    const tester = new ApiTester(logger, 'Backend');
+    const tester = new ApiTester(logger);
 
     await api.mongo.collection('users')
         .updateOne({ email: user.cred.email }, { $set: { 'scopes.serverMaintainer': true } });
@@ -533,92 +298,37 @@ async function spawnerFlow(api: Api, logger: Logger): Promise<boolean> {
     ];
 
     const addSpawnerTest = (test: BadTestcase) =>
-        tester.test(() => api.backend.addSpawner(test.url, test.secret),
-            {
-                done: [
-                    {
-                        If: () => true,
-                        Throw: x => `FAILED /spawner/add '${test.name}' should return 400. Given '${x.status}'`
-                    }
-                ],
-                error: [
-                    {
-                        If: x => x.response?.status === 400 &&
-                            (x.response.data as RejectedResponse).code === test.expected,
-                        Done: () => `PASSED /spawner/add '${test.name}' returns 400`
-                    },
-                    {
-                        If: () => true,
-                        Throw: x => `FAILED /spawner/add '${test.name}' should return 400. Given '${x.response?.status}'`
-                    }
-                ]
-            });
+        tester.test(
+            () => api.backend.addSpawner(test.url, test.secret),
+            `Add spawner '${test.name}'`)
+            .status(400)
+            .response(x => x.code === test.expected)
+            .toPromise();
 
 
-    const badPass = (await Promise.allSettled(badTestcases.map(x => addSpawnerTest(x))))
-        .every(x => (x as { value: boolean }).value);
+    const badSpawners = (await Promise.allSettled(badTestcases.map(x => addSpawnerTest(x))))
+        .every(x => (x as { value: ApiTestResult<RejectedResponse> }).value.pass);
 
-    const validSecretPass = await tester.test(() => api.backend.addSpawner('https://spawner.dev.wsl:3001', '12345'),
-        {
-            done: [
-                {
-                    If: x => x.status === 201,
-                    Done: () => 'PASSED /spawner/add \'valid secret\' returns 201'                
-                },
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /spawner/add 'valid secret' should return 201. Given '${x.status}'`
-                }
-            ],
-            error: [
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /spawner/add 'valid secret' should return 201. Given '${x.response?.status}'`
-                }
-            ]
-        });
+    const validSpawner = await tester.test(
+        () => api.backend.addSpawner('https://spawner.dev.wsl:3001', '12345'),
+        'Add valid spawner')
+        .status(201)
+        .toPromise();
 
-        const listPass = await tester.test(() => api.backend.listSpawners(),
-        {
-            done: [
-                {
-                    If: x => x.status === 200 && Array.isArray(x.data) && x.data.length >= 1,
-                    Done: () => 'PASSED /spawner/list_all returns 200'                
-                },
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /spawner/list_all should return 200. Given '${x.status}'`
-                }
-            ],
-            error: [
-                {
-                    If: () => true,
-                    Throw: x => `FAILED /spawner/list_all should return 200. Given '${x.response?.status}'`
-                }
-            ]
-        });
+    const listSpawners = await tester.test(
+        () => api.backend.listSpawners(),
+        'List spawners')
+        .status(200)
+        .response(x => Array.isArray(x) && x.length >= 1)
+        .toPromise();
 
-    const removePass = await tester.test(() => api.backend.removeSpawner('https://spawner.dev.wsl:3001'),
-    {
-        done: [
-            {
-                If: x => x.status === 200,
-                Done: () => 'PASSED /spawner/remove returns 200'                
-            },
-            {
-                If: () => true,
-                Throw: x => `FAILED /spawner/remove should return 200. Given '${x.status}'`
-            }
-        ],
-        error: [
-            {
-                If: () => true,
-                Throw: x => `FAILED /spawner/remove should return 200. Given '${x.response?.status}'`
-            }
-        ]
-    });
+    const removeSpawner = await tester.test(
+        () => api.backend.removeSpawner('https://spawner.dev.wsl:3001'),
+        'Remove spawner')
+        .status(200)
+        .toPromise();
 
-    return badPass && validSecretPass && listPass && removePass;
+    return badSpawners && validSpawner.pass && listSpawners.pass && removeSpawner.pass;
 }
 
 export async function testBackend(api: Api,): Promise<boolean> {
