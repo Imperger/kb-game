@@ -43,6 +43,5 @@ export class GameController {
   @Get('list')
   async listGames() {
     return this.gameService.listGames();
-
   }
 }
