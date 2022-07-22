@@ -25,7 +25,10 @@ export class WaitUntilProgressEndGame implements EndGameStrategy {
   }
 
   tick(emitter: Player): void {
-    if ([...this.players.values()].every((p) => p.finished)) this.endGame();
+    if ([...this.players.values()].every((p) => p.finished)) {
+      this.endGame();
+      return;
+    }
 
     if (emitter.finished) {
       if (this.players.size <= 1) {

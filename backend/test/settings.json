@@ -17,6 +17,9 @@
             "secret": ""
         }
     },
+    "game": {
+        "gamePlayerLinkTtl": "60m"
+    },
     "reCaptcha": {
         "secret": ""
     }

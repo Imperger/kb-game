@@ -1,3 +1,4 @@
+import * as Crypto from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
@@ -5,6 +6,7 @@ import { ServerDescription, SpawnerService } from '@/spawner/spawner.service';
 import { ConnectionFailedException } from './exceptions/connection-failed.exception';
 import { RequestInstanceFailedException } from './exceptions/request-instance-failed.exception';
 import { LoggerService } from '@/logger/logger.service';
+import { PlayerService } from '@/player/player.service';
 
 export interface CustomGameDescriptor {
   instanceUrl: string;
@@ -25,13 +27,28 @@ export class GameService {
   constructor(
     private readonly spawnerService: SpawnerService,
     private readonly jwtService: JwtService,
-    private readonly logger: LoggerService) { }
+    private readonly logger: LoggerService,
+    private readonly player: PlayerService) { }
 
   async newCustom(player: PlayerDescriptor): Promise<CustomGameDescriptor | null> {
+    const acquireId = GameService.generateAcquireId();
+
+    if(!await this.player.linkGame(player.playerId, { instanceUrl: acquireId }, acquireId)) {
+      this.logger.warn(`Unable to request game instance for player '${player.playerId}:${player.nickname}' due already linked to another one`, 'GameService');
+
+      throw new RequestInstanceFailedException();
+    }
+
     const instance = await this.spawnerService.findCustomInstance(player.playerId);
 
     if (instance === null) {
       this.logger.warn(`Unable to request game instance for player '${player.playerId}:${player.nickname}'`, 'GameService');
+
+      throw new RequestInstanceFailedException();
+    }
+
+    if(!await this.player.linkGame(player.playerId, { instanceUrl: instance.instanceUrl }, acquireId)) {
+      this.logger.warn(`Unable to request game instance for player '${player.playerId}:${player.nickname}' due already linked to another one`, 'GameService');
 
       throw new RequestInstanceFailedException();
     }
@@ -82,5 +99,9 @@ export class GameService {
 
   static spawnerEntryFromUrl(instanceUrl: string): string {
     return `https://${new URL(instanceUrl).host}`;
+  }
+
+  private static generateAcquireId(): string {
+    return Crypto.randomBytes(16).toString('hex');
   }
 }

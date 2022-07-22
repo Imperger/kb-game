@@ -43,6 +43,13 @@ class Auth {
   @Type(() => Google)
   readonly google: Google;
 }
+
+class Game {
+  @IsDefined({ message: 'missing property \'game.gamePlayerLinkTtl\'' })
+  @IsString()
+  readonly gamePlayerLinkTtl: string;
+}
+
 class ReCaptcha {
   @IsDefined({ message: 'missing property \'reCaptcha.secret\'' })
   @IsString()
@@ -73,6 +80,11 @@ export class ConfigSchema {
   @ValidateNested()
   @Type(() => Auth)
   readonly auth: Auth;
+
+  @IsDefined({ message: 'missing \'game\' scope' })
+  @ValidateNested()
+  @Type(() => Game)
+  readonly game: Game;
 
   @IsDefined({ message: 'missing \'reCaptcha\' scope' })
   @ValidateNested()
