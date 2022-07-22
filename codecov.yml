@@ -5,6 +5,8 @@ flags:
  spawner:
    paths:
      - ./spawner
+coverage:
+   range: "60...90"
 codecov:
   disable_default_path_fixes: true
 fixes:
