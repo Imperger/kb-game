@@ -1,7 +1,4 @@
-import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { sign } from 'jsonwebtoken';
-import { firstValueFrom } from 'rxjs';
 import { Server, Socket } from 'socket.io';
 
 import { GameFieldBuilder, PopulatedLine } from './game-field-builder';
@@ -12,20 +9,12 @@ import { EndGameStrategy } from './end-game/end-game-strategy';
 import { replayMetrics } from './Replay';
 import { WaitUntilProgressEndGame } from './end-game/wait-until-progress-end-game';
 import { ShutdownService } from '../shutdown.service';
+import { BackendApiService, Scenario } from './backend-api.service';
 
 export interface LobbyPlayer {
   id: string;
   nickname: string;
   slot: number;
-}
-
-interface Scenario {
-  id: string;
-  title: string;
-}
-
-interface ScenarioText {
-  text: string;
 }
 
 export interface LobbyState {
@@ -145,10 +134,10 @@ export class GameService {
   private broadcastProgressTimer!: NodeJS.Timer;
 
   constructor(
-    private readonly http: HttpService,
+    private readonly backendApi: BackendApiService,
     private readonly shutdownService: ShutdownService,
   ) {
-    this.listAllTitles().then((x) => {
+    this.backendApi.listAllTitles().then((x) => {
       this.scenarios = x;
       this._scenario = this.scenarios[0];
     });
@@ -158,7 +147,7 @@ export class GameService {
     setTimeout(() => this.disconnectDangling(client), 1000);
   }
 
-  disconnectClient(client: Socket) {
+  async disconnectClient(client: Socket) {
     const p = this.players.get(client);
 
     if (p) {
@@ -167,15 +156,28 @@ export class GameService {
         data: { id: p.id },
       });
 
+      await this.backendApi.unlinkGame(p.id);
+
       this.players.delete(client);
     }
   }
 
-  addPlayer(player: PlayerDesc): boolean {
+  async addPlayer(player: PlayerDesc): Promise<boolean> {
+    // Reserve slot for owner
+    const capacity = this.roomCapacity - +(process.env.OWNER_ID !== player.id);
+
     if (
-      this.players.size < this.roomCapacity &&
+      this.players.size < capacity &&
       ![...this.players.values()].find((x) => x.id === player.id)
     ) {
+      if (
+        !(await this.backendApi.linkGame(player.id, {
+          instanceUrl: this.InstanceUrl,
+        }))
+      ) {
+        return false;
+      }
+
       const p = new Player(
         player.socket,
         player.id,
@@ -237,34 +239,14 @@ export class GameService {
     return { field: { textImg: '' } };
   }
 
-  async listAllTitles(): Promise<Scenario[]> {
-    return (
-      await firstValueFrom(
-        this.http.get(
-          `${process.env.BACKEND_API}/api/scenario/titles`,
-          this.useAuthorization(),
-        ),
-      )
-    ).data;
-  }
-
-  async fetchScenarioText(): Promise<string> {
-    return (
-      await firstValueFrom(
-        this.http.get<ScenarioText>(
-          `${process.env.BACKEND_API}/api/scenario/text/${this._scenario.id}`,
-          this.useAuthorization(),
-        ),
-      )
-    ).data.text;
-  }
-
   async startGame(): Promise<boolean> {
     if (!this._scenario) return false;
 
     this._gameStarted = true;
 
-    this.scenarioText = await this.fetchScenarioText();
+    this.scenarioText = await this.backendApi.fetchScenarioText(
+      this._scenario.id,
+    );
 
     const gameFieldBuilder = new GameFieldBuilder();
     const gameFieldRenderer = new GameFieldRenderer();
@@ -316,7 +298,7 @@ export class GameService {
     return ret;
   }
 
-  endGame(): void {
+  async endGame(): Promise<void> {
     this._gameEnded = true;
 
     const players = [...this.players.values()];
@@ -341,6 +323,8 @@ export class GameService {
     this.players.forEach((p, s) => !s.disconnected && s.disconnect());
     this.players.clear();
 
+    await this.backendApi.unlinkGameAll(this.InstanceUrl);
+
     setTimeout(() => this.shutdownService.shutdown(), 10000);
   }
 
@@ -356,6 +340,12 @@ export class GameService {
     return this._gameEnded;
   }
 
+  get InstanceUrl(): string {
+    return `wss://${new URL(process.env.SPAWNER_API).host}/${
+      process.env.INSTANCE_ID
+    }`;
+  }
+
   private broadcastProgress() {
     this.emitGameEvent({
       type: GameEventType.PlayerProgress,
@@ -364,16 +354,6 @@ export class GameService {
         progress,
       })),
     });
-  }
-
-  private useAuthorization() {
-    const token = sign(
-      { spawner: process.env.SPAWNER_API.toLowerCase() },
-      process.env.SPAWNER_SECRET,
-      { expiresIn: '3m' },
-    );
-
-    return { headers: { Authorization: `Bearer ${token}` } };
   }
 
   private emitLobbyEvent(e: LobbyEvent): void {

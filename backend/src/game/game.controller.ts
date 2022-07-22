@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, ConflictException, Controller, Get, Post, UseGuards } from '@nestjs/common';
 
 import { HasScopes } from '@/auth/decorators/has-scopes.decorator';
 import { JwtGuard } from '@/jwt/decorators/jwt.guard';
@@ -9,6 +9,7 @@ import { Player as PlayerSchema } from '@/player/schemas/player.schema';
 import { ScopeGuard } from '@/auth/guards/scope.guard';
 import { ConnectToGameDto } from './dto/connect-to-game.dto';
 import { LoggerService } from '@/logger/logger.service';
+import { Catch } from '@/common/decorators/catch.decorator';
 
 @Controller('game')
 export class GameController {
@@ -18,6 +19,7 @@ export class GameController {
 
   @HasScopes(Scope.PlayGame)
   @UseGuards(JwtGuard, ScopeGuard)
+  @Catch(ConflictException)
   @Post('new_custom')
   async new_custom(@Player() player: PlayerSchema) {
     const game = await this.gameService.newCustom({ playerId: player.id, nickname: player.nickname });

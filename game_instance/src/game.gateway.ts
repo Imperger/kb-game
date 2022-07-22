@@ -51,18 +51,18 @@ export class GameGateway
   }
 
   @SubscribeMessage('auth')
-  auth(
+  async auth(
     @ConnectedSocket() client: Socket,
     @JwtArg() playerToken: PlayerToken,
-  ): AuthResult {
+  ): Promise<AuthResult> {
     if (
       playerToken.exp * 1000 > Date.now() &&
       playerToken.instanceId === process.env.INSTANCE_ID &&
-      this.game.addPlayer({
+      (await this.game.addPlayer({
         socket: client,
         id: playerToken.playerId,
         nickname: playerToken.nickname,
-      })
+      }))
     ) {
       switch (process.env.GAME_TYPE.toLowerCase()) {
         case 'custom':

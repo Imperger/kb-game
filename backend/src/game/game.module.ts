@@ -3,10 +3,12 @@ import { GameService } from './game.service';
 import { GameController } from './game.controller';
 
 import { SpawnerModule } from '@/spawner/spawner.module';
+import { PlayerModule } from '@/player/player.module';
 
 @Module({
   imports: [
-    SpawnerModule
+    SpawnerModule,
+    PlayerModule
   ],
   providers: [GameService],
   controllers: [GameController],
