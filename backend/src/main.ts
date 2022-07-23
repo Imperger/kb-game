@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import { NestFactory } from '@nestjs/core';
 import {
   FastifyAdapter,
