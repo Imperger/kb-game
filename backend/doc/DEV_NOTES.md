@@ -5,6 +5,7 @@ Input validator tests only types ends with `Dto`. E.g. `CreateUserDto`, `LoginIn
 
 ## Status codes distribution
 
-0 - ok
+common - 1 - 100
 spawner - 100-200
 game - 200-300
+auth - 300-400
