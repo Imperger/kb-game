@@ -20,7 +20,6 @@ import { Scope } from '@/auth/scopes';
 import { NewScenarioDto } from './dto/new-scenario.dto';
 import { ScenarioService } from './scenario.service';
 import { ParseObjectIdPipe } from '@/common/pipes/parse-object-id.pipe';
-import { Catch } from '@/common/decorators/catch.decorator';
 
 @Controller('scenario')
 export class ScenarioController {
@@ -59,7 +58,6 @@ export class ScenarioController {
 
   @HasScopes(Scope.EditScenario)
   @UseGuards(JwtGuard, ScopeGuard)
-  @Catch(NotFoundException)
   @Get(':id')
   one(@Param('id') id: string) {
     return this.scenarioService.content(id);
@@ -72,7 +70,6 @@ export class ScenarioController {
   }
 
   @UseGuards(JwtKnownSpawnerGuard)
-  @Catch(NotFoundException)
   @Get('text/:id')
   async text(@Param('id') id: string) {
     return { text: await this.scenarioService.text(id) };

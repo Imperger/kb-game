@@ -3,7 +3,6 @@ import { sign } from 'jsonwebtoken';
 
 import { Api } from "./api-interface";
 import { ApiTester, ApiTestResult } from "./api-tester";
-import { StatusCode } from "./api/backend-api";
 import { RejectedResponse } from './api/types';
 import { delay } from './delay';
 import { Logger } from "./logger";
@@ -37,7 +36,6 @@ async function registrationFlow(api: Api, logger: Logger): Promise<boolean> {
         () => api.backend.register(user.cred),
         'Register new user')
         .status(201)
-        .response({ code: StatusCode.Ok })
         .toPromise();
 
     if (!registered.pass) {
@@ -93,7 +91,6 @@ async function registrationFlow(api: Api, logger: Logger): Promise<boolean> {
         'Confirm registration'
     )
         .status(200)
-        .response({ code: StatusCode.Ok })
         .toPromise();
 
     return signinUnconfirmed.pass &&
@@ -108,14 +105,14 @@ async function signinFlow(api: Api, logger: Logger): Promise<boolean> {
         () => api.backend.loginUsername(user.cred.username, user.cred.password),
         'Signin with valid credentials by username')
         .status(200)
-        .response(x => x.code === StatusCode.Ok && x.token?.length > 0)
+        .response(x => x.token?.length > 0)
         .toPromise();
 
     const signinByEmail = await tester.test(
         () => api.backend.loginEmail(user.cred.email, user.cred.password),
         'Signin with valid credentials by email')
         .status(200)
-        .response(x => x.code === StatusCode.Ok && x.token?.length > 0)
+        .response(x => x.token?.length > 0)
         .toPromise();
 
     return signinByUsername.pass && signinByEmail.pass;

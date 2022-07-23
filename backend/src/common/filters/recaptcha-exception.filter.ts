@@ -2,7 +2,7 @@ import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from "@nestjs/commo
 import { GoogleRecaptchaException } from "@nestlab/google-recaptcha";
 
 import { FastifyReply } from 'fastify';
-import { StatusCode } from "../types/status-code";
+import { CommonError } from "../common-exception";
 
 @Catch(GoogleRecaptchaException)
 export class GoogleRecaptchaFilter implements ExceptionFilter {
@@ -12,6 +12,6 @@ export class GoogleRecaptchaFilter implements ExceptionFilter {
 
     response
       .status(HttpStatus.UNAUTHORIZED)
-      .send({ code: StatusCode.CaptchaFailed, message: 'Invalid recaptcha.' });
+      .send({ code: CommonError.CaptchaFailed });
   }
 }

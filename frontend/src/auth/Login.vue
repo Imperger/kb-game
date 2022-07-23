@@ -25,7 +25,7 @@
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
 
-import { StatusCode } from '@/services/api-service/auth/types';
+import { AuthError } from '@/services/api-service/auth/auth-error';
 import { ApiServiceMixin, StoreMixin } from '@/mixins';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
 import LoginForm, { Credentials } from '@/components/LoginForm.vue';
@@ -44,7 +44,7 @@ export default class Login extends Mixins(ApiServiceMixin, StoreMixin) {
 
   private interactiveBackground = true;
 
-  private loginErrorStatusCode: StatusCode | null = null;
+  private loginErrorStatusCode: AuthError | null = null;
 
   async doLogin (): Promise<void> {
     if (!(this.credentials.identifier.length &&
@@ -58,7 +58,9 @@ export default class Login extends Mixins(ApiServiceMixin, StoreMixin) {
     const token = await this.$recaptcha('LOGIN');
     const loggedIn = await this.api.auth.login(this.credentials.identifier, this.credentials.password, token);
 
-    if (loggedIn.code === StatusCode.Ok) {
+    if (isRejectedResponse(loggedIn)) {
+      this.loginErrorStatusCode = loggedIn.code;
+    } else {
       const me = await this.api.user.currentUserInfo();
 
       if (isRejectedResponse(me)) {
@@ -68,8 +70,6 @@ export default class Login extends Mixins(ApiServiceMixin, StoreMixin) {
       this.App.setUser(me);
       this.App.setToken(this.api.auth.accessToken);
       this.$router.push({ name: 'MainMenu' });
-    } else {
-      this.loginErrorStatusCode = loggedIn.code;
     }
   }
 

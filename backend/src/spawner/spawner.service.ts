@@ -8,14 +8,15 @@ import { firstValueFrom } from 'rxjs';
 
 import { Spawner } from './schemas/spawner.schema';
 import { isAxiosError } from '@/common/typeguards/axios-typeguard';
-import { SpawnerAlreadyAdded } from './exceptions/spawner-already-added';
 import { ConfigHelperService } from '@/config/config-helper.service';
-import { HostNotResponseException } from './exceptions/host-not-response.exception';
-import { HostNotFoundException } from './exceptions/host-not-found.exception';
-import { WrongSecretException } from './exceptions/wrong-secret.exception';
-import { UnknownException } from './exceptions/unknown.exception';
-import { ListGameFailedException } from './exceptions/list-game-failed.exception';
-import { RequestInstanceFailedException } from './exceptions/request-instance-failed.exception';
+import { 
+  HostNotFoundException, 
+  HostNotResponseException, 
+  ListGameFailedException, 
+  RequestInstanceFailedException, 
+  SpawnerAlreadyAdded,
+  UnknownException, 
+  WrongSecretException } from './spawner-exception';
 
 export interface RequestedSpawnerInfo {
   name: string;

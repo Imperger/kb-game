@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
+import { MailerService } from '@nestjs-modules/mailer';
 import { MongoError } from 'mongodb';
 import { Model } from 'mongoose';
 import ms from 'ms';
@@ -11,19 +12,19 @@ import ms from 'ms';
 import { User } from '@/user/schemas/user.schema';
 import { UserService } from '@/user/user.service';
 import { ExtractDuplicateKey } from '@/common/util/mongo-error-parser';
-import { UsernameIsTakenException } from './exceptions/username-is-taken.exception';
-import { EmailIsTakenException } from './exceptions/email-is-taken.exception';
-import { UnknownRegistrationException } from '@/auth/exceptions/unknown-registration.exception';
-import { RegistrationAlreadyConfirmedException } from './exceptions/registration-already-confirmed.exception';
-import { UnknownUserForConfirmRegistrationException } from './exceptions/object-of-confirmation-missing.exception';
-import { InvalidCredentialsException } from './exceptions/invalid-credentials.exception';
-import { RegistrationNotConfirmedException } from './exceptions/registration-not-confirmed-exception';
 import { timeDiff } from '@/common/util/time-diff';
-import { RegistrationConfirmExpiredException } from './exceptions/registration-confirm-expired-exception';
 import { PlayerService } from '@/player/player.service';
 import { ConfigHelperService } from '@/config/config-helper.service';
 import { LoggerService } from '@/logger/logger.service';
-import { MailerService } from '@nestjs-modules/mailer';
+import { 
+  EmailIsTakenException, 
+  InvalidCredentialsException, 
+  RegistrationAlreadyConfirmedException, 
+  RegistrationConfirmExpiredException, 
+  RegistrationNotConfirmedException, 
+  UnknownRegistrationException, 
+  UnknownUserForConfirmRegistrationException, 
+  UsernameIsTakenException } from './auth-exception';
 
 @Injectable()
 export class AuthService {

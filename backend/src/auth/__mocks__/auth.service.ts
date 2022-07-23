@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { EmailIsTakenException } from "../exceptions/email-is-taken.exception";
-import { UsernameIsTakenException } from "../exceptions/username-is-taken.exception";
 import { userStub } from "@/user/test/stubs/user.stub";
-import { UnknownUserForConfirmRegistrationException } from "../exceptions/object-of-confirmation-missing.exception";
-import { RegistrationAlreadyConfirmedException } from "../exceptions/registration-already-confirmed.exception";
+import { 
+  EmailIsTakenException, 
+  RegistrationAlreadyConfirmedException, 
+  UnknownUserForConfirmRegistrationException, 
+  UsernameIsTakenException } from "../auth-exception";
 
 export class AuthService {
   async registerUser(username: string, email: string, password: string): Promise<string> {

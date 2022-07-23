@@ -25,7 +25,7 @@
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
 
-import { RegisterResponse, StatusCode } from '@/services/api-service/auth/types';
+import { AuthError } from '@/services/api-service/auth/auth-error';
 import ApiServiceMixin from '@/mixins/api-service-mixin';
 import { isAxiosError } from '@/typeguards/axios-typeguard';
 import KeyboardBackground from '@/components/KeyboardBackground.vue';
@@ -42,7 +42,7 @@ import RegistrationForm, { RegistrationData } from '@/components/RegistrationFor
 export default class Register extends Mixins(ApiServiceMixin) {
   private registrationData: RegistrationData = { username: '', email: '', password: '' };
 
-  private signupResult: StatusCode | null = null;
+  private signupResult: AuthError | null = null;
 
   private interactiveBackground = true;
 
@@ -53,20 +53,14 @@ export default class Register extends Mixins(ApiServiceMixin) {
       return;
     }
 
-    try {
-      await this.$recaptchaLoaded();
-      const token = await this.$recaptcha('REGISTER');
+    await this.$recaptchaLoaded();
+    const token = await this.$recaptcha('REGISTER');
 
-      this.signupResult = (await this.api.auth.register(
-        this.registrationData.username,
-        this.registrationData.email,
-        this.registrationData.password,
-        token)).code;
-    } catch (e) {
-      if (isAxiosError<RegisterResponse>(e)) {
-        this.signupResult = e.response?.data.code as StatusCode;
-      }
-    }
+    this.signupResult = (await this.api.auth.register(
+      this.registrationData.username,
+      this.registrationData.email,
+      this.registrationData.password,
+      token)).code ?? 0;
   }
 
   secureInteract (active: boolean): void {
