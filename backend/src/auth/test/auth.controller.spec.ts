@@ -1,15 +1,11 @@
-import { StatusCode } from '@/common/types/status-code';
 import { LoggerService } from '@/logger/logger.service';
 import { User } from '@/user/schemas/user.schema';
 import { userStub } from '@/user/test/stubs/user.stub';
-import { GoogleRecaptchaModule } from '@imperger/google-recaptcha';
+import { GoogleRecaptchaModule } from '@nestlab/google-recaptcha';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from '../auth.controller';
 import { AuthService } from '../auth.service';
-import { EmailIsTakenException } from '../exceptions/email-is-taken.exception';
-import { UnknownUserForConfirmRegistrationException } from '../exceptions/object-of-confirmation-missing.exception';
-import { RegistrationAlreadyConfirmedException } from '../exceptions/registration-already-confirmed.exception';
-import { UsernameIsTakenException } from '../exceptions/username-is-taken.exception';
+import { EmailIsTakenException, RegistrationAlreadyConfirmedException, UnknownUserForConfirmRegistrationException, UsernameIsTakenException } from '../auth-exception';
 
 jest.mock('../../logger/logger.service');
 jest.mock('../auth.service');
@@ -56,7 +52,7 @@ describe('Auth Controller', () => {
         password: '12345678'
       })))
         .resolves
-        .toEqual({ code: StatusCode.Ok });
+        .toEqual({ });
     });
   
     it('Username is taken', async () => {
@@ -90,7 +86,7 @@ describe('Auth Controller', () => {
     it('Confirmed', async () => {
       await expect(controller.registrationConfirm(userStub(false).id))
         .resolves
-        .toEqual({ code: StatusCode.Ok });
+        .toEqual({ });
     });
 
     it('Unknown user', async () => {
@@ -116,7 +112,7 @@ describe('Auth Controller', () => {
     it('Successfully', async () => {
       await expect(controller.loginEmail(user))
         .resolves
-        .toEqual({ code: StatusCode.Ok, token: await service.generateAccessToken(user.id) });
+        .toEqual({ token: await service.generateAccessToken(user.id) });
     });
   });
 
@@ -130,7 +126,7 @@ describe('Auth Controller', () => {
     it('Successfully', async () => {
       await expect(controller.loginUsername(user))
         .resolves
-        .toEqual({ code: StatusCode.Ok, token: await service.generateAccessToken(user.id) });
+        .toEqual({ token: await service.generateAccessToken(user.id) });
     });
   });
 });

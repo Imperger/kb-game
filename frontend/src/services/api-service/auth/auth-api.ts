@@ -1,15 +1,15 @@
 import { AxiosInstance, AxiosResponse } from 'axios';
-
 import isEmail from 'validator/es/lib/isEmail';
-import { RejectedResponse } from '../rejected-response';
-import {
-  LoginResponse,
-  RegisterResponse,
-  RegistrationConfirmResponse,
-  StatusCode
-} from './types';
+
+import { isRejectedResponse, RejectedResponse } from '../rejected-response';
+
+type EmptyObject = Record<string, never>;
 
 export type UnauthorizedHandler<T> = (error: T) => void;
+
+export interface LoginResponse {
+  token?: string;
+}
 
 export default class AuthApi {
   private token = '';
@@ -49,16 +49,16 @@ export default class AuthApi {
     email: string,
     password: string,
     reCaptchaResponse: string
-  ): Promise<RegisterResponse | RejectedResponse> {
-    return (await this.http.post<RegisterResponse>('auth/register',
+  ): Promise<EmptyObject | RejectedResponse> {
+    return (await this.http.post<EmptyObject>('auth/register',
       { username, email, password },
       { headers: { recaptcha: reCaptchaResponse } })).data;
   }
 
   async confirmRegistration (
     code: string
-  ): Promise<RegistrationConfirmResponse | RejectedResponse> {
-    return (await this.http.patch<RegistrationConfirmResponse>('auth/registration/confirm', { code })).data;
+  ): Promise<EmptyObject | RejectedResponse> {
+    return (await this.http.patch<EmptyObject>('auth/registration/confirm', { code })).data;
   }
 
   async login (
@@ -79,7 +79,7 @@ export default class AuthApi {
       { username, password },
       { headers: { recaptcha: reCaptchaResponse } })).data;
 
-    if (response.code === StatusCode.Ok) {
+    if (!isRejectedResponse(response)) {
       this.accessToken = response.token as string;
     }
 
@@ -95,7 +95,7 @@ export default class AuthApi {
       { email, password },
       { headers: { recaptcha: reCaptchaResponse } })).data;
 
-    if (response.code === StatusCode.Ok) {
+    if (!isRejectedResponse(response)) {
       this.accessToken = response.token as string;
     }
 

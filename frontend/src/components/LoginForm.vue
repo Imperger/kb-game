@@ -50,7 +50,7 @@
 import { Component, Vue, Prop, Model, Emit } from 'vue-property-decorator';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
 
-import { StatusCode } from '@/services/api-service/auth/types';
+import { AuthError } from '@/services/api-service/auth/auth-error';
 
 export interface Credentials {
   identifier: string;
@@ -68,7 +68,7 @@ export default class LoginForm extends Vue {
   credentials!: Credentials;
 
   @Prop({ type: [Number], default: null })
-  error: StatusCode | null = null;
+  error: AuthError | null = null;
 
   @Emit('credentials')
   emitCredentials (credentials: Credentials): void { }
@@ -81,11 +81,11 @@ export default class LoginForm extends Vue {
 
   get loginError (): string {
     switch (this.error) {
-      case StatusCode.InvalidCredentials:
+      case AuthError.InvalidCredentials:
         return this.$t('auth.invalidCredentials') as string;
-      case StatusCode.PendingConfirmRegistration:
+      case AuthError.PendingConfirmRegistration:
         return this.$t('auth.pendingConfirmation') as string;
-      case StatusCode.PendingConfirmRegistrationExpired:
+      case AuthError.PendingConfirmRegistrationExpired:
         return this.$t('auth.confirmationExpired') as string;
       default:
         return this.$t('auth.unknownError') as string;

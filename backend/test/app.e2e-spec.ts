@@ -5,13 +5,12 @@ import request = require('supertest');
 import { Model } from 'mongoose';
 import { getModelToken } from '@nestjs/mongoose';
 
-import { AppModule } from './../src/app.module';
-import { HttpExceptionFilter } from '@/common/filters/http-exception.filter';
-import { AppExceptionFilter } from '@/common/filters/app-exception/app-exception.filter';
+import { AppModule } from '@/app.module';
 import { DtoValidationPipe } from '@/common/pipes/dto-validation.pipe';
-import { StatusCode } from '@/common/types/status-code';
 import { User } from '@/user/schemas/user.schema';
 import { userStub } from '@/user/test/stubs/user.stub';
+import { AppExceptionFilter } from '@/common/filters/app-exception.filter';
+import { LoggerService } from '@/logger/logger.service';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -29,9 +28,8 @@ describe('AppController (e2e)', () => {
     app.useLogger(false);
     app.enableCors();
     app.setGlobalPrefix('api');
-    app.useGlobalFilters(new HttpExceptionFilter());
     app.useGlobalFilters(new AppExceptionFilter());
-    app.useGlobalPipes(new DtoValidationPipe());
+    app.useGlobalPipes(new DtoValidationPipe(app.get(LoggerService)));
     await app.init();
 
     await userModel.deleteOne({ username: user.username });
@@ -44,6 +42,6 @@ describe('AppController (e2e)', () => {
       .post('/api/auth/register')
       .send({ username: user.username, email: user.email, password: '12345678' })
       .expect(201)
-      .expect({ code: StatusCode.Ok });
+      .expect({ });
   });
 });

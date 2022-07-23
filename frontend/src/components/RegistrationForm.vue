@@ -63,13 +63,16 @@
 import { Component, Emit, Model, Vue, Prop } from 'vue-property-decorator';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
 
-import { StatusCode } from '@/services/api-service/auth/types';
+import { AuthError } from '@/services/api-service/auth/auth-error';
+import { AuthResult } from '@/game/gameplay/strategies/auth-strategy';
 
 export interface RegistrationData {
   username: string;
   email: string;
   password:string;
 }
+
+const Ok = 0;
 
 @Component({
   components: {
@@ -82,7 +85,7 @@ export default class RegistrationForm extends Vue {
   registrationData!: RegistrationData;
 
   @Prop({ type: [Number], default: null })
-  status: StatusCode | null = null;
+  status: AuthError | null | typeof Ok = null;
 
   @Emit('registrationData')
   emitRegistrationData (fields: RegistrationData): void { }
@@ -108,11 +111,11 @@ export default class RegistrationForm extends Vue {
 
   get signupResultMessage (): string {
     switch (this.status) {
-      case StatusCode.Ok:
+      case Ok:
         return this.$t('auth.registrationSuccess') as string;
-      case StatusCode.UsernameIsTaken:
+      case AuthError.UsernameIsTaken:
         return this.$t('auth.usernameIsTaken') as string;
-      case StatusCode.EmailIsTaken:
+      case AuthError.EmailIsTaken:
         return this.$t('auth.emailIsTaken') as string;
       default:
         return this.$t('auth.unknownError') as string;
@@ -124,7 +127,7 @@ export default class RegistrationForm extends Vue {
   }
 
   get signupMessageType ():string {
-    return `signup-result-${this.status === StatusCode.Ok ? 'ok' : 'error'}`;
+    return `signup-result-${this.status === Ok ? 'ok' : 'error'}`;
   }
 }
 </script>

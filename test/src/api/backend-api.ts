@@ -2,12 +2,6 @@ import axios, { AxiosInstance, AxiosResponse } from "axios";
 import type { FailType } from "../api-tester";
 import { RejectedResponse } from "./types";
 
-export enum StatusCode { Ok = 0 }
-
-export interface AuthResponse {
-    code: StatusCode;
-}
-
 export interface NewUser {
     username: string;
     email: string;
@@ -15,7 +9,6 @@ export interface NewUser {
 }
 
 export interface LoginResponse {
-    code: StatusCode;
     token: string;
 }
 
@@ -90,12 +83,12 @@ export class BackendApi {
         this.http = axios.create({ baseURL: entry });
     }
 
-    register(user: NewUser): Promise<AxiosResponse<AuthResponse>> | FailType<RejectedResponse> {
-        return this.http.post<AuthResponse>('/auth/register', user);
+    register(user: NewUser): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
+        return this.http.post<void>('/auth/register', user);
     }
 
-    confirmRegistration(token: string): Promise<AxiosResponse<AuthResponse>> | FailType<RejectedResponse> {
-        return this.http.patch<AuthResponse>('/auth/registration/confirm', { code: token });
+    confirmRegistration(token: string): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
+        return this.http.patch<void>('/auth/registration/confirm', { code: token });
     }
 
     loginUsername(username: string, password: string): Promise<AxiosResponse<LoginResponse>> | FailType<RejectedResponse> {

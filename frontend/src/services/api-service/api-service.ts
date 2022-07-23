@@ -61,7 +61,7 @@ export default class ApiService {
         if (e.response) {
           const status = e.response?.status;
           if (status >= 400 && status < 500) {
-            return e.response;
+            return { ...e.response, data: JSON.stringify({ ...JSON.parse(e.response.data as string), rejectedResponse: true }) };
           }
         }
       }

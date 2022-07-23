@@ -1,14 +1,18 @@
-import { PipeTransform, ArgumentMetadata, BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
+import * as op from 'object-path';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-import { HttpException } from '@nestjs/common/exceptions/http.exception';
-import * as op from 'object-path';
+import { PipeTransform, ArgumentMetadata, Injectable } from '@nestjs/common';
+
+import { CommonException, CommonError, DtoValidationFailedException } from '../common-exception';
+import { LoggerService } from '@/logger/logger.service';
 
 @Injectable()
 export class DtoValidationPipe implements PipeTransform<any> {
+  constructor(private readonly logger: LoggerService) {}
+
   async transform(value: unknown, metadata: ArgumentMetadata): Promise<unknown> {
     if (!value) {
-      throw new BadRequestException('No data submitted');
+      throw new DtoValidationFailedException('No data submitted');
     }
 
     const { metatype } = metadata;
@@ -18,7 +22,11 @@ export class DtoValidationPipe implements PipeTransform<any> {
     const object = plainToClass(metatype, value);
     const errors = await validate(object);
     if (errors.length > 0) {
-      throw new HttpException({ message: 'Input data validation failed', errors: this.buildError(errors) }, HttpStatus.BAD_REQUEST);
+      const error = `Dto validation failed: ${this.buildError(errors)}`;
+
+      this.logger.warn(error);
+
+      throw new DtoValidationFailedException(error);
     }
     return value;
   }

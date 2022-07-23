@@ -83,6 +83,12 @@ First the client gets the state of the lobby by calling rpc `lobby_state`.
 }
 ```
 
+# One user - one game instance
+
+At the user authorization phase, the game instance sends a request to assign the user to itself. If the user has no links to other instances, he is assigned to the current one. If the user is already associated with another instance, that instance disconnects the user.
+
+When a user requests a game instance, `backend` first check if he already has link, if so request rejected. Else the backend mark his with reference to the game instance and next requests will be rejected while the reference exists. Game instance on finalization phase send an intention request to `backend` about that. Then all who were assotiated with this instance again may request a game instance, or connects to some else.
+
 # Spawner api
 
 **GET** `/info`

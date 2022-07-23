@@ -3,10 +3,11 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 import { ServerDescription, SpawnerService } from '@/spawner/spawner.service';
-import { ConnectionFailedException } from './exceptions/connection-failed.exception';
-import { RequestInstanceFailedException } from './exceptions/request-instance-failed.exception';
 import { LoggerService } from '@/logger/logger.service';
 import { PlayerService } from '@/player/player.service';
+import { 
+  ConnectionFailedException, 
+  RequestInstanceFailedException } from './game-exception';
 
 export interface CustomGameDescriptor {
   instanceUrl: string;
