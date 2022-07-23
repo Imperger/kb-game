@@ -8,10 +8,10 @@ services:
       dockerfile: Dockerfile
     environment: 
       - NODE_EXTRA_CA_CERTS=/app/config/root.crt
-    command: [ "-c", "/app/config/backend.json" ]
+    command: [ "-c", "/app/config/config.json" ]
     configs:
       - source: backend_config
-        target: /app/config/backend.json
+        target: /app/config/config.json
     secrets:
       - source: ca
         target: /app/config/root.crt
