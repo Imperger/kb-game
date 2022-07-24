@@ -1,4 +1,4 @@
-import { Body, ConflictException, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 
 import { HasScopes } from '@/auth/decorators/has-scopes.decorator';
 import { JwtGuard } from '@/jwt/decorators/jwt.guard';

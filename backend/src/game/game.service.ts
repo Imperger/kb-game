@@ -5,9 +5,10 @@ import { JwtService } from '@nestjs/jwt';
 import { ServerDescription, SpawnerService } from '@/spawner/spawner.service';
 import { LoggerService } from '@/logger/logger.service';
 import { PlayerService } from '@/player/player.service';
-import { 
-  ConnectionFailedException, 
-  RequestInstanceFailedException } from './game-exception';
+import {
+  ConnectionFailedException,
+  RequestInstanceFailedException
+} from './game-exception';
 
 export interface CustomGameDescriptor {
   instanceUrl: string;
@@ -31,10 +32,10 @@ export class GameService {
     private readonly logger: LoggerService,
     private readonly player: PlayerService) { }
 
-  async newCustom(player: PlayerDescriptor): Promise<CustomGameDescriptor | null> {
+  async newCustom(player: PlayerDescriptor): Promise<CustomGameDescriptor> {
     const acquireId = GameService.generateAcquireId();
 
-    if(!await this.player.linkGame(player.playerId, { instanceUrl: acquireId }, acquireId)) {
+    if (!await this.player.linkGame(player.playerId, { instanceUrl: acquireId }, acquireId)) {
       this.logger.warn(`Unable to request game instance for player '${player.playerId}:${player.nickname}' due already linked to another one`, 'GameService');
 
       throw new RequestInstanceFailedException();
@@ -48,7 +49,7 @@ export class GameService {
       throw new RequestInstanceFailedException();
     }
 
-    if(!await this.player.linkGame(player.playerId, { instanceUrl: instance.instanceUrl }, acquireId)) {
+    if (!await this.player.linkGame(player.playerId, { instanceUrl: instance.instanceUrl }, acquireId)) {
       this.logger.warn(`Unable to request game instance for player '${player.playerId}:${player.nickname}' due already linked to another one`, 'GameService');
 
       throw new RequestInstanceFailedException();
@@ -78,7 +79,6 @@ export class GameService {
       { expiresIn: "3m", secret: spawner.secret });
 
     return { playerToken };
-
   }
 
   async listGames(): Promise<ServerDescription[]> {
