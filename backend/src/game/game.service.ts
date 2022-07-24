@@ -44,6 +44,8 @@ export class GameService {
     const instance = await this.spawnerService.findCustomInstance(player.playerId);
 
     if (instance === null) {
+      this.player.unlinkGame(player.playerId);
+
       this.logger.warn(`Unable to request game instance for player '${player.playerId}:${player.nickname}'`, 'GameService');
 
       throw new RequestInstanceFailedException();
