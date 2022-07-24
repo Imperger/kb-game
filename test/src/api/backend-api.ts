@@ -27,6 +27,19 @@ export interface CurrentUser {
     }
 }
 
+export interface CustomGameDescriptor {
+    instanceUrl: string;
+    playerToken: string;
+}
+
+export interface ConnectionDescriptor {
+    playerToken: string;
+}
+
+export interface ConnectGameOptions {
+    instanceUrl: string;
+}
+
 type Nickname = string;
 export interface ServerDescription {
     url: string;
@@ -101,6 +114,14 @@ export class BackendApi {
 
     me(): Promise<AxiosResponse<CurrentUser>> | FailType<RejectedResponse> {
         return this.http.get<CurrentUser>('/user/me')
+    }
+
+    newCustomGame(): Promise<AxiosResponse<CustomGameDescriptor>> | FailType<RejectedResponse> {
+        return this.http.post<CustomGameDescriptor>('game/new_custom');
+    }
+
+    connectToGame(options: ConnectGameOptions): Promise<AxiosResponse<ConnectionDescriptor>> | FailType<RejectedResponse> {
+        return this.http.post<ConnectionDescriptor>('game/connect', options);
     }
 
     listGames(): Promise<AxiosResponse<ServerDescription[]>> | FailType<RejectedResponse> {
