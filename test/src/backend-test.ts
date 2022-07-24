@@ -177,8 +177,26 @@ async function fetchUserInfo(api: Api, logger: Logger): Promise<boolean> {
     return userInfo.pass;
 }
 
-async function listGames(api: Api, logger: Logger): Promise<boolean> {
+async function gameFlow(api: Api, logger: Logger): Promise<boolean> {
     const tester = new ApiTester(logger);
+
+    await api.backend.addSpawner('https://spawner.dev.wsl:3001', '12345');
+
+    const createCustomGame = await tester.test(
+        () => api.backend.newCustomGame(),
+        'Create custom game'
+    )
+        .status(201)
+        .response(x => x.instanceUrl?.length > 0 && x.playerToken?.length > 0)
+        .toPromise();
+
+    const conenctToCustomGame = await tester.test(
+        () => api.backend.connectToGame({ instanceUrl: createCustomGame.data.instanceUrl }),
+        'Connect to custom game'
+    )
+        .status(201)
+        .response(x => x.playerToken?.length > 0)
+        .toPromise();
 
     const gameList = await tester.test(
         () => api.backend.listGames(),
@@ -187,7 +205,11 @@ async function listGames(api: Api, logger: Logger): Promise<boolean> {
         .response(x => Array.isArray(x))
         .toPromise();
 
-    return gameList.pass;
+    await api.backend.removeSpawner('https://spawner.dev.wsl:3001');
+
+    return createCustomGame.pass &&
+        conenctToCustomGame.pass &&
+        gameList.pass;
 }
 
 async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
@@ -374,9 +396,9 @@ export async function testBackend(api: Api,): Promise<boolean> {
 
     success = await fetchUserInfo(api, logger) && success;
 
-    success = await listGames(api, logger) && success;
-
     success = await spawnerFlow(api, logger) && success;
+
+    success = await gameFlow(api, logger) && success;
 
     success = await scenarioFlow(api, logger) && success;
 
