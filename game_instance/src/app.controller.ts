@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 
 import { GameService, ServerDescription } from './game/game.service';
-import { SpawnerGuard } from './guards/spawner/spawner.guard';
+import { SpawnerGuard } from './guards/spawner.guard';
 
 @Controller()
 export class AppController {

@@ -5,7 +5,6 @@ import { ConfigService } from '@nestjs/config';
 
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { EmailModule } from '@/email/email.module';
 import { User, UserSchema } from '@/user/schemas/user.schema';
 import { UserModule } from '@/user/user.module';
 import { LoginByEmailStrategy, LoginByUsernameStrategy, RegistrationConfirmStrategy } from './strategies';
@@ -23,7 +22,6 @@ import { ConfigHelperModule } from '@/config/config-helper.module';
       inject: [ConfigService]
     }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    EmailModule,
     UserModule,
     PlayerModule,
     ConfigHelperModule
