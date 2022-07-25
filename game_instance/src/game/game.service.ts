@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Server, Socket } from 'socket.io';
+import { Socket } from 'socket.io';
 
 import { GameFieldBuilder, PopulatedLine } from './game-field-builder';
 import { GameFieldRenderer } from './game-field-renderer';
@@ -10,6 +10,11 @@ import { replayMetrics } from './Replay';
 import { WaitUntilProgressEndGame } from './end-game/wait-until-progress-end-game';
 import { ShutdownService } from '../shutdown.service';
 import { BackendApiService, Scenario } from './backend-api.service';
+import { ParticipantService } from './participant.service';
+import { EventEmitterService } from './event-emitter.service';
+import { LobbyEventType } from './interfaces/lobby-event.interface';
+import { GameEventType } from './interfaces/game-event.interface';
+import { instanceUrl } from './instance-url';
 
 export interface LobbyPlayer {
   id: string;
@@ -43,76 +48,10 @@ export interface PlayerDesc {
   nickname: string;
 }
 
-enum LobbyEventType {
-  PlayerJoined,
-  PlayerLeaves,
-  GameWillStart,
-}
-
-interface PlayerJoinedEvent {
-  id: string;
-  nickname: string;
-  slot: number;
-}
-
-interface PlayerLeavesEvent {
-  id: string;
-}
-
 type Base64Image = string;
-
-interface LobbyEvent {
-  type: LobbyEventType;
-  data?: PlayerJoinedEvent | PlayerLeavesEvent;
-}
-
-/**
- * GAME LOGIC REGION
- */
-
-enum GameEventType {
-  PlayerProgress,
-  EndGame,
-}
-
-// Describes the player's typing progress
-interface PlayerProgress {
-  id: string;
-  progress: number; // [0-1]
-}
-
-interface PlayersProgressEvent {
-  type: GameEventType.PlayerProgress;
-  data: PlayerProgress[];
-}
-
-type PlayerId = string;
-
-interface PlayerStats {
-  id: PlayerId;
-  accuracy: number;
-  cpm: number[]; // Each number describe cpm on 5 seconds interval
-}
-
-interface GameSummary {
-  winner: PlayerId;
-  scores: PlayerStats[];
-}
-
-interface EndGameEvent {
-  type: GameEventType.EndGame;
-  data: GameSummary;
-}
-
-type GameEvent = PlayersProgressEvent | EndGameEvent;
 
 @Injectable()
 export class GameService {
-  private roomCapacity = 10;
-
-  private readonly players = new Map<Socket, Player>();
-
-  private _server!: Server;
   private scenarios!: Scenario[];
   private _scenario: Scenario;
 
@@ -134,6 +73,8 @@ export class GameService {
   private broadcastProgressTimer!: NodeJS.Timer;
 
   constructor(
+    private readonly eventEmitter: EventEmitterService,
+    private readonly participant: ParticipantService,
     private readonly backendApi: BackendApiService,
     private readonly shutdownService: ShutdownService,
   ) {
@@ -141,63 +82,6 @@ export class GameService {
       this.scenarios = x;
       this._scenario = this.scenarios[0];
     });
-  }
-
-  newClient(client: Socket) {
-    setTimeout(() => this.disconnectDangling(client), 1000);
-  }
-
-  async disconnectClient(client: Socket) {
-    const p = this.players.get(client);
-
-    if (p) {
-      this.emitLobbyEvent({
-        type: LobbyEventType.PlayerLeaves,
-        data: { id: p.id },
-      });
-
-      await this.backendApi.unlinkGame(p.id);
-
-      this.players.delete(client);
-    }
-  }
-
-  async addPlayer(player: PlayerDesc): Promise<boolean> {
-    // Reserve slot for owner
-    const capacity = this.roomCapacity - +(process.env.OWNER_ID !== player.id);
-
-    if (
-      this.players.size < capacity &&
-      ![...this.players.values()].find((x) => x.id === player.id)
-    ) {
-      if (
-        !(await this.backendApi.linkGame(player.id, {
-          instanceUrl: this.InstanceUrl,
-        }))
-      ) {
-        return false;
-      }
-
-      const p = new Player(
-        player.socket,
-        player.id,
-        player.nickname,
-        this.findFreeSlot(),
-      );
-
-      this.players.set(player.socket, p);
-
-      this.emitLobbyEvent({
-        type: LobbyEventType.PlayerJoined,
-        data: { id: player.id, nickname: player.nickname, slot: p.slot },
-      });
-
-      return true;
-    } else {
-      setImmediate(() => player.socket.disconnect());
-
-      return false;
-    }
   }
 
   selectScenario(id: string): boolean {
@@ -213,7 +97,7 @@ export class GameService {
   lobby(): LobbyState {
     return {
       ownerId: process.env.OWNER_ID,
-      players: [...this.players.values()].map((x) => ({
+      players: [...this.participant.players].map((x) => ({
         id: x.id,
         nickname: x.nickname,
         slot: x.slot,
@@ -223,14 +107,12 @@ export class GameService {
   }
 
   serverDescription(): ServerDescription {
-    const owner =
-      [...this.players.values()].find((p) => p.id === process.env.OWNER_ID)
-        ?.nickname ?? 'Unknown';
+    const owner = this.participant.ownerNickname;
 
     return {
       owner,
       capacity: 10,
-      occupancy: this.players.size,
+      occupancy: this.participant.occupancy,
       started: this._gameStarted,
     };
   }
@@ -257,7 +139,7 @@ export class GameService {
     );
 
     this.gameStartTime = Date.now();
-    this.players.forEach(
+    this.participant.players.forEach(
       (p) =>
         (p.progressTracker = new ProgressTracker(
           this.scenarioText,
@@ -266,7 +148,7 @@ export class GameService {
         )),
     );
 
-    this.emitLobbyEvent({ type: LobbyEventType.GameWillStart });
+    this.eventEmitter.emitLobbyEvent({ type: LobbyEventType.GameWillStart });
 
     this.broadcastProgressTimer = setInterval(
       () => this.broadcastProgress(),
@@ -274,13 +156,13 @@ export class GameService {
     );
 
     this.endGameStrategy = new WaitUntilProgressEndGame(10000);
-    this.endGameStrategy.init(this.players, () => this.endGame());
+    this.endGameStrategy.init(this.participant.players, () => this.endGame());
 
     return true;
   }
 
   pressKey(client: Socket, char: string): PressKeyResult {
-    const player = this.players.get(client);
+    const player = this.participant.findBySocket(client);
 
     if (!player) throw new Error('Unknown player');
 
@@ -301,9 +183,9 @@ export class GameService {
   async endGame(): Promise<void> {
     this._gameEnded = true;
 
-    const players = [...this.players.values()];
+    const players = [...this.participant.players];
 
-    this.emitGameEvent({
+    this.eventEmitter.emitGameEvent({
       type: GameEventType.EndGame,
       data: {
         winner: this.winner.id,
@@ -320,10 +202,9 @@ export class GameService {
 
     clearInterval(this.broadcastProgressTimer);
 
-    this.players.forEach((p, s) => !s.disconnected && s.disconnect());
-    this.players.clear();
+    this.participant.dispose();
 
-    await this.backendApi.unlinkGameAll(this.InstanceUrl);
+    await this.backendApi.unlinkGameAll(instanceUrl());
 
     setTimeout(() => this.shutdownService.shutdown(), 10000);
   }
@@ -332,49 +213,17 @@ export class GameService {
     return this.scenarioImg;
   }
 
-  set server(server: Server) {
-    this._server = server;
-  }
-
   get gameEnded(): boolean {
     return this._gameEnded;
   }
 
-  get InstanceUrl(): string {
-    return `wss://${new URL(process.env.SPAWNER_API).host}/${
-      process.env.INSTANCE_ID
-    }`;
-  }
-
   private broadcastProgress() {
-    this.emitGameEvent({
+    this.eventEmitter.emitGameEvent({
       type: GameEventType.PlayerProgress,
-      data: [...this.players.values()].map(({ id, progress }) => ({
+      data: [...this.participant.players].map(({ id, progress }) => ({
         id,
         progress,
       })),
     });
-  }
-
-  private emitLobbyEvent(e: LobbyEvent): void {
-    this._server.emit('lobby_event', e);
-  }
-
-  private emitGameEvent(e: GameEvent): void {
-    this._server.emit('game_event', e);
-  }
-
-  private disconnectDangling(client: Socket) {
-    if (!(this.players.has(client) || client.disconnected)) {
-      client.disconnect();
-    }
-  }
-
-  private findFreeSlot(): number {
-    const slotPool = new Set([...Array(10).keys()]);
-
-    [...this.players.values()].forEach((x) => slotPool.delete(x.slot));
-
-    return [...slotPool][0];
   }
 }

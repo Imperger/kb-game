@@ -11,6 +11,8 @@ import type { Server, Socket } from 'socket.io';
 
 import { JwtArg } from './decorators/jwt-arg';
 import { GameService, GameState, LobbyState } from './game/game.service';
+import { ParticipantService } from './game/participant.service';
+import { WsServerRefService } from './game/ws-server-ref.service';
 
 interface PlayerToken {
   instanceId: string;
@@ -36,18 +38,22 @@ interface GameImageField {
 export class GameGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  constructor(private readonly game: GameService) {}
+  constructor(
+    private readonly wsServerRef: WsServerRefService,
+    private readonly participant: ParticipantService,
+    private readonly game: GameService,
+  ) {}
 
   async afterInit(server: Server) {
-    this.game.server = server;
+    this.wsServerRef.server = server;
   }
 
   handleConnection(client: Socket) {
-    this.game.newClient(client);
+    this.participant.newClient(client);
   }
 
   handleDisconnect(client: Socket) {
-    this.game.disconnectClient(client);
+    this.participant.disconnectClient(client);
   }
 
   @SubscribeMessage('auth')
@@ -58,7 +64,7 @@ export class GameGateway
     if (
       playerToken.exp * 1000 > Date.now() &&
       playerToken.instanceId === process.env.INSTANCE_ID &&
-      (await this.game.addPlayer({
+      (await this.participant.addPlayer({
         socket: client,
         id: playerToken.playerId,
         nickname: playerToken.nickname,

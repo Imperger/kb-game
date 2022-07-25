@@ -1,5 +1,4 @@
 import { count, Subject, startWith, debounceTime, takeUntil } from 'rxjs';
-import { Socket } from 'socket.io';
 
 import { Player } from '../Player';
 import { EndGameHandle, EndGameStrategy } from './end-game-strategy';
@@ -9,7 +8,7 @@ import { EndGameHandle, EndGameStrategy } from './end-game-strategy';
  * they has progress. If no any progress with some timeout game has ended
  */
 export class WaitUntilProgressEndGame implements EndGameStrategy {
-  private players!: Map<Socket, Player>;
+  private players!: Player[];
 
   private endGame!: EndGameHandle;
 
@@ -19,19 +18,19 @@ export class WaitUntilProgressEndGame implements EndGameStrategy {
 
   constructor(private idleTimeout: number) {}
 
-  init(players: Map<Socket, Player>, endGame: EndGameHandle): void {
+  init(players: Player[], endGame: EndGameHandle): void {
     this.players = players;
     this.endGame = () => setImmediate(() => endGame());
   }
 
   tick(emitter: Player): void {
-    if ([...this.players.values()].every((p) => p.finished)) {
+    if ([...this.players].every((p) => p.finished)) {
       this.endGame();
       return;
     }
 
     if (emitter.finished) {
-      if (this.players.size <= 1) {
+      if (this.players.length <= 1) {
         this.endGame();
         return;
       }
