@@ -8,7 +8,7 @@ import { EventEmitterService } from './game/event-emitter.service';
 import { GameService } from './game/game.service';
 import { ParticipantService } from './game/participant.service';
 import { WsServerRefService } from './game/ws-server-ref.service';
-import { SpawnerGuard } from './guards/spawner/spawner.guard';
+import { SpawnerGuard } from './guards/spawner.guard';
 import { ShutdownService } from './shutdown.service';
 
 @Module({
