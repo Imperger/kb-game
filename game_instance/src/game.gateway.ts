@@ -51,6 +51,11 @@ export class GameGateway
   }
 
   handleConnection(client: Socket) {
+    if (this.game.isStarted) {
+      client.disconnect();
+      return;
+    }
+
     this.participant.newClient(client);
   }
 

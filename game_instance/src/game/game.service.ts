@@ -209,6 +209,10 @@ export class GameService {
     setTimeout(() => this.shutdownService.shutdown(), 10000);
   }
 
+  get isStarted(): boolean {
+    return this._gameStarted;
+  }
+
   get gameFieldImage(): Base64Image {
     return this.scenarioImg;
   }

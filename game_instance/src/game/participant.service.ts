@@ -7,12 +7,17 @@ import { EventEmitterService } from './event-emitter.service';
 import { LobbyEventType } from './interfaces/lobby-event.interface';
 import { PlayerDesc } from './game.service';
 import { instanceUrl } from './instance-url';
+import { Observable, Subject } from 'rxjs';
 
 @Injectable()
 export class ParticipantService {
+  private readonly waitForOwnerTimeout = 10000;
+
   private readonly roomCapacity = 10;
 
   private readonly _players = new Map<Socket, Player>();
+
+  private readonly _$ownerPresence = new Subject<boolean>();
 
   constructor(
     private readonly eventEmitter: EventEmitterService,
@@ -31,6 +36,10 @@ export class ParticipantService {
         type: LobbyEventType.PlayerLeaves,
         data: { id: p.id },
       });
+
+      if (p.id === process.env.OWNER_ID) {
+        this._$ownerPresence.next(false);
+      }
 
       await this.backendApi.unlinkGame(p.id);
 
@@ -62,6 +71,8 @@ export class ParticipantService {
       );
 
       this._players.set(player.socket, p);
+
+      this._$ownerPresence.next(true);
 
       this.eventEmitter.emitLobbyEvent({
         type: LobbyEventType.PlayerJoined,
@@ -98,6 +109,10 @@ export class ParticipantService {
 
   get players(): Player[] {
     return [...this._players.values()];
+  }
+
+  get $ownerPresence(): Observable<boolean> {
+    return this._$ownerPresence;
   }
 
   private disconnectDangling(client: Socket) {
