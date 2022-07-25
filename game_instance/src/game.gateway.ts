@@ -1,3 +1,4 @@
+import { UseGuards } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -13,6 +14,7 @@ import { JwtArg } from './decorators/jwt-arg';
 import { GameService, GameState, LobbyState } from './game/game.service';
 import { ParticipantService } from './game/participant.service';
 import { WsServerRefService } from './game/ws-server-ref.service';
+import { OwnerGuard } from './guards/owner.guard';
 
 interface PlayerToken {
   instanceId: string;
@@ -86,14 +88,13 @@ export class GameGateway
     return this.game.lobby();
   }
 
+  @UseGuards(OwnerGuard)
   @SubscribeMessage('select_scenario')
-  selectScenario(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() id: string,
-  ): boolean {
+  selectScenario(@MessageBody() id: string): boolean {
     return this.game.selectScenario(id);
   }
 
+  @UseGuards(OwnerGuard)
   @SubscribeMessage('start_game')
   startGame(): Promise<boolean> {
     return this.game.startGame();
