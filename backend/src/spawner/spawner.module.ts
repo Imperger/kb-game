@@ -14,12 +14,9 @@ import { JwtKnownSpawnerGuard } from './decorators/jwt-known-spawner.guard';
     HttpModule,
     MongooseModule.forFeature([{ name: Spawner.name, schema: SpawnerSchema }]),
     ConfigHelperModule
-  ], 
+  ],
   controllers: [SpawnerController],
-  providers: [
-    SpawnerService,
-    JwtKnownSpawnerGuard,
-    Base64DecoderPipe],
+  providers: [SpawnerService, JwtKnownSpawnerGuard, Base64DecoderPipe],
   exports: [SpawnerService, JwtKnownSpawnerGuard]
 })
 export class SpawnerModule {}

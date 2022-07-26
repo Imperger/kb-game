@@ -3,14 +3,17 @@ import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { PipeTransform, ArgumentMetadata, Injectable } from '@nestjs/common';
 
-import { CommonException, CommonError, DtoValidationFailedException } from '../common-exception';
+import { DtoValidationFailedException } from '../common-exception';
 import { LoggerService } from '@/logger/logger.service';
 
 @Injectable()
 export class DtoValidationPipe implements PipeTransform<any> {
   constructor(private readonly logger: LoggerService) {}
 
-  async transform(value: unknown, metadata: ArgumentMetadata): Promise<unknown> {
+  async transform(
+    value: unknown,
+    metadata: ArgumentMetadata
+  ): Promise<unknown> {
     if (!value) {
       throw new DtoValidationFailedException('No data submitted');
     }

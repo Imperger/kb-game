@@ -1,5 +1,5 @@
-import { AppException, exceptionGuardFactory } from "@/common/app-exception";
-import { HttpStatus } from "@nestjs/common";
+import { AppException, exceptionGuardFactory } from '@/common/app-exception';
+import { HttpStatus } from '@nestjs/common';
 
 export enum AuthError {
   CaptchaFailed = 300,
@@ -63,4 +63,7 @@ export class UnknownRegistrationException extends AuthException {
   message = 'Unknown registration exception.';
 }
 
-export const isAuthException = exceptionGuardFactory(AuthException, { min: 300, max: 400 });
+export const isAuthException = exceptionGuardFactory(AuthException, {
+  min: 300,
+  max: 400
+});

@@ -5,7 +5,12 @@ import { GoogleRecaptchaModule } from '@nestlab/google-recaptcha';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from '../auth.controller';
 import { AuthService } from '../auth.service';
-import { EmailIsTakenException, RegistrationAlreadyConfirmedException, UnknownUserForConfirmRegistrationException, UsernameIsTakenException } from '../auth-exception';
+import {
+  EmailIsTakenException,
+  RegistrationAlreadyConfirmedException,
+  UnknownUserForConfirmRegistrationException,
+  UsernameIsTakenException
+} from '../auth-exception';
 
 jest.mock('../../logger/logger.service');
 jest.mock('../auth.service');
@@ -21,15 +26,14 @@ describe('Auth Controller', () => {
           secretKey: '',
           response: req => req.headers.recaptcha,
           skipIf: () => true
-        })],
+        })
+      ],
       providers: [AuthService, LoggerService],
       controllers: [AuthController]
-    })
-      .compile();
+    }).compile();
 
     controller = module.get<AuthController>(AuthController);
     service = module.get<AuthService>(AuthService);
-
 
     jest.clearAllMocks();
   });
@@ -46,33 +50,33 @@ describe('Auth Controller', () => {
     });
 
     it('New unique', async () => {
-      await expect((controller.register({
-        username: 'unique',
-        email: 'unique@mail.com',
-        password: '12345678'
-      })))
-        .resolves
-        .toEqual({ });
+      await expect(
+        controller.register({
+          username: 'unique',
+          email: 'unique@mail.com',
+          password: '12345678'
+        })
+      ).resolves.toEqual({});
     });
-  
+
     it('Username is taken', async () => {
-      await expect(controller.register({
-        username: user.username,
-        email: 'unique@mail.com',
-        password: '12345678'
-      }))
-        .rejects
-        .toThrowError(UsernameIsTakenException);
+      await expect(
+        controller.register({
+          username: user.username,
+          email: 'unique@mail.com',
+          password: '12345678'
+        })
+      ).rejects.toThrowError(UsernameIsTakenException);
     });
-  
+
     it('Email is taken', async () => {
-      await expect(controller.register({
-        username: 'unique',
-        email: user.email,
-        password: '12345678'
-      }))
-        .rejects
-        .toThrowError(EmailIsTakenException);
+      await expect(
+        controller.register({
+          username: 'unique',
+          email: user.email,
+          password: '12345678'
+        })
+      ).rejects.toThrowError(EmailIsTakenException);
     });
   });
 
@@ -84,21 +88,21 @@ describe('Auth Controller', () => {
     });
 
     it('Confirmed', async () => {
-      await expect(controller.registrationConfirm(userStub(false).id))
-        .resolves
-        .toEqual({ });
+      await expect(
+        controller.registrationConfirm(userStub(false).id)
+      ).resolves.toEqual({});
     });
 
     it('Unknown user', async () => {
-      await expect(controller.registrationConfirm(user.id + userStub(false).id))
-        .rejects
-        .toThrowError(UnknownUserForConfirmRegistrationException);
+      await expect(
+        controller.registrationConfirm(user.id + userStub(false).id)
+      ).rejects.toThrowError(UnknownUserForConfirmRegistrationException);
     });
 
     it('Already confirmed', async () => {
-      await expect(controller.registrationConfirm(user.id))
-        .rejects
-        .toThrowError(RegistrationAlreadyConfirmedException);
+      await expect(
+        controller.registrationConfirm(user.id)
+      ).rejects.toThrowError(RegistrationAlreadyConfirmedException);
     });
   });
 
@@ -110,9 +114,9 @@ describe('Auth Controller', () => {
     });
 
     it('Successfully', async () => {
-      await expect(controller.loginEmail(user))
-        .resolves
-        .toEqual({ token: await service.generateAccessToken(user.id) });
+      await expect(controller.loginEmail(user)).resolves.toEqual({
+        token: await service.generateAccessToken(user.id)
+      });
     });
   });
 
@@ -124,9 +128,9 @@ describe('Auth Controller', () => {
     });
 
     it('Successfully', async () => {
-      await expect(controller.loginUsername(user))
-        .resolves
-        .toEqual({ token: await service.generateAccessToken(user.id) });
+      await expect(controller.loginUsername(user)).resolves.toEqual({
+        token: await service.generateAccessToken(user.id)
+      });
     });
   });
 });

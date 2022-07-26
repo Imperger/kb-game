@@ -16,15 +16,16 @@ import { timeDiff } from '@/common/util/time-diff';
 import { PlayerService } from '@/player/player.service';
 import { ConfigHelperService } from '@/config/config-helper.service';
 import { LoggerService } from '@/logger/logger.service';
-import { 
-  EmailIsTakenException, 
-  InvalidCredentialsException, 
-  RegistrationAlreadyConfirmedException, 
-  RegistrationConfirmExpiredException, 
-  RegistrationNotConfirmedException, 
-  UnknownRegistrationException, 
-  UnknownUserForConfirmRegistrationException, 
-  UsernameIsTakenException } from './auth-exception';
+import {
+  EmailIsTakenException,
+  InvalidCredentialsException,
+  RegistrationAlreadyConfirmedException,
+  RegistrationConfirmExpiredException,
+  RegistrationNotConfirmedException,
+  UnknownRegistrationException,
+  UnknownUserForConfirmRegistrationException,
+  UsernameIsTakenException
+} from './auth-exception';
 
 @Injectable()
 export class AuthService {
@@ -36,10 +37,21 @@ export class AuthService {
     private readonly configHelperService: ConfigHelperService,
     private readonly jwtService: JwtService,
     private readonly logger: LoggerService,
-    @InjectModel(User.name) private readonly userModel: Model<User>) { }
+    @InjectModel(User.name) private readonly userModel: Model<User>
+  ) {}
 
-  async registerUser(username: string, email: string, password: string): Promise<string> {
-    const createUser = new this.userModel({ username, email, confirmed: false, secret: await AuthService.buildSecret(password), scopes: {} });
+  async registerUser(
+    username: string,
+    email: string,
+    password: string
+  ): Promise<string> {
+    const createUser = new this.userModel({
+      username,
+      email,
+      confirmed: false,
+      secret: await AuthService.buildSecret(password),
+      scopes: {}
+    });
 
     try {
       this.userService.clearExpiredRegistrations(username, email);
@@ -53,46 +65,61 @@ export class AuthService {
       });
 
       return userId;
-    }
-    catch (e) {
+    } catch (e) {
       if (e instanceof MongoError) {
         if (e.code === 11000) {
           const k = ExtractDuplicateKey(e.message);
 
           if (k.startsWith('username')) {
-            this.logger.warn(`Username already taken '${username}'`, 'AuthService::SignUp');
+            this.logger.warn(
+              `Username already taken '${username}'`,
+              'AuthService::SignUp'
+            );
 
             throw new UsernameIsTakenException();
-          }
-          else if (k.startsWith('email')) {
-            this.logger.warn(`Email already taken '${email}'`, 'AuthService::SignUp');
+          } else if (k.startsWith('email')) {
+            this.logger.warn(
+              `Email already taken '${email}'`,
+              'AuthService::SignUp'
+            );
 
             throw new EmailIsTakenException();
           }
 
-          this.logger.error(`Unrecognized error with credentials '${username}:${email}:${password}'`, 'AuthService::SignUp');
+          this.logger.error(
+            `Unrecognized error with credentials '${username}:${email}:${password}'`,
+            'AuthService::SignUp'
+          );
           throw new UnknownRegistrationException();
         }
-
       }
     }
   }
 
   async updatePassword(id: string, password: string) {
-    return (await this.userService.updateSecret(id, await AuthService.buildSecret(password)));
+    return await this.userService.updateSecret(
+      id,
+      await AuthService.buildSecret(password)
+    );
   }
 
   async confirmRegistration(userId: string) {
     const user = await this.userService.findById(userId);
 
     if (!user) {
-      this.logger.warn(`Can't find user '${userId}' for the confirmation request`, 'AuthService::SignUp');
+      this.logger.warn(
+        `Can't find user '${userId}' for the confirmation request`,
+        'AuthService::SignUp'
+      );
 
       throw new UnknownUserForConfirmRegistrationException();
     }
 
     if (user.confirmed) {
-      this.logger.warn(`The confirmation has already happened for the user '${userId}'`, 'AuthService::SignUp');
+      this.logger.warn(
+        `The confirmation has already happened for the user '${userId}'`,
+        'AuthService::SignUp'
+      );
 
       throw new RegistrationAlreadyConfirmedException();
     }
@@ -126,8 +153,11 @@ export class AuthService {
       { id: userId },
       {
         expiresIn: this.configService.get<string>('auth.confirmCodeTtl'),
-        secret: this.configService.get<string>('auth.registrationConfirmJwtSecret')
-      });
+        secret: this.configService.get<string>(
+          'auth.registrationConfirmJwtSecret'
+        )
+      }
+    );
 
     return `${this.configHelperService.apiEntry}/registration/confirm/${confirmCode}`;
   }
@@ -137,20 +167,37 @@ export class AuthService {
   }
 
   private async validateUser(user: User, password: string) {
-    if (user === null || await AuthService.hashPassword(password, user.secret.salt) !== user.secret.hash) {
-      this.logger.warn(`Invalid credentials for a user '${user?.id ?? '??'}:${user?.username ?? '??'}'`, 'AuthService::SignIn');
+    if (
+      user === null ||
+      (await AuthService.hashPassword(password, user.secret.salt)) !==
+        user.secret.hash
+    ) {
+      this.logger.warn(
+        `Invalid credentials for a user '${user?.id ?? '??'}:${user?.username ??
+          '??'}'`,
+        'AuthService::SignIn'
+      );
 
       throw new InvalidCredentialsException();
     }
 
     if (!user.confirmed) {
-      if (timeDiff(new Date(), user.createdAt) > ms(this.configService.get<string>('auth.confirmCodeTtl'))) {
-        this.logger.warn(`Expired the confirmation time '${user.id}:${user.username}'`, 'AuthService::SignIn');
+      if (
+        timeDiff(new Date(), user.createdAt) >
+        ms(this.configService.get<string>('auth.confirmCodeTtl'))
+      ) {
+        this.logger.warn(
+          `Expired the confirmation time '${user.id}:${user.username}'`,
+          'AuthService::SignIn'
+        );
 
         throw new RegistrationConfirmExpiredException();
       }
 
-      this.logger.warn(`Pending the confirmation '${user.id}:${user.username}'`, 'AuthService::SignIn');
+      this.logger.warn(
+        `Pending the confirmation '${user.id}:${user.username}'`,
+        'AuthService::SignIn'
+      );
 
       throw new RegistrationNotConfirmedException();
     }

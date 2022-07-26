@@ -7,7 +7,10 @@ import { RegistrationConfirmStrategyName } from '@/auth/constants';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class RegistrationConfirmStrategy extends PassportStrategy(Strategy, RegistrationConfirmStrategyName) {
+export class RegistrationConfirmStrategy extends PassportStrategy(
+  Strategy,
+  RegistrationConfirmStrategyName
+) {
   constructor(config: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromBodyField('code'),

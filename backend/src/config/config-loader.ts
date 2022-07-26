@@ -17,8 +17,7 @@ export class ConfigLoader {
         this.ex.throw(`Missing config file '${filename}'`);
       else if (e.name === 'SyntaxError')
         this.ex.throw(`Config '${filename}' has malformed. Expected json.`);
-      else
-        throw e;
+      else throw e;
     }
   }
 }

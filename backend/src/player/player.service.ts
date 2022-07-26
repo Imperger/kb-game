@@ -11,7 +11,8 @@ import { Player } from './schemas/player.schema';
 export class PlayerService {
   constructor(
     private readonly config: ConfigService,
-    @InjectModel(Player.name) private readonly playerModel: Model<Player>) { }
+    @InjectModel(Player.name) private readonly playerModel: Model<Player>
+  ) {}
 
   async newPlayer(nickname: string): Promise<Player> {
     const freeDiscriminator = await this.playerModel.aggregate([
@@ -21,16 +22,18 @@ export class PlayerService {
       {
         $group: {
           _id: null,
-          exists: { $push: "$discriminator" }
+          exists: { $push: '$discriminator' }
         }
       },
       {
         $addFields: {
-          free: { $first: { $setDifference: [{ $range: [1, 1000] }, "$exists"] } }
+          free: {
+            $first: { $setDifference: [{ $range: [1, 1000] }, '$exists'] }
+          }
         }
       },
       {
-        $project: { "free": 1 }
+        $project: { free: 1 }
       }
     ]);
 
@@ -44,26 +47,62 @@ export class PlayerService {
     return player;
   }
 
-  async linkGame(id: string, game: LinkedGame, acquireId = ''): Promise<boolean> {
+  async linkGame(
+    id: string,
+    game: LinkedGame,
+    acquireId = ''
+  ): Promise<boolean> {
     const ttl = ms(this.config.get<string>('game.gamePlayerLinkTtl'));
 
-    return (await this.playerModel.updateOne(
-      { $and: [
-        { _id: id },
-        { $or: [
-          { 'game.instanceUrl': null },
-          { 'game.instanceUrl': acquireId },
-          { $expr: { $lt: [ '$game.updatedAt', { $dateSubtract : { startDate: '$$NOW', unit: 'millisecond', amount: ttl } } ] } },
-        ]}    
-      ] }, 
-      { game })).modifiedCount > 0;
+    return (
+      (
+        await this.playerModel.updateOne(
+          {
+            $and: [
+              { _id: id },
+              {
+                $or: [
+                  { 'game.instanceUrl': null },
+                  { 'game.instanceUrl': acquireId },
+                  {
+                    $expr: {
+                      $lt: [
+                        '$game.updatedAt',
+                        {
+                          $dateSubtract: {
+                            startDate: '$$NOW',
+                            unit: 'millisecond',
+                            amount: ttl
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          { game }
+        )
+      ).modifiedCount > 0
+    );
   }
 
   async unlinkGame(id: string): Promise<boolean> {
-    return (await this.playerModel.updateOne({ _id: id }, { $set: { game: null } })).modifiedCount > 0;
+    return (
+      (await this.playerModel.updateOne({ _id: id }, { $set: { game: null } }))
+        .modifiedCount > 0
+    );
   }
 
   async unlinkGameAll(instanceUrl: string): Promise<boolean> {
-    return (await this.playerModel.updateMany({ 'game.instanceUrl': instanceUrl }, { $set: { game: null } })).modifiedCount > 0;
+    return (
+      (
+        await this.playerModel.updateMany(
+          { 'game.instanceUrl': instanceUrl },
+          { $set: { game: null } }
+        )
+      ).modifiedCount > 0
+    );
   }
 }

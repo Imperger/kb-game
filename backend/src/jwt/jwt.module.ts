@@ -20,4 +20,4 @@ import { ConfigService } from '@nestjs/config';
   providers: [JwtStrategy],
   exports: [NestJwtModule]
 })
-export class JwtModule { }
+export class JwtModule {}

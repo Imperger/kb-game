@@ -11,8 +11,12 @@ export class ConfigValidator {
     const object = plainToClass(ConfigSchema, config);
     const errors = validateSync(object);
     if (errors.length) {
-      const allErrors = errors.map(x => MapTree(x, 'children', this.validationErrorMapFn));
-      this.ex.throw(`Config validation error: ${JSON.stringify(allErrors, null, '\t')}`);
+      const allErrors = errors.map(x =>
+        MapTree(x, 'children', this.validationErrorMapFn)
+      );
+      this.ex.throw(
+        `Config validation error: ${JSON.stringify(allErrors, null, '\t')}`
+      );
     }
   }
   private validationErrorMapFn(error: ValidationError) {

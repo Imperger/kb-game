@@ -7,7 +7,11 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { User, UserSchema } from '@/user/schemas/user.schema';
 import { UserModule } from '@/user/user.module';
-import { LoginByEmailStrategy, LoginByUsernameStrategy, RegistrationConfirmStrategy } from './strategies';
+import {
+  LoginByEmailStrategy,
+  LoginByUsernameStrategy,
+  RegistrationConfirmStrategy
+} from './strategies';
 import { PlayerModule } from '@/player/player.module';
 import { ConfigHelperModule } from '@/config/config-helper.module';
 @Module({
@@ -26,8 +30,13 @@ import { ConfigHelperModule } from '@/config/config-helper.module';
     PlayerModule,
     ConfigHelperModule
   ],
-  providers: [AuthService, LoginByEmailStrategy, LoginByUsernameStrategy, RegistrationConfirmStrategy],
+  providers: [
+    AuthService,
+    LoginByEmailStrategy,
+    LoginByUsernameStrategy,
+    RegistrationConfirmStrategy
+  ],
   controllers: [AuthController],
   exports: [AuthService]
 })
-export class AuthModule { }
+export class AuthModule {}

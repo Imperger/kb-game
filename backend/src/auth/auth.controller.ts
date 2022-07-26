@@ -1,28 +1,43 @@
-import { Body, Controller, Post, Patch, UseGuards, HttpCode, UnauthorizedException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Patch,
+  UseGuards,
+  HttpCode
+} from '@nestjs/common';
 import { Recaptcha } from '@nestlab/google-recaptcha';
 
-import { CreateUserDto } from './dto/create-user.dto'
+import { CreateUserDto } from './dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { LoginByEmailGuard } from './decorators/login-by-email.guard';
 import { RegistrationConfirmGuard } from './decorators/registration-confirm.guard';
 import { UserId } from './decorators/user-id';
 import { LoginByUsernameGuard } from './decorators/login-by-username.guard';
 import { User } from './decorators/user';
-import { User as UserSchema } from '@/user/schemas/user.schema'
+import { User as UserSchema } from '@/user/schemas/user.schema';
 import { LoggerService } from '@/logger/logger.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly logger: LoggerService) { }
+    private readonly logger: LoggerService
+  ) {}
 
   @Recaptcha()
   @Post('register')
   async register(@Body() user: CreateUserDto) {
-    const userId = await this.authService.registerUser(user.username, user.email, user.password);
+    const userId = await this.authService.registerUser(
+      user.username,
+      user.email,
+      user.password
+    );
 
-    this.logger.log(`User data '${userId}:${user.username}:${user.email}'`, 'AuthController::SignUp');
+    this.logger.log(
+      `User data '${userId}:${user.username}:${user.email}'`,
+      'AuthController::SignUp'
+    );
   }
 
   @UseGuards(RegistrationConfirmGuard)
@@ -38,8 +53,10 @@ export class AuthController {
   @HttpCode(200)
   @Post('login/email')
   async loginEmail(@User() user: UserSchema) {
-
-    this.logger.log(`By email '${user.id}':${user.username}`, 'AuthController::SignIn');
+    this.logger.log(
+      `By email '${user.id}':${user.username}`,
+      'AuthController::SignIn'
+    );
 
     return { token: await this.authService.generateAccessToken(user.id) };
   }
@@ -49,8 +66,10 @@ export class AuthController {
   @HttpCode(200)
   @Post('login/username')
   async loginUsername(@User() user: UserSchema) {
-
-    this.logger.log(`By username '${user.id}':${user.username}`, 'AuthController::SignIn');
+    this.logger.log(
+      `By username '${user.id}':${user.username}`,
+      'AuthController::SignIn'
+    );
 
     return { token: await this.authService.generateAccessToken(user.id) };
   }

@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  NotFoundException,
   Param,
   ParseIntPipe,
   Post,
@@ -23,7 +22,7 @@ import { ParseObjectIdPipe } from '@/common/pipes/parse-object-id.pipe';
 
 @Controller('scenario')
 export class ScenarioController {
-  constructor(private readonly scenarioService: ScenarioService) { }
+  constructor(private readonly scenarioService: ScenarioService) {}
 
   @HasScopes(Scope.EditScenario)
   @UseGuards(JwtGuard, ScopeGuard)
@@ -35,7 +34,10 @@ export class ScenarioController {
   @HasScopes(Scope.EditScenario)
   @UseGuards(JwtGuard, ScopeGuard)
   @Put(':id')
-  async update(@Param('id', ParseObjectIdPipe) id: string, @Body() content: NewScenarioDto) {
+  async update(
+  @Param('id', ParseObjectIdPipe) id: string,
+    @Body() content: NewScenarioDto
+  ) {
     return this.scenarioService.update(id, content);
   }
 
@@ -48,11 +50,18 @@ export class ScenarioController {
 
   @UseGuards(JwtGuard)
   @Get()
-  async paginate(@Query('offset', ParseIntPipe) offset: number, @Query('limit', ParseIntPipe) limit: number) {
+  async paginate(
+  @Query('offset', ParseIntPipe) offset: number,
+    @Query('limit', ParseIntPipe) limit: number
+  ) {
     const page = await this.scenarioService.list(offset, limit);
     return {
       total: page.total,
-      scenarios: page.scenarios.map(({ _id, title, text }) => ({ id: _id, title, text }))
+      scenarios: page.scenarios.map(({ _id, title, text }) => ({
+        id: _id,
+        title,
+        text
+      }))
     };
   }
 

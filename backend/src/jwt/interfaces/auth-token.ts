@@ -1,5 +1,5 @@
 export interface AuthToken {
-    id: string;
-    iat: number;
-    exp: number;
+  id: string;
+  iat: number;
+  exp: number;
 }

@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards
+} from '@nestjs/common';
 
 import { Scope } from '@/auth/scopes';
 import { HasScopes } from '@/auth/decorators/has-scopes.decorator';
@@ -10,7 +18,7 @@ import { Base64DecoderPipe } from './pipes/base64-decoder.pipe';
 
 @Controller('spawner')
 export class SpawnerController {
-  constructor(private readonly spawnerService: SpawnerService) { }
+  constructor(private readonly spawnerService: SpawnerService) {}
 
   @HasScopes(Scope.ServerMaintainer)
   @UseGuards(JwtGuard, ScopeGuard)
@@ -30,7 +38,8 @@ export class SpawnerController {
   @UseGuards(JwtGuard, ScopeGuard)
   @Get()
   async listAll(): Promise<SpawnerInfo[]> {
-    return (await this.spawnerService.listAll())
-      .map(({ url, name, capacity }) => ({ url, name, capacity }));
+    return (
+      await this.spawnerService.listAll()
+    ).map(({ url, name, capacity }) => ({ url, name, capacity }));
   }
 }

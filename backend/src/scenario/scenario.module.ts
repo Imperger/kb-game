@@ -8,7 +8,9 @@ import { SpawnerModule } from '@/spawner/spawner.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Scenario.name, schema: ScenarioSchema }]),
+    MongooseModule.forFeature([
+      { name: Scenario.name, schema: ScenarioSchema }
+    ]),
     SpawnerModule
   ],
   providers: [ScenarioService],

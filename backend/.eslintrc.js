@@ -18,6 +18,8 @@ module.exports = {
   },
   rules: {
     'indent': 'off',
+    "comma-dangle": "off",
+    "@typescript-eslint/comma-dangle": ["error"],
     '@typescript-eslint/indent': ['error', 2],
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',

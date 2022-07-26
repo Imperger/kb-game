@@ -1,4 +1,10 @@
-import { BadRequestException, Body, Controller, Param, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Patch,
+  UseGuards
+} from '@nestjs/common';
 
 import { JwtKnownSpawnerGuard } from '@/spawner/decorators/jwt-known-spawner.guard';
 import { UnlinkGameAllDto } from './dto/unlink-game-all.dto';
@@ -7,7 +13,7 @@ import { PlayerService } from './player.service';
 
 @Controller('player')
 export class PlayerController {
-  constructor(private readonly player: PlayerService) { }
+  constructor(private readonly player: PlayerService) {}
 
   @UseGuards(JwtKnownSpawnerGuard)
   @Patch(':id/link_game')
