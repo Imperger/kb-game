@@ -1,4 +1,3 @@
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request = require('supertest');
@@ -19,7 +18,7 @@ describe('AppController (e2e)', () => {
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [AppModule]
     }).compile();
 
     userModel = moduleFixture.get<Model<User>>(getModelToken(User.name));
@@ -40,8 +39,12 @@ describe('AppController (e2e)', () => {
   it('/api/auth/register (POST)', () => {
     return request(app.getHttpServer())
       .post('/api/auth/register')
-      .send({ username: user.username, email: user.email, password: '12345678' })
+      .send({
+        username: user.username,
+        email: user.email,
+        password: '12345678'
+      })
       .expect(201)
-      .expect({ });
+      .expect({});
   });
 });

@@ -14,15 +14,22 @@ import { LoggerService } from '@/logger/logger.service';
 export class GameController {
   constructor(
     private readonly gameService: GameService,
-    private readonly logger: LoggerService) { }
+    private readonly logger: LoggerService
+  ) {}
 
   @HasScopes(Scope.PlayGame)
   @UseGuards(JwtGuard, ScopeGuard)
   @Post('new_custom')
   async new_custom(@Player() player: PlayerSchema) {
-    const game = await this.gameService.newCustom({ playerId: player.id, nickname: player.nickname });
+    const game = await this.gameService.newCustom({
+      playerId: player.id,
+      nickname: player.nickname
+    });
 
-    this.logger.log(`Requested game '${game.instanceUrl}' for '${player.id}:${player.nickname}#${player.discriminator}' ready`, 'GameController');
+    this.logger.log(
+      `Requested game '${game.instanceUrl}' for '${player.id}:${player.nickname}#${player.discriminator}' ready`,
+      'GameController'
+    );
 
     return game;
   }
@@ -30,10 +37,19 @@ export class GameController {
   @HasScopes(Scope.PlayGame)
   @UseGuards(JwtGuard, ScopeGuard)
   @Post('connect')
-  async connect(@Player() player: PlayerSchema, @Body() options: ConnectToGameDto) {
-    const conn = await this.gameService.connect({ playerId: player.id, nickname: player.nickname }, options.instanceUrl);
+  async connect(
+  @Player() player: PlayerSchema,
+    @Body() options: ConnectToGameDto
+  ) {
+    const conn = await this.gameService.connect(
+      { playerId: player.id, nickname: player.nickname },
+      options.instanceUrl
+    );
 
-    this.logger.log(`Player '${player.id}:${player.nickname}#${player.discriminator}' is about to join '${options.instanceUrl}'`, 'GameController');
+    this.logger.log(
+      `Player '${player.id}:${player.nickname}#${player.discriminator}' is about to join '${options.instanceUrl}'`,
+      'GameController'
+    );
 
     return conn;
   }

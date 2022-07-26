@@ -1,5 +1,5 @@
-import { playerStub } from "@/player/test/stubs/player.stub";
-import { User } from "@/user/schemas/user.schema";
+import { playerStub } from '@/player/test/stubs/player.stub';
+import { User } from '@/user/schemas/user.schema';
 
 const secret = {
   salt: '',
@@ -17,8 +17,8 @@ const scopes = {
 };
 
 export const userStub = (confirmed = true): User => {
-  return { 
-    id: confirmed? 1: 2,
+  return {
+    id: confirmed ? 1 : 2,
     username: 'well_known',
     email: 'well_known@mail.com',
     confirmed,

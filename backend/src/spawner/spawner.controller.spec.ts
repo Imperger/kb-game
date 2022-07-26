@@ -6,7 +6,7 @@ describe('Spawner Controller', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [SpawnerController],
+      controllers: [SpawnerController]
     }).compile();
 
     controller = module.get<SpawnerController>(SpawnerController);

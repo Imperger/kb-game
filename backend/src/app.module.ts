@@ -14,7 +14,7 @@ import { PlayerModule } from './player/player.module';
 import { ConfigHelperModule } from './config/config-helper.module';
 import { ScenarioModule } from './scenario/scenario.module';
 import { LoggerModule } from './logger/logger.module';
-import Config from './config'
+import Config from './config';
 
 @Module({
   imports: [
@@ -34,14 +34,14 @@ import Config from './config'
       useFactory: (config: ConfigService) => ({
         transport: config.get<string>('mail.transport'),
         defaults: {
-          from: config.get<string>('mail.from'),
+          from: config.get<string>('mail.from')
         },
         template: {
           dir: __dirname + '/templates',
           adapter: new PugAdapter(),
           options: {
-            strict: true,
-          },
+            strict: true
+          }
         }
       }),
       inject: [ConfigService]
@@ -54,6 +54,7 @@ import Config from './config'
     PlayerModule,
     ConfigHelperModule,
     ScenarioModule,
-    LoggerModule]
+    LoggerModule
+  ]
 })
-export class AppModule { }
+export class AppModule {}

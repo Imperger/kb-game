@@ -11,20 +11,25 @@ export class ScopeGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly logger: LoggerService
-  ) { }
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(
+    context: ExecutionContext
+  ): boolean | Promise<boolean> | Observable<boolean> {
     const req = context.switchToHttp().getRequest();
     const user: User = req.user;
 
-    const authorized = (this.reflector
-      .get<Scope[]>(scopeMetaId, context.getHandler()) || [])
-      .every(scope => this.checkScope(scope, user));
+    const authorized = (
+      this.reflector.get<Scope[]>(scopeMetaId, context.getHandler()) || []
+    ).every(scope => this.checkScope(scope, user));
 
     if (!authorized) {
-      this.logger.warn(`Unauthorized access to '${req.method} ${req.url}' from user '${user.id}:${user.username}'`, 'ScopeGuard');
+      this.logger.warn(
+        `Unauthorized access to '${req.method} ${req.url}' from user '${user.id}:${user.username}'`,
+        'ScopeGuard'
+      );
     }
-      
+
     return authorized;
   }
 

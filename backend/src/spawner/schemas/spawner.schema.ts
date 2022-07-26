@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Spawner extends Document {
-  @Prop({ required: true, unique: true})
+  @Prop({ required: true, unique: true })
   url: string;
 
   @Prop({ required: true })

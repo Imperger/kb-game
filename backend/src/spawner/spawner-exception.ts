@@ -1,5 +1,5 @@
-import { AppException, exceptionGuardFactory } from "@/common/app-exception";
-import { HttpStatus } from "@nestjs/common";
+import { AppException, exceptionGuardFactory } from '@/common/app-exception';
+import { HttpStatus } from '@nestjs/common';
 
 export enum SpawnerError {
   UnknownError = 100,
@@ -8,21 +8,21 @@ export enum SpawnerError {
   HostNotFound,
   WrongSecret,
   RequestInstanceFailed,
-  ListGameFailed,
-};
+  ListGameFailed
+}
 
 export class SpawnerException extends AppException {}
 
 export class HostNotFoundException extends SpawnerException {
   code = SpawnerError.HostNotFound;
   status = HttpStatus.BAD_REQUEST;
-  message = 'Can\'t resolve host address';
+  message = "Can't resolve host address";
 }
 
 export class HostNotResponseException extends SpawnerException {
   code = SpawnerError.HostNotResponse;
   status = HttpStatus.BAD_REQUEST;
-  message = 'Can\'t connect to the host';
+  message = "Can't connect to the host";
 }
 
 export class ListGameFailedException extends SpawnerException {
@@ -55,5 +55,7 @@ export class WrongSecretException extends AppException {
   message = 'Wront secret';
 }
 
-export const isSpawnerException = exceptionGuardFactory(SpawnerException, { min: 100, max: 200 })
-  
+export const isSpawnerException = exceptionGuardFactory(SpawnerException, {
+  min: 100,
+  max: 200
+});

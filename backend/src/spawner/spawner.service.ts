@@ -9,14 +9,15 @@ import { firstValueFrom } from 'rxjs';
 import { Spawner } from './schemas/spawner.schema';
 import { isAxiosError } from '@/common/typeguards/axios-typeguard';
 import { ConfigHelperService } from '@/config/config-helper.service';
-import { 
-  HostNotFoundException, 
-  HostNotResponseException, 
-  ListGameFailedException, 
-  RequestInstanceFailedException, 
+import {
+  HostNotFoundException,
+  HostNotResponseException,
+  ListGameFailedException,
+  RequestInstanceFailedException,
   SpawnerAlreadyAdded,
-  UnknownException, 
-  WrongSecretException } from './spawner-exception';
+  UnknownException,
+  WrongSecretException
+} from './spawner-exception';
 
 export interface RequestedSpawnerInfo {
   name: string;
@@ -54,13 +55,19 @@ export class SpawnerService {
     private http: HttpService,
     private readonly jwtService: JwtService,
     private readonly configHelperService: ConfigHelperService,
-    @InjectModel(Spawner.name) private readonly spawnerModel: Model<Spawner>) { }
+    @InjectModel(Spawner.name) private readonly spawnerModel: Model<Spawner>
+  ) {}
 
   async add(url: string, secret: string): Promise<RequestedSpawnerInfo> {
     try {
-      const info = (await firstValueFrom(this.http
-        .get<RequestedSpawnerInfo>(`${url}/info`, this.useAuthorization(secret))))
-        .data;
+      const info = (
+        await firstValueFrom(
+          this.http.get<RequestedSpawnerInfo>(
+            `${url}/info`,
+            this.useAuthorization(secret)
+          )
+        )
+      ).data;
 
       await new this.spawnerModel({
         url: url.toLowerCase(),
@@ -77,8 +84,7 @@ export class SpawnerService {
             throw new HostNotResponseException();
           case 'ENOTFOUND':
             throw new HostNotFoundException();
-          case 'ERR_BAD_REQUEST':
-          {
+          case 'ERR_BAD_REQUEST': {
             if (e.response?.status === HttpStatus.UNAUTHORIZED) {
               throw new WrongSecretException();
             }
@@ -90,7 +96,6 @@ export class SpawnerService {
         if (e.code === 11000) {
           throw new SpawnerAlreadyAdded();
         }
-
       }
     }
   }
@@ -103,27 +108,37 @@ export class SpawnerService {
     return this.spawnerModel.find({});
   }
 
-  async findCustomInstance(ownerId: string): Promise<GameInstanceDescriptor | null> {
+  async findCustomInstance(
+    ownerId: string
+  ): Promise<GameInstanceDescriptor | null> {
     const spawners = await this.listAll();
 
     for (const s of spawners) {
       try {
         return {
-          ...await this.requestCustomInstance(s.url, s.secret, ownerId),
+          ...(await this.requestCustomInstance(s.url, s.secret, ownerId)),
           spawnerUrl: s.url,
           spawnerSecret: s.secret
         };
-      } catch (e) { }
+      } catch (e) {}
     }
 
     return null;
   }
 
-  async listSpawnerInstancesInfo(spawnerUrl: string, secret: string): Promise<ServerDescription[]> {
+  async listSpawnerInstancesInfo(
+    spawnerUrl: string,
+    secret: string
+  ): Promise<ServerDescription[]> {
     try {
-      return (await firstValueFrom(this.http.get<ServerDescription[]>(
-        `${spawnerUrl}/game/list`,
-        this.useAuthorization(secret)))).data;
+      return (
+        await firstValueFrom(
+          this.http.get<ServerDescription[]>(
+            `${spawnerUrl}/game/list`,
+            this.useAuthorization(secret)
+          )
+        )
+      ).data;
     } catch (e) {
       if (isAxiosError(e)) {
         throw new ListGameFailedException();
@@ -131,12 +146,21 @@ export class SpawnerService {
     }
   }
 
-  private async requestCustomInstance(spawnerUrl: string, secret: string, ownerId: string): Promise<InstanceDescriptor> {
+  private async requestCustomInstance(
+    spawnerUrl: string,
+    secret: string,
+    ownerId: string
+  ): Promise<InstanceDescriptor> {
     try {
-      return (await firstValueFrom(this.http.post<InstanceDescriptor>(
-        `${spawnerUrl}/game/new_custom`,
-        { ownerId, backendApi: this.configHelperService.apiEntry },
-        this.useAuthorization(secret)))).data;
+      return (
+        await firstValueFrom(
+          this.http.post<InstanceDescriptor>(
+            `${spawnerUrl}/game/new_custom`,
+            { ownerId, backendApi: this.configHelperService.apiEntry },
+            this.useAuthorization(secret)
+          )
+        )
+      ).data;
     } catch (e) {
       if (isAxiosError(e)) {
         throw new RequestInstanceFailedException();
@@ -145,7 +169,7 @@ export class SpawnerService {
   }
 
   private useAuthorization(secret: string) {
-    const token = this.jwtService.sign({}, { expiresIn: "3m", secret });
+    const token = this.jwtService.sign({}, { expiresIn: '3m', secret });
 
     return { headers: { Authorization: `Bearer ${token}` } };
   }

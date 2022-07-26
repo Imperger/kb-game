@@ -1,8 +1,13 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from "@nestjs/common";
-import { GoogleRecaptchaException } from "@nestlab/google-recaptcha";
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpStatus
+} from '@nestjs/common';
+import { GoogleRecaptchaException } from '@nestlab/google-recaptcha';
 
 import { FastifyReply } from 'fastify';
-import { CommonError } from "../common-exception";
+import { CommonError } from '../common-exception';
 
 @Catch(GoogleRecaptchaException)
 export class GoogleRecaptchaFilter implements ExceptionFilter {

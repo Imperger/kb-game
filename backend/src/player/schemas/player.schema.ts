@@ -15,7 +15,7 @@ export class Player extends Document {
   @Prop({ required: true })
   nickname: string;
 
-  @Prop({ required: true , min: 1, max: 999 })
+  @Prop({ required: true, min: 1, max: 999 })
   discriminator: number;
 
   @Prop({ type: CurrentGame, default: null })

@@ -6,10 +6,7 @@ import { SpawnerModule } from '@/spawner/spawner.module';
 import { PlayerModule } from '@/player/player.module';
 
 @Module({
-  imports: [
-    SpawnerModule,
-    PlayerModule
-  ],
+  imports: [SpawnerModule, PlayerModule],
   providers: [GameService],
   controllers: [GameController],
   exports: [GameService]
