@@ -53,6 +53,8 @@ async function createCustomGame(api: Api, logger: Logger): Promise<boolean> {
 
     api.spawner.useAuthorization(false);
 
+    await await api.backend.addSpawner('https://spawner.dev.wsl:3001', '12345');
+
     const newGameWithoutCreds = await tester.test(
         () => api.spawner.requestCustomInstance({ ownerId: '', backendApi: '' }),
         'Request custom instance without credentials')
@@ -73,6 +75,8 @@ async function createCustomGame(api: Api, logger: Logger): Promise<boolean> {
         .status(201)
         .response(x => typeof x === 'object' && typeof x.instanceUrl === 'string')
         .toPromise();
+
+    await api.backend.removeSpawner('https://spawner.dev.wsl:3001');
 
     return newGameWithoutCreds.pass &&
         newGameWithInvalidInput.pass &&
