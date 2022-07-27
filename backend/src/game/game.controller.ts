@@ -15,7 +15,7 @@ export class GameController {
   constructor(
     private readonly gameService: GameService,
     private readonly logger: LoggerService
-  ) {}
+  ) { }
 
   @HasScopes(Scope.PlayGame)
   @UseGuards(JwtGuard, ScopeGuard)
