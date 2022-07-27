@@ -78,10 +78,10 @@ export class GameService {
     private readonly backendApi: BackendApiService,
     private readonly shutdownService: ShutdownService,
   ) {
-    this.backendApi.listAllTitles().then((x) => {
+    /* this.backendApi.listAllTitles().then((x) => {
       this.scenarios = x;
       this._scenario = this.scenarios[0];
-    });
+    }); */
   }
 
   selectScenario(id: string): boolean {
