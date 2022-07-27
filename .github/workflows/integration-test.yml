@@ -14,7 +14,9 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           flags: backend
+          directory: ./backend/coverage
       - name: Upload spawner codecov
         uses: codecov/codecov-action@v3
         with:
           flags: spawner
+          directory: ./spawner/coverage
