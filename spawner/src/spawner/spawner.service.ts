@@ -172,9 +172,14 @@ export class SpawnerService implements OnModuleInit {
     );
 
     this.instancesHost.add(hostname);
-    unloaded.then(() => this.instancesHost.delete(hostname));
-
+    
     let retries = 20;
+
+    unloaded.then(() => {
+      retries = 0;
+      this.instancesHost.delete(hostname);
+    });
+
     for (; retries > 0; --retries) {
       try {
         await this.dockerService.client.getContainer(hostname).inspect();
