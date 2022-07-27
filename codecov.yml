@@ -18,6 +18,3 @@ coverage:
         target: 90%
 codecov:
   disable_default_path_fixes: true
-fixes:
-  - "backend/coverage/::backend/"
-  - "spawner/coverage/::spawner/"
