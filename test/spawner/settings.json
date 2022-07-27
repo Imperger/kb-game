@@ -7,6 +7,6 @@
     "secret": "12345",
     "tls": {
         "certs": "",
-        "ca": "[CA_PATH]"
+        "ca": "/app/config/root.crt"
     }
 }

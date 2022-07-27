@@ -16,9 +16,7 @@ echo "$SSL_CERTS" > '../deploy/docker-compose/backend/config/server.cert'
 echo "$SSL_CA" > '../deploy/docker-compose/spawner/config/root.crt'
 echo "$SSL_CERTS" > '../deploy/docker-compose/spawner/config/server.cert'
 
-cp ./spawner/settings.json ../deploy/docker-compose/spawner/config/settings.json && \
-    sed -i -e "s|\[CA_PATH\]|${PWD}/../deploy/docker-compose/spawner/config/root.crt|g" \
-    ../deploy/docker-compose/spawner/config/settings.json
+cp ./spawner/settings.json ../deploy/docker-compose/spawner/config/settings.json
 
 # Setup docker environment
 docker network create backend_spawner
