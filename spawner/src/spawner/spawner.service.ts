@@ -1,5 +1,5 @@
 import * as Crypto from 'crypto';
-import { HttpException, HttpStatus, Injectable, OnModuleInit } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable, OnModuleInit } from '@nestjs/common';
 import type { AxiosResponse } from 'axios';
 
 import { DockerService } from './docker.service';
@@ -82,12 +82,14 @@ export class SpawnerService implements OnModuleInit {
 
     const instanceId = SpawnerService.generateInstanceId();
 
-    await this.spawnGameInstance({
+    if (!await this.spawnGameInstance({
       instanceId,
       owner: options.ownerId,
       backendApi: options.backendApi,
       type: 'custom'
-    });
+    })) {
+      throw new ConflictException('Failed to spawn game instance');
+    }
 
     return { instanceUrl: this.instanceNameResolver.buildInstanceUrl(instanceId) }
   }
@@ -130,7 +132,7 @@ export class SpawnerService implements OnModuleInit {
     }
   }
 
-  private async spawnGameInstance(options: GameInstanceOptions) {
+  private async spawnGameInstance(options: GameInstanceOptions): Promise<boolean> {
 
     const Env = [
       'NODE_EXTRA_CA_CERTS=./ca/root.crt',
@@ -190,6 +192,8 @@ export class SpawnerService implements OnModuleInit {
         await new Promise<void>(ok => setTimeout(() => ok(), 1000))
       }
     }
+
+    return retries > 0;
   }
 
   private useAuthorization() {
