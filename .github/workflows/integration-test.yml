@@ -12,7 +12,7 @@ jobs:
           SSL_CA: ${{ secrets.SSL_CA }}
           SSL_CERTS: ${{ secrets.SSL_CERTS }}
         run: cd test && chmod +x ./run && ./run
-      - name Print coverage
+      - name: Print coverage
         run: tree . 
       - name: Upload backend codecov
         uses: codecov/codecov-action@v3
