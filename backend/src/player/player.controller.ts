@@ -17,19 +17,19 @@ export class PlayerController {
 
   @UseGuards(JwtKnownSpawnerGuard)
   @Patch(':id/link_game')
-  async linkGame(@Param('id') id: string, @Body() game: LinkedGame) {
-    return { text: await this.player.linkGame(id, game) };
+  linkGame(@Param('id') id: string, @Body() game: LinkedGame) {
+    return this.player.linkGame(id, game);
   }
 
   @UseGuards(JwtKnownSpawnerGuard)
   @Patch(':id/unlink_game')
-  async unlinkGame(@Param('id') id: string) {
-    return { text: await this.player.unlinkGame(id) };
+  unlinkGame(@Param('id') id: string) {
+    return this.player.unlinkGame(id);
   }
 
   @UseGuards(JwtKnownSpawnerGuard)
   @Patch('unlink_game')
-  async unlinkGameAll(@Body() unlinked: UnlinkGameAllDto) {
-    return { text: await this.player.unlinkGameAll(unlinked.instanceUrl) };
+  unlinkGameAll(@Body() unlinked: UnlinkGameAllDto) {
+    return this.player.unlinkGameAll(unlinked.instanceUrl);
   }
 }

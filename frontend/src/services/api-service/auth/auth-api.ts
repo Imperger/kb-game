@@ -102,6 +102,10 @@ export default class AuthApi {
     return response;
   }
 
+  signOut (): void {
+    delete this.http.defaults.headers.common.Authorization;
+  }
+
   private updateAuthorizationHeader () {
     this.http.defaults.headers.common.Authorization = `Bearer ${this.token}`;
   }

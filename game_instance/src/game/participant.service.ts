@@ -39,9 +39,9 @@ export class ParticipantService {
 
       if (p.id === process.env.OWNER_ID) {
         this._$ownerPresence.next(false);
+      } else {
+        await this.backendApi.unlinkGame(p.id);
       }
-
-      await this.backendApi.unlinkGame(p.id);
 
       this._players.delete(client);
     }
@@ -56,6 +56,7 @@ export class ParticipantService {
       ![...this._players.values()].find((x) => x.id === player.id)
     ) {
       if (
+        player.id !== process.env.OWNER_ID &&
         !(await this.backendApi.linkGame(player.id, {
           instanceUrl: instanceUrl(),
         }))
