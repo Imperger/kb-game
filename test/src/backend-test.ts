@@ -209,7 +209,7 @@ async function gameFlow(api: Api, logger: Logger): Promise<boolean> {
         () => api.backend.listGames(),
         'Fetch game list')
         .status(200)
-        .response(x => Array.isArray(x))
+        .response(x => Array.isArray(x) && x.length >= 1)
         .toPromise();
 
     await api.backend.removeSpawner('https://spawner.dev.wsl:3001');
