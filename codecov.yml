@@ -12,10 +12,6 @@ coverage:
       default:                 
         enabled: yes           
         target: 90%
-    patch:                   
-      default:                 
-        enabled: yes           
-        target: 90%
 codecov:
   disable_default_path_fixes: true
 fixes:
