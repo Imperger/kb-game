@@ -42,7 +42,7 @@ export class UserService {
   ): Promise<number> {
     try {
       const ttl = ms(this.configService.get<string>('auth.confirmCodeTtl'));
-      const result = await this.userModel.remove({
+      const result = await this.userModel.deleteMany({
         $or: [
           {
             $and: [
@@ -59,7 +59,7 @@ export class UserService {
         ]
       });
 
-      return result?.n || 0;
+      return result?.deletedCount || 0;
     } catch (e) {
       return 0;
     }
