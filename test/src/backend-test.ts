@@ -157,7 +157,7 @@ async function confirmRegistrationUnsuccess(api: Api, logger: Logger): Promise<b
 
     const alreadyConfirmed = await tester.test(
         () => api.backend.confirmRegistration(user.token),
-        'Confirm registration for unexist user')
+        'Confirm registration for already confirmed user')
         .status(409)
         .toPromise();
 
