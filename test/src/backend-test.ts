@@ -375,6 +375,13 @@ async function spawnerFlow(api: Api, logger: Logger): Promise<boolean> {
         'Add valid spawner')
         .status(201)
         .toPromise();
+    
+    const alreadyAddedSpawner = await tester.test(
+        () => api.backend.addSpawner('https://spawner.dev.wsl:3001', '12345'),
+        'Add already added spawner')
+        .status(409)
+        .response(x => x.code === 101)
+        .toPromise();
 
     const listSpawners = await tester.test(
         () => api.backend.listSpawners(),
