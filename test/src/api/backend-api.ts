@@ -168,6 +168,27 @@ export class BackendApi {
         return this.http.get<SpawnerInfo>('/spawner');
     }
 
+    linkGamePlayer(playerId: string, instanceUrl: string, accessToken: string): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
+        return this.http.patch<boolean>(
+            `/player/${playerId}/link_game`,
+            { instanceUrl },
+            { headers: { Authorization: `Bearer ${accessToken}` } });
+    }
+
+    unlinkGamePlayer(playerId: string, accessToken: string): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
+        return this.http.patch<boolean>(
+            `/player/${playerId}/unlink_game`,
+            {},
+            { headers: { Authorization: `Bearer ${accessToken}` } });
+    }
+
+    unlinkGamePlayers(instanceUrl: string, accessToken: string): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
+        return this.http.patch<boolean>(
+            '/player/unlink_game',
+            { instanceUrl },
+            { headers: { Authorization: `Bearer ${accessToken}` } });
+    }
+
     private async handleAuthToken(signin: () => Promise<AxiosResponse<LoginResponse>>): Promise<AxiosResponse<LoginResponse>> {
         const ret = await signin();
 

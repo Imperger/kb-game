@@ -375,7 +375,7 @@ async function spawnerFlow(api: Api, logger: Logger): Promise<boolean> {
         'Add valid spawner')
         .status(201)
         .toPromise();
-    
+
     const alreadyAddedSpawner = await tester.test(
         () => api.backend.addSpawner('https://spawner.dev.wsl:3001', '12345'),
         'Add already added spawner')
@@ -396,7 +396,63 @@ async function spawnerFlow(api: Api, logger: Logger): Promise<boolean> {
         .status(200)
         .toPromise();
 
-    return badSpawners && validSpawner.pass && listSpawners.pass && removeSpawner.pass;
+    return badSpawners &&
+        validSpawner.pass &&
+        alreadyAddedSpawner.pass &&
+        listSpawners.pass &&
+        removeSpawner.pass;
+}
+
+async function linkPlayerFlow(api: Api, logger: Logger): Promise<boolean> {
+    const tester = new ApiTester(logger);
+
+    const knownSpawner = {
+        url: 'https://spawner.dev.wsl:3001',
+        secret: '12345'
+    };
+
+    const playerId = (await api.mongo.collection('users').findOne({ username: user.cred.username }))?.player.toString();
+    await api.backend.addSpawner(knownSpawner.url, knownSpawner.secret);
+    const token = sign({ spawner: knownSpawner.url }, knownSpawner.secret);
+    const instanceUrl = `${knownSpawner.url}/random_instance_id`;
+
+    const linkedGame = await tester.test(
+        () => api.backend.linkGamePlayer(playerId, instanceUrl, token),
+        'Link game to player')
+        .status(200)
+        .response(true)
+        .toPromise();
+
+    const linkAlreadyLinked = await tester.test(
+        () => api.backend.linkGamePlayer(playerId, `${instanceUrl}0`, token),
+        'Link to already linked')
+        .status(200)
+        .response(false)
+        .toPromise();
+
+    const unlinkGame = await tester.test(
+        () => api.backend.unlinkGamePlayer(playerId, token),
+        'Unlink game from player')
+        .status(200)
+        .response(true)
+        .toPromise();
+
+    await api.backend.linkGamePlayer(playerId, instanceUrl, token);
+
+    const unlinkAll = await tester.test(
+        () => api.backend.unlinkGamePlayers(instanceUrl, token),
+        'Unlink game from all')
+        .status(200)
+        .response(true)
+        .toPromise();
+
+    await api.backend.removeSpawner(knownSpawner.url);
+
+    return linkedGame.pass &&
+        linkAlreadyLinked.pass &&
+        unlinkGame.pass &&
+        unlinkAll.pass;
+
 }
 
 export async function testBackend(api: Api,): Promise<boolean> {
@@ -412,6 +468,8 @@ export async function testBackend(api: Api,): Promise<boolean> {
     success = await fetchUserInfo(api, logger) && success;
 
     success = await spawnerFlow(api, logger) && success;
+
+    success = await linkPlayerFlow(api, logger) && success;
 
     success = await gameFlow(api, logger) && success;
 
