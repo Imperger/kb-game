@@ -42,6 +42,7 @@ docker run --rm --name tester \
     --network backend_spawner -t \
     tester
 
+docker stop $(docker ps -q -f "name=ga_")
 docker stop spawner-spawner-1
 docker stop backend-backend_api-1
 
