@@ -9,7 +9,7 @@
   </template>
   <v-list>
     <v-list-item>
-      <v-list-item-title @click="App.signOut">Log out</v-list-item-title>
+      <v-list-item-title @click="signOut">Log out</v-list-item-title>
     </v-list-item>
   </v-list>
 </v-menu>
@@ -19,14 +19,19 @@
 </style>
 
 <script lang="ts">
-import { StoreMixin } from '@/mixins';
+import { ApiServiceMixin, StoreMixin } from '@/mixins';
 
 import { Component, Mixins } from 'vue-property-decorator';
 
 @Component
-export default class ProfileWidget extends Mixins(StoreMixin) {
+export default class ProfileWidget extends Mixins(StoreMixin, ApiServiceMixin) {
   get avatarUrl (): string {
     return this.App.user?.avatar || require('@/assets/default_avatar.png');
+  }
+
+  signOut (): void {
+    this.App.signOut();
+    this.api.auth.signOut();
   }
 }
 </script>
