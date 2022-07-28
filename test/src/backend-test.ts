@@ -182,6 +182,13 @@ async function gameFlow(api: Api, logger: Logger): Promise<boolean> {
 
     await api.backend.addSpawner('https://spawner.dev.wsl:3001', '12345');
 
+    const emptyGameList = await tester.test(
+        () => api.backend.listGames(),
+        'Fetch game list')
+        .status(200)
+        .response(x => Array.isArray(x) && x.length === 0)
+        .toPromise();
+
     const createCustomGame = await tester.test(
         () => api.backend.newCustomGame(),
         'Create custom game'
@@ -202,12 +209,13 @@ async function gameFlow(api: Api, logger: Logger): Promise<boolean> {
         () => api.backend.listGames(),
         'Fetch game list')
         .status(200)
-        .response(x => Array.isArray(x))
+        .response(x => Array.isArray(x) && x.length >= 1)
         .toPromise();
 
     await api.backend.removeSpawner('https://spawner.dev.wsl:3001');
 
-    return createCustomGame.pass &&
+    return emptyGameList.pass &&
+        createCustomGame.pass &&
         conenctToCustomGame.pass &&
         gameList.pass;
 }
