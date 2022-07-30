@@ -197,6 +197,13 @@ async function gameFlow(api: Api, logger: Logger): Promise<boolean> {
         .response(x => x.instanceUrl?.length > 0 && x.playerToken?.length > 0)
         .toPromise();
 
+    const reRequestCustomGame = await tester.test(
+        () => api.backend.newCustomGame(),
+        'Re-create custom game'
+    )
+        .status(400)
+        .toPromise();
+
     const conenctToCustomGame = await tester.test(
         () => api.backend.connectToGame({ instanceUrl: createCustomGame.data.instanceUrl }),
         'Connect to custom game'
@@ -216,6 +223,7 @@ async function gameFlow(api: Api, logger: Logger): Promise<boolean> {
 
     return emptyGameList.pass &&
         createCustomGame.pass &&
+        reRequestCustomGame.pass &&
         conenctToCustomGame.pass &&
         gameList.pass;
 }
