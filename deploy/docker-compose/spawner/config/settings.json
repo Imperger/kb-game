@@ -5,8 +5,10 @@
     "network": "backend_spawner",
     "capacity": 3,
     "secret": "12345",
+    "game_instance": {
+        "ca_mount": "/home/vitaly/Projects/kb-game/ca"
+    },
     "tls": {
-        "certs": "/home/vitaly/Projects/kb-game/certs",
-        "ca": "/home/vitaly/Projects/kb-game/ca"
+        "certs": "/home/vitaly/Projects/kb-game/certs"
     }
 }
