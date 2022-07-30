@@ -145,7 +145,7 @@ export class SpawnerService implements OnModuleInit {
     ];
 
     const Binds = [
-      `${this.configService.get<string>('tls.ca')}:/app/ca:rw`];
+      `${this.configService.get<string>('game_instance.ca_mount')}:/app/ca:rw`];
 
     const hostname = this.instanceNameResolver.toHostname(options.instanceId);
 

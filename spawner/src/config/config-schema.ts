@@ -1,14 +1,16 @@
 import { Type } from 'class-transformer';
 import { IsString, IsDefined, IsNumber, IsOptional, ValidateNested } from 'class-validator';
 
+class GameInstance {
+  @IsDefined({ message: "missing 'game_instance.ca_mount' property" })
+  @IsString()
+  readonly ca_mount: string;
+}
+
 class Tls {
   @IsDefined({ message: "missing 'tls.certs' property" })
   @IsString()
   readonly certs: string;
-
-  @IsDefined({ message: "missing 'tls.ca' property" })
-  @IsString()
-  readonly ca: string;
 }
 
 export class ConfigSchema {
