@@ -212,6 +212,13 @@ async function gameFlow(api: Api, logger: Logger): Promise<boolean> {
         .response(x => x.playerToken?.length > 0)
         .toPromise();
 
+    const connectToCustomGameWithInvalidInstanceUrl = await tester.test(
+        () => api.backend.connectToGame({ instanceUrl: 'https://invalid_spawner.dev.wsl/12345' }),
+        'Connect to custom game with invalid instance url'
+    )
+        .status(400)
+        .toPromise();
+
     const gameList = await tester.test(
         () => api.backend.listGames(),
         'Fetch game list')
@@ -225,6 +232,7 @@ async function gameFlow(api: Api, logger: Logger): Promise<boolean> {
         createCustomGame.pass &&
         reRequestCustomGame.pass &&
         conenctToCustomGame.pass &&
+        connectToCustomGameWithInvalidInstanceUrl.pass &&
         gameList.pass;
 }
 
