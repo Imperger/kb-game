@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse } from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import type { FailType } from "../api-tester";
 import { RejectedResponse } from "./types";
 
@@ -94,6 +94,10 @@ export class BackendApi {
         public entry: string
     ) {
         this.http = axios.create({ baseURL: entry });
+    }
+
+    raw<TSuccess, TError>(config: AxiosRequestConfig<any>): Promise<AxiosResponse<TSuccess>> | FailType<TError> {
+        return this.http.request(config);
     }
 
     register(user: NewUser): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {

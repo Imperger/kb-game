@@ -16,6 +16,24 @@ function genUser() {
     user.cred.password = '1234567890';
 }
 
+async function dtoValidation(api: Api, logger: Logger): Promise<boolean> {
+    const tester = new ApiTester(logger);
+
+    const emptyPayload = await tester.test(
+        () => api.backend.raw({ method: 'post', url: '/auth/register', headers: { 'Content-Type': 'text/plain' }}),
+        'Empty dto')
+        .status(400)
+        .toPromise();
+
+    const invalidPayload = await tester.test(
+        () => api.backend.register({ abcdefg_42: '42' } as any),
+        'Invalid dto')
+        .status(400)
+        .toPromise();
+
+    return emptyPayload.pass && invalidPayload.pass;
+}
+
 async function signinInvalidCreds(api: Api, logger: Logger): Promise<boolean> {
     genUser();
 
@@ -475,6 +493,7 @@ export async function testBackend(api: Api,): Promise<boolean> {
     const logger = new Logger('Backend');
 
     let success = true;
+    success = await dtoValidation(api, logger) && success;
     success = await signinInvalidCreds(api, logger) && success;
     success = await registrationFlow(api, logger) && success;
     success = await signinFlow(api, logger) && success;
