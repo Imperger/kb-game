@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 
 import { Scope } from '@/auth/scopes';
-import { HasScopes } from '@/auth/decorators/has-scopes.decorator';
 import { JwtGuard } from '@/jwt/decorators/jwt.guard';
 import { ScopeGuard } from '@/auth/guards/scope.guard';
 import { AddSpawnerDto } from './dto/add-spawner.dto';
@@ -20,22 +19,19 @@ import { Base64DecoderPipe } from './pipes/base64-decoder.pipe';
 export class SpawnerController {
   constructor(private readonly spawnerService: SpawnerService) {}
 
-  @HasScopes(Scope.ServerMaintainer)
-  @UseGuards(JwtGuard, ScopeGuard)
+  @UseGuards(JwtGuard, ScopeGuard(Scope.ServerMaintainer))
   @Post()
   async add(@Body() spawner: AddSpawnerDto) {
     return this.spawnerService.add(spawner.url, spawner.secret);
   }
 
-  @HasScopes(Scope.ServerMaintainer)
-  @UseGuards(JwtGuard, ScopeGuard)
+  @UseGuards(JwtGuard, ScopeGuard(Scope.ServerMaintainer))
   @Delete(':url_base64')
   async remove(@Param('url_base64', Base64DecoderPipe) url: string) {
     return this.spawnerService.remove(url);
   }
 
-  @HasScopes(Scope.ServerMaintainer)
-  @UseGuards(JwtGuard, ScopeGuard)
+  @UseGuards(JwtGuard, ScopeGuard(Scope.ServerMaintainer))
   @Get()
   async listAll(): Promise<SpawnerInfo[]> {
     return (

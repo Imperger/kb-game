@@ -1,6 +1,5 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 
-import { HasScopes } from '@/auth/decorators/has-scopes.decorator';
 import { JwtGuard } from '@/jwt/decorators/jwt.guard';
 import { Player } from '@/player/decorators/player.decorator';
 import { Scope } from '@/auth/scopes';
@@ -17,8 +16,7 @@ export class GameController {
     private readonly logger: LoggerService
   ) { }
 
-  @HasScopes(Scope.PlayGame)
-  @UseGuards(JwtGuard, ScopeGuard)
+  @UseGuards(JwtGuard, ScopeGuard(Scope.PlayGame))
   @Post('new_custom')
   async new_custom(@Player() player: PlayerSchema) {
     const game = await this.gameService.newCustom({
@@ -34,8 +32,7 @@ export class GameController {
     return game;
   }
 
-  @HasScopes(Scope.PlayGame)
-  @UseGuards(JwtGuard, ScopeGuard)
+  @UseGuards(JwtGuard, ScopeGuard(Scope.PlayGame))
   @Post('connect')
   async connect(
   @Player() player: PlayerSchema,
@@ -54,8 +51,7 @@ export class GameController {
     return conn;
   }
 
-  @HasScopes(Scope.PlayGame)
-  @UseGuards(JwtGuard, ScopeGuard)
+  @UseGuards(JwtGuard, ScopeGuard(Scope.PlayGame))
   @Get('list')
   async listGames() {
     return this.gameService.listGames();
