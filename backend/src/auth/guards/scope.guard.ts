@@ -1,52 +1,52 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
+import { CanActivate, ExecutionContext, mixin, Type } from '@nestjs/common';
 import { Observable } from 'rxjs';
 
 import { User } from '@/user/schemas/user.schema';
-import { Scope, scopeMetaId } from '@/auth/scopes';
+import { Scope } from '@/auth/scopes';
 import { LoggerService } from '@/logger/logger.service';
 
-@Injectable()
-export class ScopeGuard implements CanActivate {
-  constructor(
-    private readonly reflector: Reflector,
-    private readonly logger: LoggerService
-  ) {}
+export const ScopeGuard = (...scopes: Scope[]): Type<CanActivate> => {
 
-  canActivate(
-    context: ExecutionContext
-  ): boolean | Promise<boolean> | Observable<boolean> {
-    const req = context.switchToHttp().getRequest();
-    const user: User = req.user;
+  class ScopeGuardMixin implements CanActivate {
+    constructor(
+      private readonly logger: LoggerService
+    ) { }
 
-    const authorized = (
-      this.reflector.get<Scope[]>(scopeMetaId, context.getHandler()) || []
-    ).every(scope => this.checkScope(scope, user));
+    canActivate(
+      context: ExecutionContext
+    ): boolean | Promise<boolean> | Observable<boolean> {
+      const req = context.switchToHttp().getRequest();
+      const user: User = req.user;
 
-    if (!authorized) {
-      this.logger.warn(
-        `Unauthorized access to '${req.method} ${req.url}' from user '${user.id}:${user.username}'`,
-        'ScopeGuard'
-      );
+      const authorized = scopes.every(scope => this.checkScope(scope, user));
+
+      if (!authorized) {
+        this.logger.warn(
+          `Unauthorized access to '${req.method} ${req.url}' from user '${user.id}:${user.username}'`,
+          'ScopeGuard'
+        );
+      }
+
+      return authorized;
     }
 
-    return authorized;
-  }
-
-  private checkScope(scope: Scope, user: User) {
-    switch (scope) {
-      case Scope.AssignScope:
-        return user.scopes.assignScope;
-      case Scope.ServerMaintainer:
-        return user.scopes.serverMaintainer;
-      case Scope.EditScenario:
-        return user.scopes.editScenario;
-      case Scope.ModerateChat:
-        return user.scopes.moderateChat;
-      case Scope.PlayGame:
-        return user.scopes.blockedUntil < new Date();
-      case Scope.WriteToChat:
-        return user.scopes.mutedUntil < new Date();
+    private checkScope(scope: Scope, user: User) {
+      switch (scope) {
+        case Scope.AssignScope:
+          return user.scopes.assignScope;
+        case Scope.ServerMaintainer:
+          return user.scopes.serverMaintainer;
+        case Scope.EditScenario:
+          return user.scopes.editScenario;
+        case Scope.ModerateChat:
+          return user.scopes.moderateChat;
+        case Scope.PlayGame:
+          return user.scopes.blockedUntil < new Date();
+        case Scope.WriteToChat:
+          return user.scopes.mutedUntil < new Date();
+      }
     }
   }
+
+  return mixin(ScopeGuardMixin);
 }

@@ -11,7 +11,6 @@ import {
   UseGuards
 } from '@nestjs/common';
 
-import { HasScopes } from '@/auth/decorators/has-scopes.decorator';
 import { ScopeGuard } from '@/auth/guards/scope.guard';
 import { JwtGuard } from '@/jwt/decorators/jwt.guard';
 import { JwtKnownSpawnerGuard } from '@/spawner/decorators/jwt-known-spawner.guard';
@@ -24,15 +23,13 @@ import { ParseObjectIdPipe } from '@/common/pipes/parse-object-id.pipe';
 export class ScenarioController {
   constructor(private readonly scenarioService: ScenarioService) {}
 
-  @HasScopes(Scope.EditScenario)
-  @UseGuards(JwtGuard, ScopeGuard)
+  @UseGuards(JwtGuard, ScopeGuard(Scope.EditScenario))
   @Post()
   async add(@Body() scenario: NewScenarioDto) {
     return this.scenarioService.add(scenario.title, scenario.text);
   }
 
-  @HasScopes(Scope.EditScenario)
-  @UseGuards(JwtGuard, ScopeGuard)
+  @UseGuards(JwtGuard, ScopeGuard(Scope.EditScenario))
   @Put(':id')
   async update(
   @Param('id', ParseObjectIdPipe) id: string,
@@ -41,8 +38,7 @@ export class ScenarioController {
     return this.scenarioService.update(id, content);
   }
 
-  @HasScopes(Scope.EditScenario)
-  @UseGuards(JwtGuard, ScopeGuard)
+  @UseGuards(JwtGuard, ScopeGuard(Scope.EditScenario))
   @Delete(':id')
   async remove(@Param('id', ParseObjectIdPipe) id: string) {
     return this.scenarioService.remove(id);
@@ -65,8 +61,7 @@ export class ScenarioController {
     };
   }
 
-  @HasScopes(Scope.EditScenario)
-  @UseGuards(JwtGuard, ScopeGuard)
+  @UseGuards(JwtGuard, ScopeGuard(Scope.EditScenario))
   @Get(':id')
   one(@Param('id') id: string) {
     return this.scenarioService.content(id);
