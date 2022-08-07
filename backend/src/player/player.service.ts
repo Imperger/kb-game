@@ -90,7 +90,18 @@ export class PlayerService {
 
   async unlinkGame(id: string): Promise<boolean> {
     return (
-      (await this.playerModel.updateOne({ _id: id }, { $set: { game: null } }))
+      (await this.playerModel.updateOne(
+        { _id: id },
+        [{
+          $set: {
+            hoursInGame: {
+              $sum: [
+                '$hoursInGame',
+                { $divide: [{ $dateDiff: { startDate: '$game.updatedAt', endDate: '$$NOW', unit: 'second' } }, 3600] }]
+            },
+            game: null
+          }
+        }]))
         .modifiedCount > 0
     );
   }
@@ -100,7 +111,16 @@ export class PlayerService {
       (
         await this.playerModel.updateMany(
           { 'game.instanceUrl': instanceUrl },
-          { $set: { game: null } }
+          [{
+            $set: {
+              hoursInGame: {
+                $sum: [
+                  '$hoursInGame',
+                  { $divide: [{ $dateDiff: { startDate: '$game.updatedAt', endDate: '$$NOW', unit: 'second' } }, 3600] }]
+              },
+              game: null
+            }
+          }]
         )
       ).modifiedCount > 0
     );
