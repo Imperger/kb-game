@@ -21,6 +21,9 @@ export class Player extends Document {
   @Prop({ type: CurrentGame, default: null })
   game: CurrentGame | null;
 
+  @Prop({ default: 0 })
+  hoursInGame: number;
+
   @Prop()
   createdAt?: Date;
 
