@@ -30,7 +30,7 @@
 </style>
 
 <script lang="ts">
-import { Component, Emit, Mixins, Model, Prop } from 'vue-property-decorator';
+import { Component, Mixins } from 'vue-property-decorator';
 
 import { ApiServiceMixin, StoreMixin } from '@/mixins';
 import { AvailableLocales, locales } from '@/locales/available-locales';

@@ -9,6 +9,7 @@ import { mainMenu } from '@/main-menu/main-menu-router';
 import { game } from '@/game/game-router';
 import { scenario } from '@/scenario/scenario-router';
 import { Role } from './roles';
+import { playerStats } from '@/player-stats/player-router';
 
 Vue.use(VueRouter);
 
@@ -16,6 +17,7 @@ const routes: Array<RouteConfig> = [
   ...auth,
   ...game,
   ...scenario,
+  ...playerStats,
   {
     path: '/',
     name: 'MainMenu',

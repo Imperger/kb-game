@@ -2,6 +2,7 @@ import { RouteConfig } from 'vue-router';
 
 import MainMenuHome from './MainMenuHome.vue';
 import MainMenuPlay from './MainMenuPlay.vue';
+import MainMenuProfile from './MainMenuProfile.vue';
 import MainMenuServer from './MainMenuServer.vue';
 import ServerBrowser from './play/ServerBrowser.vue';
 
@@ -15,6 +16,11 @@ export const mainMenu: Array<RouteConfig> = [
     path: 'play',
     name: 'MainMenuPlay',
     component: MainMenuPlay
+  },
+  {
+    path: 'profile/me',
+    name: 'MainMenuProfile',
+    component: MainMenuProfile
   },
   {
     path: 'play/server_browser',
