@@ -24,6 +24,24 @@ export class Player extends Document {
   @Prop({ default: 0 })
   hoursInGame: number;
 
+  @Prop({ default: 1000 })
+  elo: number;
+
+  @Prop({ default: 0 })
+  totalPlayed: number;
+
+  @Prop({ default: 0 })
+  totalWins: number;
+
+  @Prop({ default: 0 })
+  averageCpm: number;
+
+  @Prop({ default: 0 })
+  maxCpm: number;
+
+  @Prop({ type: Date, default: null })
+  quickGameQueue: Date | null;
+
   @Prop()
   createdAt?: Date;
 
@@ -33,4 +51,5 @@ export class Player extends Document {
 
 export const PlayerSchema = SchemaFactory.createForClass(Player);
 
-PlayerSchema.index({ nickname: 1, discriminator: 1 }, { unique: true });
+PlayerSchema.index({ nickname: 1, discriminator: 1 }, { unique: true, collation: { locale: 'en', strength: 1 } });
+PlayerSchema.index({ quickGameQueue: 1 }, { sparse: true });
