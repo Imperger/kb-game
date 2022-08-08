@@ -12,7 +12,7 @@ export class PlayerService {
   constructor(
     private readonly config: ConfigService,
     @InjectModel(Player.name) private readonly playerModel: Model<Player>
-  ) {}
+  ) { }
 
   async newPlayer(nickname: string): Promise<Player> {
     const freeDiscriminator = await this.playerModel.aggregate([
