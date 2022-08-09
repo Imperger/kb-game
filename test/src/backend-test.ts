@@ -20,7 +20,7 @@ async function dtoValidation(api: Api, logger: Logger): Promise<boolean> {
     const tester = new ApiTester(logger);
 
     const emptyPayload = await tester.test(
-        () => api.backend.raw({ method: 'post', url: '/auth/register', headers: { 'Content-Type': 'text/plain' }}),
+        () => api.backend.raw({ method: 'post', url: '/auth/register', headers: { 'Content-Type': 'text/plain' } }),
         'Empty dto')
         .status(400)
         .toPromise();
@@ -193,6 +193,40 @@ async function fetchUserInfo(api: Api, logger: Logger): Promise<boolean> {
         .toPromise();
 
     return userInfo.pass;
+}
+
+async function playerStatsFlow(api: Api, logger: Logger): Promise<boolean> {
+    const tester = new ApiTester(logger);
+
+    const malformedNickname = await tester.test(
+        () => api.backend.getPlayerStats('invalid_username'),
+        'Fetch player stats using an malformed nickname')
+        .status(400)
+        .toPromise();
+
+    const unknownNickname = await tester.test(
+        () => api.backend.getPlayerStats('username_999'),
+        'Fetch player stats using an unknown nickname')
+        .status(404)
+        .toPromise();
+
+    const currentPlayer = await tester.test(
+        () => api.backend.currentPlayerStats(user.token),
+        'Fetch the current player stats')
+        .status(200)
+        .toPromise();
+
+    const knownNickname = await tester.test(
+        () => api.backend.getPlayerStats(`${currentPlayer.data.nickname}_${currentPlayer.data.discriminator}`),
+        'Fetch player stats using an known nickname')
+        .status(200)
+        .response(currentPlayer.data)
+        .toPromise();
+
+    return malformedNickname.pass &&
+        unknownNickname.pass &&
+        currentPlayer.pass &&
+        knownNickname.pass;
 }
 
 async function gameFlow(api: Api, logger: Logger): Promise<boolean> {
@@ -501,6 +535,8 @@ export async function testBackend(api: Api,): Promise<boolean> {
     success = await confirmRegistrationUnsuccess(api, logger) && success;
 
     success = await fetchUserInfo(api, logger) && success;
+
+    success = await playerStatsFlow(api, logger) && success;
 
     success = await spawnerFlow(api, logger) && success;
 

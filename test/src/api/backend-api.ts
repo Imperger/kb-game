@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+
 import type { FailType } from "../api-tester";
 import { RejectedResponse } from "./types";
 
@@ -85,6 +86,24 @@ export interface ScenarioTitle {
 
 export interface ScenarioText {
     text: string;
+}
+
+export interface CurrentGame {
+    instanceUrl: string;
+    updatedAt?: Date;
+}
+
+export interface PlayerStats {
+    nickname: string;
+    discriminator: number;
+    game: CurrentGame | null;
+    hoursInGame: number;
+    elo: number;
+    totalPlayed: number;
+    totalWins: number;
+    averageCpm: number;
+    maxCpm: number;
+    quickGameQueue: Date | null;
 }
 
 export class BackendApi {
@@ -191,6 +210,14 @@ export class BackendApi {
             '/player/unlink_game',
             { instanceUrl },
             { headers: { Authorization: `Bearer ${accessToken}` } });
+    }
+
+    getPlayerStats(nickname: string): Promise<AxiosResponse<PlayerStats>> | FailType<RejectedResponse> {
+        return this.http.get<PlayerStats>(`/player/${nickname}`);
+    }
+
+    currentPlayerStats(accessToken: string): Promise<AxiosResponse<PlayerStats>> | FailType<RejectedResponse> {
+        return this.http.get<PlayerStats>('/player/me');
     }
 
     private async handleAuthToken(signin: () => Promise<AxiosResponse<LoginResponse>>): Promise<AxiosResponse<LoginResponse>> {
