@@ -1,4 +1,4 @@
-import { PipeTransform, Injectable, ArgumentMetadata, BadRequestException } from '@nestjs/common';
+import { PipeTransform, Injectable, ArgumentMetadata, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -22,7 +22,7 @@ export class PlayerByNicknamePipe implements PipeTransform {
       .collation({ locale: 'en', strength: 1 });
 
     if (player == null) {
-      throw new BadRequestException('Unknown player');
+      throw new NotFoundException('Unknown player');
     }
 
     return player;
