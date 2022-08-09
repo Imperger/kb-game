@@ -20,7 +20,7 @@ async function dtoValidation(api: Api, logger: Logger): Promise<boolean> {
     const tester = new ApiTester(logger);
 
     const emptyPayload = await tester.test(
-        () => api.backend.raw({ method: 'post', url: '/auth/register', headers: { 'Content-Type': 'text/plain' }}),
+        () => api.backend.raw({ method: 'post', url: '/auth/register', headers: { 'Content-Type': 'text/plain' } }),
         'Empty dto')
         .status(400)
         .toPromise();

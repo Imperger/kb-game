@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+
 import type { FailType } from "../api-tester";
 import { RejectedResponse } from "./types";
 
