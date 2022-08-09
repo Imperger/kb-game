@@ -17,6 +17,25 @@
                 "-c",
                 "config/settings.json"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Backend Test",
+            "runtimeArgs": [
+                "-r",
+                "ts-node/register",
+                "-r",
+                "tsconfig-paths/register"
+            ],
+            "env": { 
+                "NODE_EXTRA_CA_CERTS": "./.vscode/certs/root.crt", 
+                "NODE_ENV": "test" },
+            "args": [
+                "${workspaceFolder}/src/main.ts",
+                "-c",
+                "config/settings.json"
+            ]
         }
     ]
 }
