@@ -28,7 +28,14 @@ export default class App extends VuexModule {
 
   @Mutation
   public setUser (user: CurrentUser | null): void {
-    this.me = user;
+    this.me = user ? {
+      ...user,
+      scopes: {
+        ...user.scopes,
+        blockedUntil: new Date(user.scopes.blockedUntil),
+        mutedUntil: new Date(user.scopes.mutedUntil)
+      }
+    } : null;
   }
 
   @Mutation
@@ -82,5 +89,9 @@ export default class App extends VuexModule {
 
   public get serverMaintainer (): boolean {
     return this.me?.scopes.serverMaintainer ?? false;
+  }
+
+  public get canPlay (): boolean {
+    return (this.me?.scopes.blockedUntil ?? NaN) < new Date();
   }
 }

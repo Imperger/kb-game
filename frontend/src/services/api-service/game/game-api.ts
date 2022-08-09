@@ -19,11 +19,24 @@ export interface ServerDescription {
   started: boolean;
 }
 
+export interface QuickGameDescriptor {
+  instanceUrl: string;
+  playerToken: string;
+}
+
 export default class GameApi {
   private http!: AxiosInstance;
 
   set httpClient (httpClient: AxiosInstance) {
     this.http = httpClient;
+  }
+
+  async enterQuickQueue (): Promise<QuickGameDescriptor | null | RejectedResponse> {
+    return (await this.http.put<QuickGameDescriptor | null>('game/enter_quick')).data;
+  }
+
+  async leaveQuickQueue (): Promise<boolean | RejectedResponse> {
+    return (await this.http.put<boolean>('game/leave_quick')).data;
   }
 
   async newCustom (): Promise<NewGameDescriptor | RejectedResponse> {
