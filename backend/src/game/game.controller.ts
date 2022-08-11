@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Req, UseGuards } from '@nestjs/common';
 
 import { JwtGuard } from '@/jwt/decorators/jwt.guard';
 import { Player } from '@/player/decorators/player.decorator';
@@ -8,13 +8,60 @@ import { Player as PlayerSchema } from '@/player/schemas/player.schema';
 import { ScopeGuard } from '@/auth/guards/scope.guard';
 import { ConnectToGameDto } from './dto/connect-to-game.dto';
 import { LoggerService } from '@/logger/logger.service';
+import { QuickGameDescriptor } from './interfaces/quick-game-descriptor';
+import { QuickGameQueueResponderService } from './quick-game-queue-responder.service';
+import { MatchMakingService } from './matchmaking.service';
 
 @Controller('game')
 export class GameController {
   constructor(
     private readonly gameService: GameService,
+    private readonly quickGameQueueResponder: QuickGameQueueResponderService,
+    private readonly matchmaking: MatchMakingService,
     private readonly logger: LoggerService
   ) { }
+
+  @UseGuards(JwtGuard, ScopeGuard(Scope.PlayGame))
+  @Put('enter_quick')
+  async enterQuickGameQeue(@Req() req: any, @Player() player: PlayerSchema) {
+    return new Promise<QuickGameDescriptor | null>(async (resolve) => {
+      // Trying to enter the quick game queue
+      if (await this.gameService.enterQuickQueue(player)) {
+        /**
+         * At this point request being in long polling state.
+         * By saving a response handle that will later be used to notify 
+         * the player about the result of the matchmaking.
+         */
+        this.quickGameQueueResponder.register(player.id, resolve);
+        this.matchmaking.enterQueue(player);
+
+        let canceled = true;
+
+        req.raw.once('end', () => {
+          canceled = false;
+        });
+
+        req.raw.once('close', () => {
+          // The player should being in the queue only while request in pending state
+          this.gameService.leaveQuickQueue(player);
+
+          if (canceled) {
+            this.quickGameQueueResponder.resolve(player.id, null);
+          }
+        });
+      } else {
+        // The player already in queue or in a running game.
+        resolve(null);
+      }
+    });
+  }
+
+  @UseGuards(JwtGuard, ScopeGuard(Scope.PlayGame))
+  @Put('leave_quick')
+  async leaveQuickGameQeue(@Player() player: PlayerSchema) {
+    await this.quickGameQueueResponder.resolve(player.id, null);
+    return this.gameService.leaveQuickQueue(player);
+  }
 
   @UseGuards(JwtGuard, ScopeGuard(Scope.PlayGame))
   @Post('new_custom')

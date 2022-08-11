@@ -1,5 +1,5 @@
 import * as Crypto from 'crypto';
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 import { ServerDescription, SpawnerService } from '@/spawner/spawner.service';
@@ -9,6 +9,10 @@ import {
   ConnectionFailedException,
   RequestInstanceFailedException
 } from './game-exception';
+import { Player } from '@/player/schemas/player.schema';
+import { MatchMakingService } from './matchmaking.service';
+import { PlayerGroup } from './match-making-strategies/match-makin-strategy';
+import { QuickGameQueueResponderService } from './quick-game-queue-responder.service';
 
 export interface CustomGameDescriptor {
   instanceUrl: string;
@@ -25,13 +29,43 @@ export interface PlayerDescriptor {
 }
 
 @Injectable()
-export class GameService {
+export class GameService implements OnModuleInit {
   constructor(
     private readonly spawnerService: SpawnerService,
     private readonly jwtService: JwtService,
     private readonly logger: LoggerService,
-    private readonly player: PlayerService
-  ) {}
+    private readonly player: PlayerService,
+    private readonly matchmaking: MatchMakingService,
+    private readonly quickGameQueueResponder: QuickGameQueueResponderService
+  ) {
+    matchmaking.$gameFormed.subscribe(x => this.newQuick(x));
+  }
+
+  async onModuleInit() {
+    if (await this.player.resetQuickQueueForAll()) {
+      this.logger.log('Reset the quick game queue', 'GameService');
+    }
+  }
+
+  enterQuickQueue(player: Player) {
+    return this.player.enterQuickGameQueue(player.id);
+  }
+
+  async leaveQuickQueue(player: Player) {
+    const leaved = await this.player.leaveQuickGameQueue(player.id);
+
+    if (leaved) {
+      this.matchmaking.leaveQueue(player);
+    }
+
+    return leaved;
+  }
+
+  async newQuick(group: PlayerGroup) {
+    // TODO: Implement me
+    group
+      .forEach(x => this.quickGameQueueResponder.resolve(x, { instanceUrl: 'url', playerToken: 'token' }));
+  }
 
   async newCustom(player: PlayerDescriptor): Promise<CustomGameDescriptor> {
     const acquireId = GameService.generateAcquireId();
@@ -128,7 +162,7 @@ export class GameService {
             spawner.secret
           ))
         );
-      } catch (e) {}
+      } catch (e) { }
     }
 
     return ret;
