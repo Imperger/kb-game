@@ -47,6 +47,36 @@ export class PlayerService {
     return player;
   }
 
+  async enterQuickGameQueue(id: string): Promise<boolean> {
+    return (await this.playerModel.updateOne(
+      { _id: id, quickGameQueue: null, game: null },
+      { $currentDate: { quickGameQueue: true } })).modifiedCount > 0;
+  }
+
+  async leaveQuickGameQueue(id: string): Promise<boolean> {
+    return (await this.playerModel.updateOne(
+      { _id: id, quickGameQueue: { $ne: null } },
+      { $set: { quickGameQueue: null } })).modifiedCount > 0;
+  }
+
+  async resetQuickQueueForAll(): Promise<boolean> {
+    return (await this.playerModel.updateMany(
+      { quickGameQueue: { $ne: null } },
+      { $set: { quickGameQueue: null } }
+    )).acknowledged;
+  }
+
+  /**
+   * 
+   * @param id Player id
+   * @param game Reference to the game instance
+   * @param acquireId Used for linking without previous unlinking
+   * @returns Returns true if the linking was successful, false - otherwise
+   * Link the player to the game instance to which he's connected to. Using acquiredId
+   * makes possible to make prelink and thus reserve the player by itself in case
+   * when an reference to a game instance unknown yet. It is also impossible to link
+   * a player who is in the quick game queue.
+   */
   async linkGame(
     id: string,
     game: LinkedGame,
@@ -59,7 +89,7 @@ export class PlayerService {
         await this.playerModel.updateOne(
           {
             $and: [
-              { _id: id },
+              { _id: id, quickGameQueue: null },
               {
                 $or: [
                   { 'game.instanceUrl': null },
@@ -124,5 +154,9 @@ export class PlayerService {
         )
       ).modifiedCount > 0
     );
+  }
+
+  get model() {
+    return this.playerModel;
   }
 }
