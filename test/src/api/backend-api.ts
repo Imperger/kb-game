@@ -106,6 +106,11 @@ export interface PlayerStats {
     quickGameQueue: Date | null;
 }
 
+export interface QuickGameDescriptor {
+    instanceUrl: string;
+    playerToken: string;
+  }  
+
 export class BackendApi {
     private token!: string;
     private http!: AxiosInstance;
@@ -149,6 +154,14 @@ export class BackendApi {
 
     listGames(): Promise<AxiosResponse<ServerDescription[]>> | FailType<RejectedResponse> {
         return this.http.get<ServerDescription[]>('/game/list');
+    }
+
+    enterQuickQueue() {
+        return this.http.put<QuickGameDescriptor | null>('/game/enter_quick');
+    }
+
+    leaveQuickQueue() {
+        return this.http.put<boolean>('/game/leave_quick');
     }
 
     addScenario(title: string, text: string): Promise<AxiosResponse<string>> | FailType<RejectedResponse> {
@@ -216,7 +229,7 @@ export class BackendApi {
         return this.http.get<PlayerStats>(`/player/${nickname}`);
     }
 
-    currentPlayerStats(accessToken: string): Promise<AxiosResponse<PlayerStats>> | FailType<RejectedResponse> {
+    currentPlayerStats(): Promise<AxiosResponse<PlayerStats>> | FailType<RejectedResponse> {
         return this.http.get<PlayerStats>('/player/me');
     }
 
