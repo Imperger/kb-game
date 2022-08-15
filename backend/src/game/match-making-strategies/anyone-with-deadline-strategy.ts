@@ -5,9 +5,10 @@ import { Injectable, OnModuleInit, Type } from "@nestjs/common";
 import { Player } from "@/player/schemas/player.schema";
 import { MatchMakingStrategy, PlayerGroup } from "./match-makin-strategy";
 import { PlayerServiceExtension } from "./player-service-extension";
+import { PlayerDescriptor } from '../interfaces/player-descriptor';
 
 interface DeadlineDescriptor {
-  playerId: string | null;
+  player: PlayerDescriptor | null;
   inQueueSince: number | null;
   timer: NodeJS.Timeout | null;
 }
@@ -26,7 +27,7 @@ export const anyoneWithDeadlineStrategyFactory = (deadline: number): Type<MatchM
     private player: PlayerServiceExtension;
 
     private readonly deadline: DeadlineDescriptor = {
-      playerId: null,
+      player: null,
       inQueueSince: null,
       timer: null
     };
@@ -42,8 +43,8 @@ export const anyoneWithDeadlineStrategyFactory = (deadline: number): Type<MatchM
     async enterQueue(player: Player) {
       ++this.totalInQueue;
 
-      if (!this.deadline.playerId) {
-        this.deadline.playerId = player.id;
+      if (!this.deadline.player) {
+        this.deadline.player = { playerId: player.id, nickname: player.nickname };
         this.deadline.inQueueSince = Date.now();
       }
 
@@ -51,7 +52,7 @@ export const anyoneWithDeadlineStrategyFactory = (deadline: number): Type<MatchM
       if (this.totalInQueue === 2) {
         // Deadline had happened
         if (this.deadline.inQueueSince + deadline * 1000 <= Date.now()) {
-          this.$groupFormed.next([this.deadline.playerId, player.id]);
+          this.$groupFormed.next([this.deadline.player, { playerId: player.id, nickname: player.nickname }]);
         } else {
           // Deadline didn't happen, waiting for more players
           this.deadline.timer = setTimeout(
@@ -66,11 +67,18 @@ export const anyoneWithDeadlineStrategyFactory = (deadline: number): Type<MatchM
         const candidates = await this.player.findByOrderedInQueueTime(this.serverCapacity + 2);
 
         if (candidates.length >= this.serverCapacity) {
-          this.$groupFormed.next(candidates.slice(0, this.serverCapacity).map(x => x.id));
+          this.$groupFormed
+            .next(candidates
+              .slice(0, this.serverCapacity)
+              .map(x => ({ playerId: x.id, nickname: x.nickname })));
         }
 
         if (candidates.length == this.serverCapacity + 2) {
-          this.deadline.playerId = candidates[this.serverCapacity].id;
+          this.deadline.player = {
+            playerId: candidates[this.serverCapacity].id,
+            nickname: candidates[this.serverCapacity].nickname
+          };
+
           this.deadline.timer = setTimeout(
             () => this.gatherPlayers(),
             this.deadline.inQueueSince - Date.now());
@@ -86,15 +94,15 @@ export const anyoneWithDeadlineStrategyFactory = (deadline: number): Type<MatchM
         this.deadline.timer = null;
       }
 
-      if (this.deadline.playerId === player.id) {
-        this.deadline.playerId = null;
+      if (this.deadline.player?.playerId === player.id) {
+        this.deadline.player = null;
         clearTimeout(this.deadline.timer);
         this.deadline.timer = null;
 
         const nextDeadline = await this.player.findByOrderedInQueueTime(1);
 
         if (nextDeadline.length) {
-          this.deadline.playerId = nextDeadline[0].id;
+          this.deadline.player = { playerId: nextDeadline[0].id, nickname: nextDeadline[0].nickname };
           this.deadline.timer = setTimeout(
             () => this.gatherPlayers(),
             this.deadline.inQueueSince - Date.now());
@@ -107,11 +115,17 @@ export const anyoneWithDeadlineStrategyFactory = (deadline: number): Type<MatchM
       const candidates = await this.player.findByOrderedInQueueTime(this.serverCapacity + 2);
 
       if (candidates.length > 1) {
-        this.$groupFormed.next(candidates.slice(0, Math.min(candidates.length, this.serverCapacity)).map(x => x.id));
+        this.$groupFormed
+          .next(candidates.slice(0, Math.min(candidates.length, this.serverCapacity))
+            .map(x => ({ playerId: x.id, nickname: x.nickname })));
       }
 
       if (candidates.length === this.serverCapacity + 2) {
-        this.deadline.playerId = candidates[this.serverCapacity].id;
+        this.deadline.player = {
+          playerId: candidates[this.serverCapacity].id,
+          nickname: candidates[this.serverCapacity].nickname
+        };
+
         this.deadline.inQueueSince = candidates[this.serverCapacity].quickGameQueue.getTime();
         this.deadline.timer = setTimeout(
           () => this.gatherPlayers(),

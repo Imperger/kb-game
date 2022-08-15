@@ -9,24 +9,12 @@ import { EndGameStrategy } from './end-game/end-game-strategy';
 import { replayMetrics } from './Replay';
 import { WaitUntilProgressEndGame } from './end-game/wait-until-progress-end-game';
 import { ShutdownService } from '../shutdown.service';
-import { BackendApiService, Scenario } from './backend-api.service';
+import { BackendApiService } from './backend-api.service';
 import { ParticipantService } from './participant.service';
 import { EventEmitterService } from './event-emitter.service';
 import { LobbyEventType } from './interfaces/lobby-event.interface';
 import { GameEventType } from './interfaces/game-event.interface';
 import { instanceUrl } from './instance-url';
-
-export interface LobbyPlayer {
-  id: string;
-  nickname: string;
-  slot: number;
-}
-
-export interface LobbyState {
-  ownerId: string;
-  players: LobbyPlayer[];
-  scenarios: Scenario[];
-}
 
 type Nickname = string;
 export interface ServerDescription {
@@ -51,15 +39,13 @@ export interface PlayerDesc {
 type Base64Image = string;
 
 @Injectable()
-export class GameService {
-  private scenarios!: Scenario[];
-  private _scenario: Scenario;
-
+export abstract class GameService {
   private _gameStarted = false;
 
   private scenarioText!: string;
 
   private scenarioImg!: Base64Image;
+
   private scenarioImgDescription!: PopulatedLine[];
 
   private endGameStrategy!: EndGameStrategy;
@@ -74,60 +60,24 @@ export class GameService {
 
   constructor(
     private readonly eventEmitter: EventEmitterService,
-    private readonly participant: ParticipantService,
-    private readonly backendApi: BackendApiService,
+    protected readonly participant: ParticipantService,
+    protected readonly backendApi: BackendApiService,
     private readonly shutdownService: ShutdownService,
-  ) {
-    this.backendApi.listAllTitles().then((x) => {
-      this.scenarios = x;
-      this._scenario = this.scenarios[0];
-    });
-  }
+  ) {}
 
-  selectScenario(id: string): boolean {
-    const seleted = this.scenarios.find((x) => x.id === id);
-
-    if (seleted) {
-      this._scenario = seleted;
-    }
-
-    return !!this.scenarios;
-  }
-
-  lobby(): LobbyState {
-    return {
-      ownerId: process.env.OWNER_ID,
-      players: [...this.participant.players].map((x) => ({
-        id: x.id,
-        nickname: x.nickname,
-        slot: x.slot,
-      })),
-      scenarios: this.scenarios,
-    };
-  }
-
-  serverDescription(): ServerDescription {
-    const owner = this.participant.ownerNickname;
-
-    return {
-      owner,
-      capacity: 10,
-      occupancy: this.participant.occupancy,
-      started: this._gameStarted,
-    };
-  }
+  abstract get scenarioId(): string;
 
   game(): GameState {
     return { field: { textImg: '' } };
   }
 
   async startGame(): Promise<boolean> {
-    if (!this._scenario) return false;
+    if (!this.scenarioId) return false;
 
     this._gameStarted = true;
 
     this.scenarioText = await this.backendApi.fetchScenarioText(
-      this._scenario.id,
+      this.scenarioId,
     );
 
     const gameFieldBuilder = new GameFieldBuilder();

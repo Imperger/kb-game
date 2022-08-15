@@ -1,18 +1,19 @@
-import { IsDefined, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ArrayMinSize, IsArray, IsDefined, IsString } from 'class-validator';
 
-import { NewCustomGameDto } from './new-custom-game.dto';
-
-export class NewQuickGameDto extends NewCustomGameDto  {
+export class NewQuickGameDto  {
     @IsDefined({ message: 'missing property \'backendApi\'' })
     @IsString()
     readonly backendApi: string;
     
-    @IsDefined({ message: 'missing property \'type\'' })
-    @IsString()
-    readonly type: string; // 'FFA' or 'Teams'
+    @IsDefined({ message: 'missing property \'players\'' })
+    @IsArray()
+    @ArrayMinSize(2)
+    @Type(() => String)
+    readonly players: string[];
 
-    @IsDefined({ message: 'missing property \'text\'' })
+    @IsDefined({ message: 'missing property \'scenarioId\'' })
     @IsString()
-    readonly text: string; // text content ??
+    readonly scenarioId: string;
     
 }

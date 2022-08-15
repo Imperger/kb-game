@@ -3,6 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import { AuthResult, AuthStrategy } from './strategies/auth-strategy';
 import { GameStrategy } from './strategies/game-strategy';
 import { LobbyStrategy } from './strategies/lobby-strategy';
+import { QuickGameLobbyStrategy } from './strategies/quick-game-lobby-strategy';
 import { Strategy } from './strategies/strategy';
 
 export class GameClient {
@@ -37,12 +38,20 @@ export class GameClient {
     return this.state.sendKey(key);
   }
 
+  get inLobby (): boolean {
+    return this.state instanceof LobbyStrategy;
+  }
+
   get lobby (): LobbyStrategy {
     return this.state as LobbyStrategy;
   }
 
-  get inLobby (): boolean {
-    return this.state instanceof LobbyStrategy;
+  get inQuickgGameLobby () : boolean {
+    return this.state instanceof QuickGameLobbyStrategy;
+  }
+
+  get quickGameLobby (): QuickGameLobbyStrategy {
+    return this.state as QuickGameLobbyStrategy;
   }
 
   get inGame () : boolean {
@@ -56,9 +65,12 @@ export class GameClient {
   private async switchStrategy (strategy: Strategy) {
     if (this.state instanceof AuthStrategy && strategy instanceof LobbyStrategy) {
       this.authResult(AuthResult.CustomGame);
-    } else if (this.state instanceof AuthStrategy && strategy instanceof GameStrategy) {
+    } else if (this.state instanceof AuthStrategy && strategy instanceof QuickGameLobbyStrategy) {
+      strategy.bufferedEvents = this.state.bufferedEvents;
       this.authResult(AuthResult.QuickGame);
     } else if (this.state instanceof LobbyStrategy && strategy instanceof GameStrategy) {
+      strategy.players = this.state.players.map(x => ({ ...x, progress: 0 }));
+    } else if (this.state instanceof QuickGameLobbyStrategy && strategy instanceof GameStrategy) {
       strategy.players = this.state.players.map(x => ({ ...x, progress: 0 }));
     }
 

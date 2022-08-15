@@ -3,6 +3,7 @@ import { Socket } from 'socket.io-client';
 
 import { remoteCall } from '../remote-call';
 import { GameStrategy } from './game-strategy';
+import { LobbyEvent, LobbyEventType, PlayerJoinedEvent, PlayerLeavesEvent } from './interfaces/lobby-events';
 import { Strategy } from './strategy';
 
 export interface Player {
@@ -22,34 +23,11 @@ export interface LobbyState {
   scenarios: Scenario[];
 }
 
-enum LobbyEventType { PlayerJoined, PlayerLeaves, GameWillStart, FetchGameField }
-
-interface PlayerJoinedEvent {
-  id: string;
-  nickname: string;
-  slot: number;
-}
-
-interface PlayerLeavesEvent {
-  id: string;
-}
-
-type Base64Image = string;
-
-interface FetchGameFieldEvent {
-  field: Base64Image;
-}
-
-interface LobbyEvent {
-  type: LobbyEventType;
-  data?: PlayerJoinedEvent | PlayerLeavesEvent | FetchGameFieldEvent;
-}
-
 export class LobbyStrategy extends Strategy {
   private socket!: Socket;
 
   private _ownerId!: string;
-  private _players!: Player[];
+  private _players: Player[] = [];
   private _scenarios!: Scenario[];
   private _scenario!: Scenario;
 
@@ -63,12 +41,16 @@ export class LobbyStrategy extends Strategy {
     this.socket = socket;
     this.switchStrategy = switchStrategy;
 
-    ({ ownerId: this._ownerId, players: this._players, scenarios: this._scenarios } =
+    this.socket.on('lobby_event', this.lobbyEventHandler);
+
+    let players: Player[];
+
+    ({ ownerId: this._ownerId, players, scenarios: this._scenarios } =
       await this.fetchLobbyState());
 
-    this._scenario = this.scenarios[0];
+    this._players.push(...players);
 
-    this.socket.on('lobby_event', this.lobbyEventHandler);
+    this._scenario = this.scenarios[0];
   }
 
   async deactivate (): Promise<void> {

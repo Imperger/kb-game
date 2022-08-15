@@ -13,6 +13,8 @@ import { Player } from '@/player/schemas/player.schema';
 import { MatchMakingService } from './matchmaking.service';
 import { PlayerGroup } from './match-making-strategies/match-makin-strategy';
 import { QuickGameQueueResponderService } from './quick-game-queue-responder.service';
+import { PlayerDescriptor } from './interfaces/player-descriptor';
+import { ScenarioService } from '@/scenario/scenario.service';
 
 export interface CustomGameDescriptor {
   instanceUrl: string;
@@ -23,11 +25,6 @@ export interface ConnectionDescriptor {
   playerToken: string;
 }
 
-export interface PlayerDescriptor {
-  playerId: string;
-  nickname: string;
-}
-
 @Injectable()
 export class GameService implements OnModuleInit {
   constructor(
@@ -36,7 +33,8 @@ export class GameService implements OnModuleInit {
     private readonly logger: LoggerService,
     private readonly player: PlayerService,
     private readonly matchmaking: MatchMakingService,
-    private readonly quickGameQueueResponder: QuickGameQueueResponderService
+    private readonly quickGameQueueResponder: QuickGameQueueResponderService,
+    private readonly scenaio: ScenarioService
   ) {
     matchmaking.$gameFormed.subscribe(x => this.newQuick(x));
   }
@@ -62,9 +60,27 @@ export class GameService implements OnModuleInit {
   }
 
   async newQuick(group: PlayerGroup) {
-    // TODO: Implement me
+    const instance = await this.spawnerService.findQuickInstance(
+      group.map(x => x.playerId),
+      await this.scenaio.randomScenarioId());
+
+    if (instance === null) {
+      group.forEach(x => this.quickGameQueueResponder.resolve(x.playerId, null));
+
+      return;
+    }
+
     group
-      .forEach(x => this.quickGameQueueResponder.resolve(x, { instanceUrl: 'url', playerToken: 'token' }));
+      .forEach(x => this.quickGameQueueResponder.resolve(x.playerId, {
+        instanceUrl: instance.instanceUrl,
+        playerToken: this.jwtService.sign(
+          {
+            instanceId: GameService.instanceIdFromUrl(instance.instanceUrl),
+            ...x
+          },
+          { expiresIn: '3m', secret: instance.spawnerSecret }
+        )
+      }));
   }
 
   async newCustom(player: PlayerDescriptor): Promise<CustomGameDescriptor> {

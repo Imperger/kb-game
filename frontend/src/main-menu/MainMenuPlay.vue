@@ -49,8 +49,15 @@ export default class MainMenuPlay extends Mixins(ApiServiceMixin, GameMixin, Sto
         return;
       }
 
-      // TODO: Here we can connect to the game instance
-      console.log('Game found', descriptor);
+      switch (await this.gameClient.connect(descriptor.instanceUrl, descriptor.playerToken)) {
+        case AuthResult.CustomGame:
+          break;
+        case AuthResult.QuickGame:
+          this.$router.push({ name: 'QuickGameLobby' });
+          break;
+        case AuthResult.Unauthorized:
+          break;
+      }
     }
   }
 

@@ -1,20 +1,26 @@
+import { AxiosResponse } from 'axios';
 import Crypto from 'crypto';
 import { sign } from 'jsonwebtoken';
 
 import { Api } from "./api-interface";
 import { ApiTester, ApiTestResult } from "./api-tester";
+import { BackendApi } from './api/backend-api';
 import { RejectedResponse } from './api/types';
 import { delay } from './delay';
 import { Logger } from "./logger";
 import { Mailbox } from './mailbox';
 
-const user = { cred: { username: '', email: '', password: '' }, token: '' };
-
 function genUser() {
-    user.cred.username = Crypto.randomBytes(7).toString('hex');
-    user.cred.email = `${user.cred.username}@dev.wsl`;
-    user.cred.password = '1234567890';
+    const id = Crypto.randomBytes(7).toString('hex');
+
+    return {
+        username: id,
+        email: `${id}@dev.wsl`,
+        password: '1234567890'
+    }
 }
+
+const user = { cred: genUser(), token: '' };
 
 async function dtoValidation(api: Api, logger: Logger): Promise<boolean> {
     const tester = new ApiTester(logger);
@@ -35,8 +41,6 @@ async function dtoValidation(api: Api, logger: Logger): Promise<boolean> {
 }
 
 async function signinInvalidCreds(api: Api, logger: Logger): Promise<boolean> {
-    genUser();
-
     const tester = new ApiTester(logger);
     const login = await tester.test(
         () => api.backend.loginUsername(user.cred.username, user.cred.password),
@@ -45,6 +49,29 @@ async function signinInvalidCreds(api: Api, logger: Logger): Promise<boolean> {
         .toPromise();
 
     return login.pass;
+}
+
+async function getConfirmationToken(destination: string): Promise<string> {
+    const mailbox = new Mailbox('http://mail.dev.wsl:1080');
+
+    let confirmLetter = null;
+    for (let retries = 20; confirmLetter === null && retries > 0; --retries) {
+        confirmLetter = await mailbox.findByDestination(destination);
+
+        await delay(2500);
+    }
+
+    if (confirmLetter === null) {
+        throw new Error('FAIL /register should sent confirmation letter');
+    }
+
+    const [, token] = /https*:\/\/.+\/registration\/confirm\/([a-zA-Z0-9\._-]+)/.exec(confirmLetter.html) ?? [null, null];
+
+    if (!token) {
+        throw new Error('FAIL /register confirmation letter should contain confirm url');
+    }
+
+    return token;
 }
 
 async function registrationFlow(api: Api, logger: Logger): Promise<boolean> {
@@ -80,32 +107,14 @@ async function registrationFlow(api: Api, logger: Logger): Promise<boolean> {
     // Make confirmation time valid again
     await api.mongo.collection('users').updateOne({ email: user.cred.email }, { $set: { createdAt: new Date() } });
 
-
-    const mailbox = new Mailbox('http://mail.dev.wsl:1080');
-
-    let confirmLetter = null;
-    for (let retries = 20; confirmLetter === null && retries > 0; --retries) {
-        confirmLetter = await mailbox.findByDestination(user.cred.email);
-
-        await delay(2500);
+    try {
+        user.token = await getConfirmationToken(user.cred.email);
+    } catch (e) {
+        logger.error((e as Error).message);
     }
-
-    if (confirmLetter === null) {
-        logger.error('FAIL /register should sent confirmation letter');
-        return false;
-    }
-
-    const [, token] = /https*:\/\/.+\/registration\/confirm\/([a-zA-Z0-9\._-]+)/.exec(confirmLetter.html) ?? [null, null];
-
-    if (!token) {
-        logger.error('FAIL /register confirmation letter should contain confirm url');
-        return false;
-    }
-
-    user.token = token;
 
     const confirmRegistration = await tester.test(
-        () => api.backend.confirmRegistration(token),
+        () => api.backend.confirmRegistration(user.token),
         'Confirm registration'
     )
         .status(200)
@@ -211,7 +220,7 @@ async function playerStatsFlow(api: Api, logger: Logger): Promise<boolean> {
         .toPromise();
 
     const currentPlayer = await tester.test(
-        () => api.backend.currentPlayerStats(user.token),
+        () => api.backend.currentPlayerStats(),
         'Fetch the current player stats')
         .status(200)
         .toPromise();
@@ -523,6 +532,70 @@ async function linkPlayerFlow(api: Api, logger: Logger): Promise<boolean> {
 
 }
 
+async function quickGameFlow(api: Api, logger: Logger): Promise<boolean> {
+    const spawner = { url: 'https://spawner.dev.wsl:3001', secret: '12345' };
+
+    const participantCreds1 = genUser();
+    const participant1 = new BackendApi('https://backend.dev.wsl/api');
+    await participant1.register(participantCreds1);
+    await participant1.confirmRegistration(await getConfirmationToken(participantCreds1.email));
+    await participant1.loginUsername(participantCreds1.username, participantCreds1.password);
+
+    const participantCreds2 = genUser();
+    const participant2 = new BackendApi('https://backend.dev.wsl/api');
+    await participant2.register(participantCreds2);
+    await participant2.confirmRegistration(await getConfirmationToken(participantCreds2.email));
+    await participant2.loginUsername(participantCreds2.username, participantCreds2.password);
+
+    await api.backend.addSpawner(spawner.url, spawner.secret);
+    const scenarioId = ((await api.backend.addScenario('QQQQQ', 'QQQQQQQQQQQQ')) as AxiosResponse<string>).data;
+
+    const tester = new ApiTester(logger);
+
+    const p1Queue = tester.test(
+        () => participant1.enterQuickQueue(),
+        'Enter the quick game queue for player#1')
+        .status(200)
+        .response(x => x !== null)
+        .toPromise();
+
+    const p2Queue = tester.test(
+        () => participant2.enterQuickQueue(),
+        'Enter the quick game queue for player#2')
+        .status(200)
+        .response(x => x === null)
+        .toPromise();
+
+    await delay(1000);
+
+    const p2LeaveQueue = tester.test(
+        () => participant2.leaveQuickQueue(),
+        'Leave the quick queue for player#2'
+    )
+        .status(200)
+        .response(true)
+        .toPromise();
+
+    await delay(1000);
+
+    const p2QueueAgain = tester.test(
+        () => participant2.enterQuickQueue(),
+        'Enter again the quick game queue for player#2')
+        .status(200)
+        .response(x => x !== null)
+        .toPromise();
+
+    let pass = false
+    try {
+        pass = (await Promise.all([p1Queue, p2Queue, p2LeaveQueue, p2QueueAgain])).every(x => x.pass);
+    } catch (e) { }
+
+    await api.backend.removeScenario(scenarioId);
+    await api.backend.removeSpawner(spawner.url);
+
+    return pass;
+}
+
 export async function testBackend(api: Api,): Promise<boolean> {
     const logger = new Logger('Backend');
 
@@ -545,6 +618,8 @@ export async function testBackend(api: Api,): Promise<boolean> {
     success = await gameFlow(api, logger) && success;
 
     success = await scenarioFlow(api, logger) && success;
+
+    success = await quickGameFlow(api, logger) && success;
 
     return success;
 }
