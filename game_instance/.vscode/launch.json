@@ -4,7 +4,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Backend",
+            "name": "Custom Game",
             "runtimeArgs": [
                 "-r",
                 "ts-node/register",
@@ -14,11 +14,37 @@
             "env": { 
                 "NODE_EXTRA_CA_CERTS": "./.vscode/certs/root.crt",
                 "INSTANCE_ID": "random_generated_instance_id",
-                "OWNER_ID": "62924fa78d952ccf7085dd3d",
+                "OWNER_ID": "62f79230d5612cd7acf463fa",
                 "BACKEND_API": "https://backend.dev.wsl",
                 "SPAWNER_API": "https://spawner.dev.wsl:3001",
                 "SPAWNER_SECRET": "12345",
                 "GAME_TYPE": "custom"
+             },
+            "args": [
+                "${workspaceFolder}/src/main.ts",
+                "-c",
+                "config/settings.json"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Quick Game",
+            "runtimeArgs": [
+                "-r",
+                "ts-node/register",
+                "-r",
+                "tsconfig-paths/register"
+            ],
+            "env": { 
+                "NODE_EXTRA_CA_CERTS": "./.vscode/certs/root.crt",
+                "INSTANCE_ID": "random_generated_instance_id",
+                "BACKEND_API": "https://backend.dev.wsl",
+                "SPAWNER_API": "https://spawner.dev.wsl:3001",
+                "SPAWNER_SECRET": "12345",
+                "PLAYERS": "[\"62f79215d5612cd7acf463f3\", \"62f79230d5612cd7acf463fa\"]",
+                "SCENARIO_ID": "62f7a0eb5dc33a2dd045fedd",
+                "GAME_TYPE": "quick"
              },
             "args": [
                 "${workspaceFolder}/src/main.ts",
