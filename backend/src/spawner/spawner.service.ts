@@ -126,6 +126,25 @@ export class SpawnerService {
     return null;
   }
 
+  async findQuickInstance(
+    players: string[],
+    scenarioId: string
+  ): Promise<GameInstanceDescriptor | null> {
+    const spawners = await this.listAll();
+
+    for (const s of spawners) {
+      try {
+        return {
+          ...(await this.requestQuickInstance(s.url, s.secret, players, scenarioId)),
+          spawnerUrl: s.url,
+          spawnerSecret: s.secret
+        };
+      } catch (e) {}
+    }
+
+    return null;
+  }
+
   async listSpawnerInstancesInfo(
     spawnerUrl: string,
     secret: string
@@ -157,6 +176,29 @@ export class SpawnerService {
           this.http.post<InstanceDescriptor>(
             `${spawnerUrl}/game/new_custom`,
             { ownerId, backendApi: this.configHelperService.apiEntry },
+            this.useAuthorization(secret)
+          )
+        )
+      ).data;
+    } catch (e) {
+      if (isAxiosError(e)) {
+        throw new RequestInstanceFailedException();
+      }
+    }
+  }
+
+  private async requestQuickInstance(
+    spawnerUrl: string,
+    secret: string,
+    players: string[],
+    scenarioId: string
+  ): Promise<InstanceDescriptor> {
+    try {
+      return (
+        await firstValueFrom(
+          this.http.post<InstanceDescriptor>(
+            `${spawnerUrl}/game/new_quick`,
+            { players, scenarioId, backendApi: this.configHelperService.apiEntry },
             this.useAuthorization(secret)
           )
         )

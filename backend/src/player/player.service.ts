@@ -92,7 +92,7 @@ export class PlayerService {
               { _id: id, quickGameQueue: null },
               {
                 $or: [
-                  { 'game.instanceUrl': null },
+                  { 'game': null },
                   { 'game.instanceUrl': acquireId },
                   {
                     $expr: {

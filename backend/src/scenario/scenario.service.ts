@@ -19,7 +19,7 @@ export interface ScenarioContent {
 export class ScenarioService {
   constructor(
     @InjectModel(Scenario.name) private readonly scenarioModel: Model<Scenario>
-  ) {}
+  ) { }
 
   async add(title: string, text: string): Promise<string> {
     text = text
@@ -64,7 +64,7 @@ export class ScenarioService {
             title: 1,
             text: {
               $function: {
-                body: function(text) {
+                body: function (text) {
                   return text.substring(0, 100);
                 },
                 args: ['$text'],
@@ -91,5 +91,11 @@ export class ScenarioService {
 
   async text(id: string): Promise<string> {
     return (await this.scenarioModel.findById(id)).text;
+  }
+
+  async randomScenarioId(): Promise<string> {
+    return (await this.scenarioModel.aggregate([{ $sample: { size: 1 } }]))[0]
+      ._id
+      .toString();
   }
 }

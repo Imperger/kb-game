@@ -13,7 +13,8 @@ import { SpawnerModule } from '@/spawner/spawner.module';
     ]),
     SpawnerModule
   ],
+  controllers: [ScenarioController],
   providers: [ScenarioService],
-  controllers: [ScenarioController]
+  exports: [ScenarioService]
 })
 export class ScenarioModule {}

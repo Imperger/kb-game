@@ -14,10 +14,12 @@ export interface CustomGameOptions {
   backendApi: string;
 }
 
+type PlayerId = string;
+
 export interface QuickGameOptions {
+  players: PlayerId[];
+  scenarioId: string;
   backendApi: string;
-  type: string, // 'FFA' or 'Teams'
-  text: string // text content ??
 }
 
 export interface SpawnerInfo {
@@ -29,11 +31,31 @@ export interface InstanceRequestResult {
   instanceUrl: string;
 };
 
-interface GameInstanceOptions {
+enum InstanceType { Custom = 'custom', Quick = 'quick' }
+
+interface CustomGameInstanceOptions {
   instanceId: string;
   owner: string;
   backendApi: string;
-  type: 'custom';
+  type: InstanceType.Custom;
+}
+
+interface QuickGameInstanceOptions {
+  instanceId: string;
+  players: PlayerId[];
+  scenarioId: string;
+  backendApi: string;
+  type: InstanceType.Quick;
+}
+
+type GameInstanceOptions = CustomGameInstanceOptions | QuickGameInstanceOptions;
+
+function isCustomGameInstanceOptions(opts: GameInstanceOptions): opts is CustomGameInstanceOptions {
+  return opts.type === InstanceType.Custom;
+}
+
+function isQuickGameInstanceOptions(opts: GameInstanceOptions): opts is QuickGameInstanceOptions {
+  return opts.type === InstanceType.Quick;
 }
 
 type Nickname = string;
@@ -45,13 +67,14 @@ export interface ServerDescription {
   started: boolean;
 }
 
+
 @Injectable()
 export class SpawnerService implements OnModuleInit {
   private network: string = '';
 
   private readonly gameInstanceImageName = 'game_instance';
 
-  private readonly instancesHost = new Set<string>();
+  private readonly instancesHost = new Map<string, InstanceType>();
 
   constructor(
     private readonly configService: ConfigService,
@@ -72,7 +95,23 @@ export class SpawnerService implements OnModuleInit {
   }
 
   async createQuickGame(options: QuickGameOptions): Promise<InstanceRequestResult | null> {
-    return { instanceUrl: 'wss://game.dev.wsl:3002' }
+    if (this.instancesHost.size >= this.configService.get<number>('capacity')) {
+      throw new HttpException('The maximum capacity of the spawner has been reached', HttpStatus.CONFLICT);
+    }
+
+    const instanceId = SpawnerService.generateInstanceId();
+
+    if (!await this.spawnGameInstance({
+      instanceId,
+      players: options.players,
+      scenarioId: options.scenarioId,
+      backendApi: options.backendApi,
+      type: InstanceType.Quick
+    })) {
+      throw new ConflictException('Failed to spawn game instance');
+    }
+
+    return { instanceUrl: this.instanceNameResolver.buildInstanceUrl(instanceId) }
   }
 
   async createCustomGame(options: CustomGameOptions): Promise<InstanceRequestResult> {
@@ -86,7 +125,7 @@ export class SpawnerService implements OnModuleInit {
       instanceId,
       owner: options.ownerId,
       backendApi: options.backendApi,
-      type: 'custom'
+      type: InstanceType.Custom
     })) {
       throw new ConflictException('Failed to spawn game instance');
     }
@@ -98,15 +137,16 @@ export class SpawnerService implements OnModuleInit {
     if (this.instancesHost.size === 0)
       return [];
 
-    const requests = [...this.instancesHost.values()]
-      .map(hostname => new Observable<ServerDescription>(observer => {
-        this.http.get<ServerDescription>(`http://${hostname}/info`, this.useAuthorization())
+    const requests = [...this.instancesHost.entries()]
+      .filter(([host, type]) => type === InstanceType.Custom)
+      .map(([host, type]) => new Observable<ServerDescription>(observer => {
+        this.http.get<ServerDescription>(`http://${host}/info`, this.useAuthorization())
           .pipe<AxiosResponse<ServerDescription>>(catchError(x => Promise.resolve(null)))
           .subscribe(game => {
             if (game)
               observer.next({
                 ...game.data,
-                url: this.instanceNameResolver.buildInstanceUrl(this.instanceNameResolver.toInstanceId(hostname))
+                url: this.instanceNameResolver.buildInstanceUrl(this.instanceNameResolver.toInstanceId(host))
               });
 
             observer.complete();
@@ -132,17 +172,23 @@ export class SpawnerService implements OnModuleInit {
     }
   }
 
-  private async spawnGameInstance(options: GameInstanceOptions): Promise<boolean> {
+  private async spawnGameInstance(options: CustomGameInstanceOptions | QuickGameInstanceOptions): Promise<boolean> {
 
     const Env = [
       'NODE_EXTRA_CA_CERTS=./ca/root.crt',
       `INSTANCE_ID=${options.instanceId}`,
-      `OWNER_ID=${options.owner}`,
       `BACKEND_API=${options.backendApi}`,
       `SPAWNER_API=${this.configService.get<string>('entry')}`,
       `SPAWNER_SECRET=${this.configService.get<string>('secret')}`,
       `GAME_TYPE=${options.type}`
     ];
+
+    if (isCustomGameInstanceOptions(options)) {
+      Env.push(`OWNER_ID=${options.owner}`);
+    } else if (isQuickGameInstanceOptions(options)) {
+      Env.push(`PLAYERS=${JSON.stringify(options.players)}`);
+      Env.push(`SCENARIO_ID=${options.scenarioId}`);
+    }
 
     const Binds = [
       `${this.configService.get<string>('game_instance.ca_mount')}:/app/ca:rw`];
@@ -171,8 +217,8 @@ export class SpawnerService implements OnModuleInit {
       }
     );
 
-    this.instancesHost.add(hostname);
-    
+    this.instancesHost.set(hostname, options.type);
+
     let retries = 20;
 
     unloaded.then(() => {

@@ -1,4 +1,4 @@
-import { UseGuards } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -6,15 +6,14 @@ import {
   OnGatewayDisconnect,
   OnGatewayInit,
   SubscribeMessage,
-  WebSocketGateway,
 } from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';
 
-import { JwtArg } from './decorators/jwt-arg';
-import { GameService, GameState, LobbyState } from './game/game.service';
-import { ParticipantService } from './game/participant.service';
-import { WsServerRefService } from './game/ws-server-ref.service';
-import { OwnerGuard } from './guards/owner.guard';
+import { JwtArg } from '../decorators/jwt-arg';
+import { GameService, GameState } from './game.service';
+import { ParticipantService } from './participant.service';
+import { WsServerRefService } from './ws-server-ref.service';
+import { ConfigService } from './config.service';
 
 interface PlayerToken {
   instanceId: string;
@@ -24,7 +23,7 @@ interface PlayerToken {
   exp: number;
 }
 
-enum AuthResult {
+export enum AuthResult {
   Unauthorized = 0,
   CustomGame = 1,
   QuickGame = 2,
@@ -36,15 +35,18 @@ interface GameImageField {
   field: Base64Image;
 }
 
-@WebSocketGateway({ cors: true })
-export class GameGateway
+@Injectable()
+export abstract class GameGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(
     private readonly wsServerRef: WsServerRefService,
     private readonly participant: ParticipantService,
-    private readonly game: GameService,
+    protected readonly game: GameService,
+    protected readonly config: ConfigService,
   ) {}
+
+  abstract get gameType(): AuthResult;
 
   async afterInit(server: Server) {
     this.wsServerRef.server = server;
@@ -70,39 +72,17 @@ export class GameGateway
   ): Promise<AuthResult> {
     if (
       playerToken.exp * 1000 > Date.now() &&
-      playerToken.instanceId === process.env.INSTANCE_ID &&
+      playerToken.instanceId === this.config.instanceId &&
       (await this.participant.addPlayer({
         socket: client,
         id: playerToken.playerId,
         nickname: playerToken.nickname,
       }))
     ) {
-      switch (process.env.GAME_TYPE.toLowerCase()) {
-        case 'custom':
-          return AuthResult.CustomGame;
-        case 'quick':
-          return AuthResult.QuickGame;
-      }
+      return this.gameType;
     } else {
       return AuthResult.Unauthorized;
     }
-  }
-
-  @SubscribeMessage('lobby_state')
-  lobbyState(): LobbyState {
-    return this.game.lobby();
-  }
-
-  @UseGuards(OwnerGuard)
-  @SubscribeMessage('select_scenario')
-  selectScenario(@MessageBody() id: string): boolean {
-    return this.game.selectScenario(id);
-  }
-
-  @UseGuards(OwnerGuard)
-  @SubscribeMessage('start_game')
-  startGame(): Promise<boolean> {
-    return this.game.startGame();
   }
 
   @SubscribeMessage('game_field')

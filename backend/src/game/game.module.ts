@@ -8,9 +8,10 @@ import { QuickGameQueueResponderService } from './quick-game-queue-responder.ser
 import { MatchMakingService } from './matchmaking.service';
 import { anyoneWithDeadlineStrategyFactory } from './match-making-strategies/anyone-with-deadline-strategy';
 import { matchMakingStrategyToken } from './match-making-strategies/match-makin-strategy';
+import { ScenarioModule } from '@/scenario/scenario.module';
 
 @Module({
-  imports: [SpawnerModule, PlayerModule],
+  imports: [SpawnerModule, PlayerModule, ScenarioModule],
   providers: [
     {
       provide: matchMakingStrategyToken,
