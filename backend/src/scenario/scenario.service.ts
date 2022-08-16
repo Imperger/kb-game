@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { NewScenarioDto } from './dto/new-scenario.dto';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 
+import { LoggerService } from '@/logger/logger.service';
+import { NewScenarioDto } from './dto/new-scenario.dto';
 import { Scenario } from './schemas/scenario.schema';
 
 export interface ScenarioPage {
@@ -16,10 +17,17 @@ export interface ScenarioContent {
 }
 
 @Injectable()
-export class ScenarioService {
+export class ScenarioService implements OnModuleInit {
   constructor(
-    @InjectModel(Scenario.name) private readonly scenarioModel: Model<Scenario>
+    @InjectModel(Scenario.name) private readonly scenarioModel: Model<Scenario>,
+    private readonly logger: LoggerService
   ) { }
+
+  async onModuleInit() {
+    if (await this.populateIfEmpty()) {
+      this.logger.log('Populate the empty scenario list with a sample', 'ScenarioService');
+    }
+  }
 
   async add(title: string, text: string): Promise<string> {
     text = text
@@ -43,7 +51,11 @@ export class ScenarioService {
   }
 
   async remove(id: string): Promise<boolean> {
-    return (await this.scenarioModel.deleteOne({ _id: id })).deletedCount > 0;
+    if (await this.scenarioModel.count() > 1) {
+      return (await this.scenarioModel.deleteOne({ _id: id })).deletedCount > 0;
+    }
+
+    return false;
   }
 
   async list(offset: number, limit: number): Promise<ScenarioPage> {
@@ -97,5 +109,18 @@ export class ScenarioService {
     return (await this.scenarioModel.aggregate([{ $sample: { size: 1 } }]))[0]
       ._id
       .toString();
+  }
+
+  private async populateIfEmpty(): Promise<boolean> {
+    if (await this.scenarioModel.count() === 0) {
+      new this.scenarioModel({
+        title: 'Lorem ipsum',
+        text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent ut felis mauris. Donec nec placerat justo. Proin at tempor orci. Morbi dignissim tortor nec massa commodo, at feugiat purus vestibulum. Nunc scelerisque mollis nisi mattis eleifend. Fusce dictum non orci vitae cursus. Phasellus a elementum felis. Nullam urna est, venenatis non elit eget, rutrum efficitur velit. Proin lacus erat, sodales sed urna in, condimentum convallis nulla. Quisque iaculis nunc augue, et imperdiet risus tempor non.'
+      }).save();
+
+      return true;
+    }
+
+    return false;
   }
 }
