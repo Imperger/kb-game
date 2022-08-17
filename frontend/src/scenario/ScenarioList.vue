@@ -64,7 +64,7 @@ import { ScenarioPage } from '@/services/api-service/scenario/scenario-api';
 })
 export default class ScenarioList extends Mixins(ApiServiceMixin) {
   page = 1;
-  pages = 4;
+  pages = 1;
   perPage = 4;
 
   scenarioPage: ScenarioPage = { total: 0, scenarios: [] };
