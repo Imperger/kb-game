@@ -32,8 +32,8 @@ export default class ScenarioApi {
     return !isRejectedResponse((await this.http.put<boolean>(`scenario/${id}`, { ...content })));
   }
 
-  async remove (id: string): Promise<boolean | RejectedResponse> {
-    return (await this.http.delete<boolean>(`scenario/${id}`)).data;
+  async remove (id: string): Promise<void | RejectedResponse> {
+    return (await this.http.delete<void>(`scenario/${id}`)).data;
   }
 
   async content (id: string): Promise<ScenarioContent | RejectedResponse> {

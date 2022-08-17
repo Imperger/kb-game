@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { LoggerService } from '@/logger/logger.service';
 import { NewScenarioDto } from './dto/new-scenario.dto';
 import { Scenario } from './schemas/scenario.schema';
+import { RemovingLastScenarioException, ScenarioNotFoundException } from './scenario-exception';
 
 export interface ScenarioPage {
   total: number;
@@ -50,12 +51,16 @@ export class ScenarioService implements OnModuleInit {
     return true;
   }
 
-  async remove(id: string): Promise<boolean> {
+  async remove(id: string): Promise<void> {
     if (await this.scenarioModel.count() > 1) {
-      return (await this.scenarioModel.deleteOne({ _id: id })).deletedCount > 0;
+      if ((await this.scenarioModel.deleteOne({ _id: id })).deletedCount > 0) {
+        return;
+      }
+
+      throw new ScenarioNotFoundException();
     }
 
-    return false;
+    throw new RemovingLastScenarioException();
   }
 
   async list(offset: number, limit: number): Promise<ScenarioPage> {

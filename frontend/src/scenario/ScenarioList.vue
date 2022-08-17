@@ -64,7 +64,7 @@ import { ScenarioPage } from '@/services/api-service/scenario/scenario-api';
 })
 export default class ScenarioList extends Mixins(ApiServiceMixin) {
   page = 1;
-  pages = 4;
+  pages = 1;
   perPage = 4;
 
   scenarioPage: ScenarioPage = { total: 0, scenarios: [] };
@@ -84,7 +84,7 @@ export default class ScenarioList extends Mixins(ApiServiceMixin) {
   async remove (id: string): Promise<void> {
     const removed = await this.api.scenario.remove(id);
 
-    if (!isRejectedResponse(removed) && removed) {
+    if (!isRejectedResponse(removed)) {
       this.syncView(this.page, true);
     }
   }
@@ -103,6 +103,11 @@ export default class ScenarioList extends Mixins(ApiServiceMixin) {
     const scenarioPage = await this.api.scenario.list((page - 1) * this.perPage, this.perPage);
 
     if (!isRejectedResponse(scenarioPage)) {
+      if (scenarioPage.scenarios.length === 0) {
+        this.page = Math.ceil(scenarioPage.total / this.perPage);
+        return this.syncView(this.page, true);
+      }
+
       this.scenarioPage = scenarioPage;
       this.pages = Math.ceil(scenarioPage.total / this.perPage);
 

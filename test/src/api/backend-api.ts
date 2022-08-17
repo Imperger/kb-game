@@ -172,8 +172,8 @@ export class BackendApi {
         return this.http.put<boolean>(`/scenario/${id}`, content);
     }
 
-    removeScenario(id: string): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
-        return this.http.delete<boolean>(`/scenario/${id}`);
+    removeScenario(id: string): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
+        return this.http.delete<void>(`/scenario/${id}`);
     }
 
     listScenario(offset: number, limit: number): Promise<AxiosResponse<ScenarioPage>> | FailType<RejectedResponse> {

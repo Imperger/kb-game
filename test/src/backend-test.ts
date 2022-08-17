@@ -370,8 +370,13 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
     const removeScenario = await tester.test(
         () => api.backend.removeScenario(scenario.id),
         'Remove scenario')
-        .status(200)
-        .response(x => x === true)
+        .status(204)
+        .toPromise();
+
+    const removeLastScenario = await tester.test(
+        () => api.backend.removeScenario(scenarioList.data.scenarios.find(x => x.id !== scenario.id)?.id ?? ''),
+        'Remove last scenario')
+        .status(409)
         .toPromise();
 
     try {
@@ -386,7 +391,8 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
         scenarioList.pass &&
         allTitles.pass &&
         scenarioText.pass &&
-        removeScenario.pass;
+        removeScenario.pass &&
+        removeLastScenario.pass;
 }
 
 export enum SpawnerStatusCode {
