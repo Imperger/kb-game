@@ -9,3 +9,4 @@ common - 1 - 100
 spawner - 100-200
 game - 200-300
 auth - 300-400
+scenario - 400-500

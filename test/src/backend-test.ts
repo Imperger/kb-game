@@ -370,8 +370,7 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
     const removeScenario = await tester.test(
         () => api.backend.removeScenario(scenario.id),
         'Remove scenario')
-        .status(200)
-        .response(x => x === true)
+        .status(204)
         .toPromise();
 
     try {

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseIntPipe,
   Post,
@@ -21,7 +22,7 @@ import { ParseObjectIdPipe } from '@/common/pipes/parse-object-id.pipe';
 
 @Controller('scenario')
 export class ScenarioController {
-  constructor(private readonly scenarioService: ScenarioService) {}
+  constructor(private readonly scenarioService: ScenarioService) { }
 
   @UseGuards(JwtGuard, ScopeGuard(Scope.EditScenario))
   @Post()
@@ -39,9 +40,10 @@ export class ScenarioController {
   }
 
   @UseGuards(JwtGuard, ScopeGuard(Scope.EditScenario))
+  @HttpCode(204)
   @Delete(':id')
   async remove(@Param('id', ParseObjectIdPipe) id: string) {
-    return this.scenarioService.remove(id);
+    await this.scenarioService.remove(id);
   }
 
   @UseGuards(JwtGuard)
