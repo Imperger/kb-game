@@ -196,8 +196,8 @@ export class BackendApi {
         return this.http.post<RequestedSpawnerInfo>('/spawner', { url, secret });
     }
 
-    removeSpawner(url: string): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
-        return this.http.delete<boolean>(`/spawner/${Buffer.from(url).toString('base64')}`);
+    removeSpawner(url: string): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
+        return this.http.delete<void>(`/spawner/${Buffer.from(url).toString('base64')}`);
     }
 
     listSpawners(): Promise<AxiosResponse<SpawnerInfo>> | FailType<RejectedResponse> {

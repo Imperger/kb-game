@@ -15,11 +15,12 @@ import {
   ListGameFailedException,
   RequestInstanceFailedException,
   SpawnerAlreadyAdded,
+  SpawnerNotFound,
   UnknownException,
   WrongSecretException
 } from './spawner-exception';
 
-export interface RequestedSpawnerInfo {
+export interface KnownSpawnerInfo {
   name: string;
   capacity: number;
 }
@@ -30,18 +31,19 @@ export interface SpawnerInfo {
   capacity: number;
 }
 
-export interface InstanceDescriptor {
+export interface InstanceLocation {
   instanceUrl: string;
 }
 
-export interface GameInstanceDescriptor {
+export interface RequestedInstance {
   instanceUrl: string;
   spawnerUrl: string;
   spawnerSecret: string;
 }
 
 type Nickname = string;
-export interface ServerDescription {
+
+export interface CustomInstanceInfo {
   url: string;
   owner: Nickname;
   capacity: number;
@@ -58,11 +60,11 @@ export class SpawnerService {
     @InjectModel(Spawner.name) private readonly spawnerModel: Model<Spawner>
   ) {}
 
-  async add(url: string, secret: string): Promise<RequestedSpawnerInfo> {
+  async add(url: string, secret: string): Promise<KnownSpawnerInfo> {
     try {
       const info = (
         await firstValueFrom(
-          this.http.get<RequestedSpawnerInfo>(
+          this.http.get<KnownSpawnerInfo>(
             `${url}/info`,
             this.useAuthorization(secret)
           )
@@ -100,8 +102,10 @@ export class SpawnerService {
     }
   }
 
-  async remove(url: string): Promise<boolean> {
-    return (await this.spawnerModel.deleteOne({ url })).deletedCount > 0;
+  async remove(url: string): Promise<void> {
+    if((await this.spawnerModel.deleteOne({ url })).deletedCount === 0) {
+      throw new SpawnerNotFound();
+    }
   }
 
   async listAll() {
@@ -110,7 +114,7 @@ export class SpawnerService {
 
   async findCustomInstance(
     ownerId: string
-  ): Promise<GameInstanceDescriptor | null> {
+  ): Promise<RequestedInstance | null> {
     const spawners = await this.listAll();
 
     for (const s of spawners) {
@@ -129,7 +133,7 @@ export class SpawnerService {
   async findQuickInstance(
     players: string[],
     scenarioId: string
-  ): Promise<GameInstanceDescriptor | null> {
+  ): Promise<RequestedInstance | null> {
     const spawners = await this.listAll();
 
     for (const s of spawners) {
@@ -148,11 +152,11 @@ export class SpawnerService {
   async listSpawnerInstancesInfo(
     spawnerUrl: string,
     secret: string
-  ): Promise<ServerDescription[]> {
+  ): Promise<CustomInstanceInfo[]> {
     try {
       return (
         await firstValueFrom(
-          this.http.get<ServerDescription[]>(
+          this.http.get<CustomInstanceInfo[]>(
             `${spawnerUrl}/game/list`,
             this.useAuthorization(secret)
           )
@@ -169,11 +173,11 @@ export class SpawnerService {
     spawnerUrl: string,
     secret: string,
     ownerId: string
-  ): Promise<InstanceDescriptor> {
+  ): Promise<InstanceLocation> {
     try {
       return (
         await firstValueFrom(
-          this.http.post<InstanceDescriptor>(
+          this.http.post<InstanceLocation>(
             `${spawnerUrl}/game/new_custom`,
             { ownerId, backendApi: this.configHelperService.apiEntry },
             this.useAuthorization(secret)
@@ -192,11 +196,11 @@ export class SpawnerService {
     secret: string,
     players: string[],
     scenarioId: string
-  ): Promise<InstanceDescriptor> {
+  ): Promise<InstanceLocation> {
     try {
       return (
         await firstValueFrom(
-          this.http.post<InstanceDescriptor>(
+          this.http.post<InstanceLocation>(
             `${spawnerUrl}/game/new_quick`,
             { players, scenarioId, backendApi: this.configHelperService.apiEntry },
             this.useAuthorization(secret)
