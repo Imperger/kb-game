@@ -7,6 +7,7 @@ export enum SpawnerError {
   HostNotResponse,
   HostNotFound,
   WrongSecret,
+  UnknownSpawner,
   RequestInstanceFailed,
   ListGameFailed
 }
@@ -53,6 +54,12 @@ export class WrongSecretException extends AppException {
   code = SpawnerError.WrongSecret;
   status = HttpStatus.BAD_REQUEST;
   message = 'Wront secret';
+}
+
+export class SpawnerNotFound extends AppException {
+  code = SpawnerError.WrongSecret;
+  status = HttpStatus.NOT_FOUND;
+  message = 'Unknown spawner';
 }
 
 export const isSpawnerException = exceptionGuardFactory(SpawnerException, {

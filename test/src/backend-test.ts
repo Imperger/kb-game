@@ -476,14 +476,21 @@ async function spawnerFlow(api: Api, logger: Logger): Promise<boolean> {
     const removeSpawner = await tester.test(
         () => api.backend.removeSpawner('https://spawner.dev.wsl:3001'),
         'Remove spawner')
-        .status(200)
+        .status(204)
+        .toPromise();
+
+    const removeUnknownSpawner = await tester.test(
+        () => api.backend.removeSpawner('https://spawner.dev.wsl:3001'),
+        'Remove unknown spawner')
+        .status(404)
         .toPromise();
 
     return badSpawners &&
         validSpawner.pass &&
         alreadyAddedSpawner.pass &&
         listSpawners.pass &&
-        removeSpawner.pass;
+        removeSpawner.pass &&
+        removeUnknownSpawner.pass;
 }
 
 async function linkPlayerFlow(api: Api, logger: Logger): Promise<boolean> {

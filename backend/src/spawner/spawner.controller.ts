@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Post,
   UseGuards
@@ -12,7 +13,7 @@ import { Scope } from '@/auth/scopes';
 import { JwtGuard } from '@/jwt/decorators/jwt.guard';
 import { ScopeGuard } from '@/auth/guards/scope.guard';
 import { AddSpawnerDto } from './dto/add-spawner.dto';
-import { SpawnerInfo, SpawnerService } from './spawner.service';
+import { SpawnerInfo, KnownSpawnerInfo, SpawnerService } from './spawner.service';
 import { Base64DecoderPipe } from './pipes/base64-decoder.pipe';
 
 @Controller('spawner')
@@ -21,14 +22,15 @@ export class SpawnerController {
 
   @UseGuards(JwtGuard, ScopeGuard(Scope.ServerMaintainer))
   @Post()
-  async add(@Body() spawner: AddSpawnerDto) {
+  async add(@Body() spawner: AddSpawnerDto): Promise<KnownSpawnerInfo> {
     return this.spawnerService.add(spawner.url, spawner.secret);
   }
 
   @UseGuards(JwtGuard, ScopeGuard(Scope.ServerMaintainer))
+  @HttpCode(204)
   @Delete(':url_base64')
-  async remove(@Param('url_base64', Base64DecoderPipe) url: string) {
-    return this.spawnerService.remove(url);
+  async remove(@Param('url_base64', Base64DecoderPipe) url: string): Promise<void> {
+    await this.spawnerService.remove(url);
   }
 
   @UseGuards(JwtGuard, ScopeGuard(Scope.ServerMaintainer))

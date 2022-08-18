@@ -2,7 +2,7 @@ import * as Crypto from 'crypto';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { ServerDescription, SpawnerService } from '@/spawner/spawner.service';
+import { CustomInstanceInfo, SpawnerService } from '@/spawner/spawner.service';
 import { LoggerService } from '@/logger/logger.service';
 import { PlayerService } from '@/player/player.service';
 import {
@@ -167,8 +167,8 @@ export class GameService implements OnModuleInit {
     return { playerToken };
   }
 
-  async listGames(): Promise<ServerDescription[]> {
-    const ret: ServerDescription[] = [];
+  async listGames(): Promise<CustomInstanceInfo[]> {
+    const ret: CustomInstanceInfo[] = [];
 
     for (const spawner of await this.spawnerService.listAll()) {
       try {
