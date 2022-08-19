@@ -19,6 +19,26 @@
                 "-c",
                 "config/settings.json"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Redirect Quick Game",
+            "runtimeArgs": [
+                "-r",
+                "ts-node/register",
+                "-r",
+                "tsconfig-paths/register"
+            ],
+            "env": { 
+                "NODE_ENV": "quick-redirect",
+                "NODE_EXTRA_CA_CERTS": "./.vscode/certs/root.crt",
+            },
+            "args": [
+                "${workspaceFolder}/src/main.ts",
+                "-c",
+                "config/settings.json"
+            ]
         }
     ]
 }
