@@ -1,4 +1,11 @@
-import { count, Subject, startWith, debounceTime, takeUntil } from 'rxjs';
+import {
+  count,
+  Subject,
+  startWith,
+  debounceTime,
+  takeUntil,
+  Subscription,
+} from 'rxjs';
 
 import { Player } from '../Player';
 import { EndGameHandle, EndGameStrategy } from './end-game-strategy';
@@ -16,6 +23,8 @@ export class WaitUntilProgressEndGame implements EndGameStrategy {
 
   private $idle = new Subject<void>();
 
+  private idleUnsub: Subscription;
+
   constructor(private idleTimeout: number) {}
 
   init(players: Player[], endGame: EndGameHandle): void {
@@ -25,18 +34,20 @@ export class WaitUntilProgressEndGame implements EndGameStrategy {
 
   tick(emitter: Player): void {
     if ([...this.players].every((p) => p.finished)) {
+      this.idleUnsub.unsubscribe();
       this.endGame();
       return;
     }
 
     if (emitter.finished) {
       if (this.players.length <= 1) {
+        this.idleUnsub.unsubscribe();
         this.endGame();
         return;
       }
 
       if (!this.hasWinner) {
-        this.$idle
+        this.idleUnsub = this.$idle
           .pipe(
             startWith(),
             debounceTime(this.idleTimeout),
