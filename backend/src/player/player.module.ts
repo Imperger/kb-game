@@ -5,11 +5,13 @@ import { Player, PlayerSchema } from './schemas/player.schema';
 import { PlayerService } from './player.service';
 import { PlayerController } from './player.controller';
 import { SpawnerModule } from '@/spawner/spawner.module';
+import { ScoringModule } from '@/scoring/scoring.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Player.name, schema: PlayerSchema }]),
-    SpawnerModule
+    SpawnerModule,
+    ScoringModule
   ],
   providers: [PlayerService],
   controllers: [PlayerController],

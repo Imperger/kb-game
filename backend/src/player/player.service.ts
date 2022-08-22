@@ -6,16 +6,19 @@ import { Model } from 'mongoose';
 
 import { LinkedGame } from './interfaces/linked-game';
 import { Player } from './schemas/player.schema';
+import { ReplayStats } from '@/replay/interfaces/replay-stats';
+import { EloCalculatorService } from '@/scoring/elo-calculator.service';
 
 @Injectable()
 export class PlayerService {
   constructor(
     private readonly config: ConfigService,
-    @InjectModel(Player.name) private readonly playerModel: Model<Player>
+    @InjectModel(Player.name) private readonly player: Model<Player>,
+    private readonly elo: EloCalculatorService
   ) { }
 
   async newPlayer(nickname: string): Promise<Player> {
-    const freeDiscriminator = await this.playerModel.aggregate([
+    const freeDiscriminator = await this.player.aggregate([
       {
         $match: { nickname }
       },
@@ -41,26 +44,26 @@ export class PlayerService {
       ? freeDiscriminator[0].free
       : 1;
 
-    const player = new this.playerModel({ nickname, discriminator });
+    const player = new this.player({ nickname, discriminator });
     await player.save();
 
     return player;
   }
 
   async enterQuickGameQueue(id: string): Promise<boolean> {
-    return (await this.playerModel.updateOne(
+    return (await this.player.updateOne(
       { _id: id, quickGameQueue: null, game: null },
       { $currentDate: { quickGameQueue: true } })).modifiedCount > 0;
   }
 
   async leaveQuickGameQueue(id: string): Promise<boolean> {
-    return (await this.playerModel.updateOne(
+    return (await this.player.updateOne(
       { _id: id, quickGameQueue: { $ne: null } },
       { $set: { quickGameQueue: null } })).modifiedCount > 0;
   }
 
   async resetQuickQueueForAll(): Promise<boolean> {
-    return (await this.playerModel.updateMany(
+    return (await this.player.updateMany(
       { quickGameQueue: { $ne: null } },
       { $set: { quickGameQueue: null } }
     )).acknowledged;
@@ -86,7 +89,7 @@ export class PlayerService {
 
     return (
       (
-        await this.playerModel.updateOne(
+        await this.player.updateOne(
           {
             $and: [
               { _id: id, quickGameQueue: null },
@@ -120,7 +123,7 @@ export class PlayerService {
 
   async unlinkGame(id: string): Promise<boolean> {
     return (
-      (await this.playerModel.updateOne(
+      (await this.player.updateOne(
         { _id: id },
         [{
           $set: {
@@ -139,7 +142,7 @@ export class PlayerService {
   async unlinkGameAll(instanceUrl: string): Promise<boolean> {
     return (
       (
-        await this.playerModel.updateMany(
+        await this.player.updateMany(
           { 'game.instanceUrl': instanceUrl },
           [{
             $set: {
@@ -156,7 +159,38 @@ export class PlayerService {
     );
   }
 
+  async updateStats(stats: ReplayStats[]): Promise<boolean> {
+    if (stats.length < 2) {
+      return;
+    }
+
+    const participants = await this.player.find({ _id: { $in: stats.map(x => x.playerId) } });
+    
+    const updatedElo = this.elo
+      .newRating(stats.map(x => participants.find(p => p.id === x.playerId).elo));
+
+    return (await this.player.bulkWrite(participants.map(p => {
+      const statsIdx = stats.findIndex(x => x.playerId === p.id);
+      const s = stats[statsIdx];
+      const elo = updatedElo[statsIdx];
+
+      return {
+        updateOne: {
+          filter: { _id: p.id },
+          update: { 
+            $inc: { 
+              totalPlayed: 1, 
+              totalWins: +(stats[0].playerId === p.id) },
+            $set: { 
+              averageCpm: Math.round((p.averageCpm * p.totalPlayed + s.cpm) / (p.totalPlayed + 1)),
+              elo },
+            $max: { maxCpm: Math.round(s.cpm) }
+          }
+        }
+      };}))).modifiedCount === stats.length;
+  }
+
   get model() {
-    return this.playerModel;
+    return this.player;
   }
 }
