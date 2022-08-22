@@ -16,6 +16,21 @@ export interface LinkedGame {
   instanceUrl: string;
 }
 
+export interface InputEvent {
+  char: string;
+  correct: boolean;
+  timestamp: number;
+}
+
+export interface Track {
+  playerId: string;
+  data: InputEvent[];
+}
+
+export interface Replay {
+  tracks: Track[];
+}
+
 @Injectable()
 export class BackendApiService {
   constructor(private readonly http: HttpService) {}
@@ -76,6 +91,16 @@ export class BackendApiService {
         ),
       )
     ).data;
+  }
+
+  async uploadReplay(replay: Replay): Promise<void> {
+    await firstValueFrom(
+      this.http.post<void>(
+        `${process.env.BACKEND_API}/api/replay`,
+        replay,
+        this.useAuthorization(),
+      ),
+    );
   }
 
   private useAuthorization() {

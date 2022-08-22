@@ -38,9 +38,8 @@ export const replayMetrics = (
     samples[n] *= 60000 / samplingInterval;
   }
 
-  const rem = gameDuration % samplingInterval;
-  const realLastSampleInterval = rem === 0 ? samplingInterval : rem;
-  samples[samples.length - 1] *= 60000 / realLastSampleInterval;
+  samples[samples.length - 1] *=
+    60000 / (gameDuration % samplingInterval || samplingInterval);
 
   return { accuracy: 1 - mistakes / Math.max(1, replay.length), cpm: samples };
 };

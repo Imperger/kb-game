@@ -14,6 +14,8 @@ import { PlayerModule } from './player/player.module';
 import { ConfigHelperModule } from './config/config-helper.module';
 import { ScenarioModule } from './scenario/scenario.module';
 import { LoggerModule } from './logger/logger.module';
+import { ReplayModule } from './replay/replay.module';
+import { ScoringModule } from './scoring/scoring.module';
 import Config from './config';
 
 @Module({
@@ -54,7 +56,9 @@ import Config from './config';
     PlayerModule,
     ConfigHelperModule,
     ScenarioModule,
-    LoggerModule
+    LoggerModule,
+    ReplayModule,
+    ScoringModule
   ]
 })
 export class AppModule {}

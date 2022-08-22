@@ -9,7 +9,7 @@
   </v-row>
   <v-row justify="center">
     <v-col cols="5" class="text-h5">MMR</v-col>
-    <v-col cols="5" class="text-h5">{{ player.elo }}</v-col>
+    <v-col cols="5" class="text-h5">{{ elo }}</v-col>
   </v-row>
   <v-row justify="center">
     <v-col cols="5" class="text-h5">CPM</v-col>
@@ -55,6 +55,10 @@ export default class PlayerStats extends Mixins(ApiServiceMixin) {
 
   get playedTime (): string {
     return `${this.player?.hoursInGame.toFixed(1)}h`;
+  }
+
+  get elo (): number {
+    return Math.round(this.player?.elo ?? 0);
   }
 
   get cpm (): string {

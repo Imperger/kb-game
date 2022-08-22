@@ -9,7 +9,7 @@ import { EndGameStrategy } from './end-game/end-game-strategy';
 import { replayMetrics } from './Replay';
 import { WaitUntilProgressEndGame } from './end-game/wait-until-progress-end-game';
 import { ShutdownService } from '../shutdown.service';
-import { BackendApiService } from './backend-api.service';
+import { BackendApiService, InputEvent } from './backend-api.service';
 import { ParticipantService } from './participant.service';
 import { EventEmitterService } from './event-emitter.service';
 import { LobbyEventType } from './interfaces/lobby-event.interface';
@@ -155,6 +155,13 @@ export abstract class GameService {
     this.participant.dispose();
 
     await this.backendApi.unlinkGameAll(instanceUrl());
+
+    await this.backendApi.uploadReplay({
+      tracks: players.map((x) => ({
+        playerId: x.id,
+        data: x.progressTracker.replay as InputEvent[],
+      })),
+    });
 
     setTimeout(() => this.shutdownService.shutdown(), 10000);
   }
