@@ -1,16 +1,17 @@
 import ms from 'ms';
 
-type milliseconds = number;
+import { Milliseconds } from '../duration';
+
 type duration = string;
 
-export function timeDiff(a: Date, b: Date): milliseconds;
-export function timeDiff(a: Date, b: milliseconds): Date;
+export function timeDiff(a: Date, b: Date): Milliseconds;
+export function timeDiff(a: Date, b: Milliseconds): Date;
 export function timeDiff(a: Date, b: duration): Date;
 
-export function timeDiff<S extends Date | milliseconds | duration>(
+export function timeDiff<S extends Date | Milliseconds | duration>(
   a: Date,
   b: S
-): milliseconds | Date {
+): Milliseconds | Date {
   const m = a.getTime();
 
   if (b instanceof Date) {
