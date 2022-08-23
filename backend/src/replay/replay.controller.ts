@@ -12,7 +12,6 @@ export class ReplayController {
   @UseGuards(JwtKnownSpawnerGuard)
   @Post()
   async uploadReplay(@Body() replay: ReplayDto) {
-    await this.replay.upload(replay);
-    await this.replay.updateStats(replay);
+    await this.replay.uploadAndUpdateStats(replay);
   }
 }
