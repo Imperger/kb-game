@@ -54,7 +54,8 @@ export class StatsGathererService {
     return {
       playerId: track.playerId,
       winner: position === 0,
-      cpm: track.correctHits * 60000 / track.endTime
+      cpm: track.correctHits * 60000 / track.endTime,
+      accuracy: track.accuracy
     };
   }
 }
