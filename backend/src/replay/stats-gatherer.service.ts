@@ -11,15 +11,11 @@ interface TrackWithSortdAttributes extends Track {
 
 @Injectable()
 export class StatsGathererService {
-  async gather(replay: ReplayDto) {
-    const stats: ReplayStats[] = [];
-
-    replay.tracks
+  gather(replay: ReplayDto): ReplayStats[] {
+    return replay.tracks
       .map(x => StatsGathererService.attachSortAttributes(x))
       .sort(StatsGathererService.trackComparator)
-      .forEach(StatsGathererService.populateStats.bind(null, stats));
-
-    return stats;
+      .map(StatsGathererService.populateStats);
   }
 
   private static attachSortAttributes(track: Track): TrackWithSortdAttributes {
@@ -54,11 +50,11 @@ export class StatsGathererService {
     return b.correctHits - a.correctHits;
   }
 
-  private static populateStats(stats: ReplayStats[], track: TrackWithSortdAttributes, position: number): void {
-    stats.push({
+  private static populateStats(track: TrackWithSortdAttributes, position: number): ReplayStats {
+    return {
       playerId: track.playerId,
       winner: position === 0,
       cpm: track.correctHits * 60000 / track.endTime
-    });
+    };
   }
 }
