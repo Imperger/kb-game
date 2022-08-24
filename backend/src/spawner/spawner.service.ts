@@ -41,11 +41,9 @@ export interface RequestedInstance {
   spawnerSecret: string;
 }
 
-type Nickname = string;
-
 export interface CustomInstanceInfo {
   url: string;
-  owner: Nickname;
+  owner: string;
   capacity: number;
   occupancy: number;
   started: boolean;
