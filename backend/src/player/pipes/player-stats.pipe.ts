@@ -7,6 +7,7 @@ import { PlayerStats } from '../interfaces/player-stats';
 export class PlayerStatsPipe implements PipeTransform {
   transform(player: Player, metadata: ArgumentMetadata): PlayerStats {
     return {
+      id: player.id,
       nickname: player.nickname,
       discriminator: player.discriminator,
       game: player.game ? { instanceUrl: player.game.instanceUrl, updatedAt: player.game.updatedAt } : null,

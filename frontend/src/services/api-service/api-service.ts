@@ -9,6 +9,7 @@ import UserApi from './user/user-api';
 import GameApi from './game/game-api';
 import ScenarioApi from './scenario/scenario-api';
 import PlayerApi from './player/player-api';
+import ReplayApi from './replay/replay-api';
 
 export { UnauthorizedHandler } from './auth/auth-api';
 
@@ -20,6 +21,7 @@ export default class ApiService {
   private readonly spawnerApi: SpawnerApi = new SpawnerApi();
   private readonly scenarioApi: ScenarioApi = new ScenarioApi();
   private readonly gameApi = new GameApi();
+  private readonly replayApi = new ReplayApi();
 
   constructor (baseURL: string, accessToken = '') {
     this.axios = axios.create({ baseURL, adapter: ApiService.UnauthorizedIsNotThrowsAdapter });
@@ -31,6 +33,7 @@ export default class ApiService {
     this.spawnerApi.httpClient = this.axios;
     this.gameApi.httpClient = this.axios;
     this.scenarioApi.httpClient = this.axios;
+    this.replayApi.httpClient = this.axios;
   }
 
   get auth (): AuthApi {
@@ -55,6 +58,10 @@ export default class ApiService {
 
   get game (): GameApi {
     return this.gameApi;
+  }
+
+  get replay (): ReplayApi {
+    return this.replayApi;
   }
 
   private static async UnauthorizedIsNotThrowsAdapter (config: AxiosRequestConfig): Promise<AxiosResponse<unknown>> {
