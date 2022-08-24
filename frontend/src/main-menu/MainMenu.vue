@@ -11,6 +11,7 @@
       <v-tab :to="{ name: 'MainMenuHome' }">Home</v-tab>
       <v-tab :to="{ name: 'MainMenuPlay' }">Play</v-tab>
       <v-tab :disabled="!App.loggedIn" :to="{ name: 'MainMenuProfile' }">Profile</v-tab>
+      <v-tab :disabled="!App.loggedIn" :to="{ name: 'MainMenuReplays' }">Replays</v-tab>
       <v-tab v-if="App.serverMaintainer" :to="{ name: 'MainMenuServer' }">Server</v-tab>
     </v-tabs>
     <section class="profile">

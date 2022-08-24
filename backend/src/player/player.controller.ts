@@ -46,7 +46,7 @@ export class PlayerController {
 
   @UseGuards(JwtGuard)
   @Get('me')
-  me(@Player(PlayerStatsPipe) player: PlayerStats) {
+  me(@Player(PlayerStatsPipe) player: PlayerStats): PlayerStats {
     return player;
   }
 }

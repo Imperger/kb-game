@@ -4,6 +4,7 @@ export interface CurrentGame {
 }
 
 export interface PlayerStats {
+  id: string,
   nickname: string;
   discriminator: number;
   game: CurrentGame | null;

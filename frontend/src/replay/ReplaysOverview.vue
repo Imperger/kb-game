@@ -1,0 +1,42 @@
+<template>
+<div class="replays-overview">
+  <replay-item-overview v-for="r in replays" :key="r.id" :currentPlayerId="currentPlayerId" :replay="r" />
+</div>
+</template>
+
+<style scoped>
+.replays-overview {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+</style>
+
+<script lang="ts">
+import { Component, Prop, Mixins } from 'vue-property-decorator';
+
+import { ApiServiceMixin } from '@/mixins';
+import ReplayItemOverview from './ReplayItemOverview.vue';
+import { isRejectedResponse } from '@/services/api-service/rejected-response';
+
+@Component({
+  components: {
+    ReplayItemOverview
+  }
+})
+export default class ReplaysOverview extends Mixins(ApiServiceMixin) {
+  @Prop({ required: true })
+  private readonly replays!: ReplaysOverview[];
+
+  private currentPlayerId = '';
+
+  async created (): Promise<void> {
+    const player = await this.api.player.currentPlayerInfo();
+
+    if (!isRejectedResponse(player)) {
+      this.currentPlayerId = player.id;
+    }
+  }
+}
+</script>
