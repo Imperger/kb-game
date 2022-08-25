@@ -47,7 +47,8 @@ export class ReplayService {
           tracks: { $push: "$tracks" },
           createdAt: { $first: "$createdAt"}
         }
-      }]))
+      },
+      { $sort : { createdAt : -1 } }]))
       .map(x => ({
         id: x._id,
         duration: x.duration,
