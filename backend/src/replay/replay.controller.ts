@@ -2,12 +2,13 @@ import { Body, Controller, Get, ParseIntPipe, Post, Query, UseGuards } from '@ne
 
 import { ReplayDto } from './dto/replay-dto';
 import { JwtKnownSpawnerGuard } from '@/spawner/decorators/jwt-known-spawner.guard';
-import { ReplayService } from './replay.service';
+import { DateCondition, ReplayService } from './replay.service';
 import { JwtGuard } from '@/jwt/decorators/jwt.guard';
 import { ParseDatePipe } from '@/common/pipes/parse-date.pipe';
-import { ReplayOverview } from './interfaces/replay-overview';
+import { ReplaysOverview } from './interfaces/replay-overview';
 import { Player } from '@/player/decorators/player.decorator';
 import { Player as PlayerSchema } from '@/player/schemas/player.schema';
+import { EnumValidationPipe } from '@/common/pipes/enum-validation.pipe';
 
 @Controller('replay')
 export class ReplayController {
@@ -18,10 +19,11 @@ export class ReplayController {
   @Get()
   async currentPlayerReplays(
     @Player() player: PlayerSchema,
+      @Query('cond', EnumValidationPipe(DateCondition)) cond: DateCondition,
       @Query('since', ParseDatePipe) since: Date,
       @Query('limit', ParseIntPipe) limit: number
-  ): Promise<ReplayOverview[]> {
-    return this.replay.findReplays(player.id, since, limit);
+  ): Promise<ReplaysOverview> {
+    return this.replay.findReplays(player.id, cond, since, limit);
   }
 
   @UseGuards(JwtKnownSpawnerGuard)
