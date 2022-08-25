@@ -1,5 +1,4 @@
 import { Seconds } from "@/common/duration";
-
 import { Nickname } from "@/player/interfaces/nickname";
 
 interface PlayerOverview {
@@ -18,4 +17,9 @@ export interface ReplayOverview {
   duration: Seconds;
   tracks: TrackOverview[];
   createdAt: Date;
+}
+
+export interface ReplaysOverview {
+  total: number;
+  replays: ReplayOverview[];
 }

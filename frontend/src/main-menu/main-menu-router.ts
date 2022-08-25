@@ -24,7 +24,7 @@ export const mainMenu: Array<RouteConfig> = [
     component: MainMenuProfile
   },
   {
-    path: 'replays/me',
+    path: 'replays/my',
     name: 'MainMenuReplays',
     component: MainMenuReplay
   },
