@@ -19,6 +19,7 @@ import { Component, Prop, Mixins } from 'vue-property-decorator';
 import { ApiServiceMixin } from '@/mixins';
 import ReplayItemOverview from './ReplayItemOverview.vue';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
+import { ReplayOverview } from '@/services/api-service/replay/replay-overview';
 
 @Component({
   components: {
@@ -27,7 +28,7 @@ import { isRejectedResponse } from '@/services/api-service/rejected-response';
 })
 export default class ReplaysOverview extends Mixins(ApiServiceMixin) {
   @Prop({ required: true })
-  private readonly replays!: ReplaysOverview[];
+  private readonly replays!: ReplayOverview[];
 
   private currentPlayerId = '';
 

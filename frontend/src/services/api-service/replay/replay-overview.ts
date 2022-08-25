@@ -22,3 +22,8 @@ export interface ReplayOverview {
   tracks: TrackOverview[];
   createdAt: Date;
 }
+
+export interface ReplaysOverview {
+  total: number;
+  replays: ReplayOverview[];
+}

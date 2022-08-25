@@ -1,17 +1,26 @@
 <template>
-<replays-overview :replays="replays" />
+<div class="main-menu-replay">
+  <v-btn x-large icon :disabled="prevDisabled" @click="prev"><v-icon>mdi-chevron-left-circle</v-icon></v-btn>
+  <replays-overview :replays="overview.replays" />
+  <v-btn x-large icon :disabled="nextDisabled" @click="next"><v-icon>mdi-chevron-right-circle</v-icon></v-btn>
+</div>
 </template>
 
 <style scoped>
+.main-menu-replay {
+  display: flex;
+  flex-direction: row;
+}
 </style>
 
 <script lang="ts">
-import { Component, Vue, Prop, Mixins } from 'vue-property-decorator';
+import { Component, Mixins } from 'vue-property-decorator';
 
 import ReplaysOverview from '@/replay/ReplaysOverview.vue';
 import { ApiServiceMixin } from '@/mixins';
-import { ReplayOverview } from '@/services/api-service/replay/replay-overview';
+import { ReplayOverview, ReplaysOverview as IReplaysOverview } from '@/services/api-service/replay/replay-overview';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
+import { DateCondition } from '@/services/api-service/replay/replay-api';
 
 @Component({
   components: {
@@ -19,16 +28,49 @@ import { isRejectedResponse } from '@/services/api-service/rejected-response';
   }
 })
 export default class MainMenuReplay extends Mixins(ApiServiceMixin) {
-  private replays: ReplayOverview[] = [];
+  private page = 1;
 
-  async created (): Promise<void> {
-    const replays = await this.api.replay.getMyReplays(new Date(0), 5);
+  private perPage = 8;
 
-    if (isRejectedResponse(replays)) {
+  private overview: IReplaysOverview = { total: 0, replays: [] };
+
+  created (): void{
+    this.fetchReplays(DateCondition.Greather, new Date(0));
+  }
+
+  async prev (): Promise<void> {
+    await this.fetchReplays(
+      DateCondition.Greather,
+      this.overview.replays[0].createdAt);
+
+    --this.page;
+  }
+
+  async next (): Promise<void> {
+    await this.fetchReplays(
+      DateCondition.Less,
+      this.overview.replays[this.overview.replays.length - 1].createdAt);
+
+    ++this.page;
+  }
+
+  get prevDisabled (): boolean {
+    return this.page === 1;
+  }
+
+  get nextDisabled (): boolean {
+    return this.overview.replays.length < this.perPage ||
+      this.page * this.perPage === this.overview.total;
+  }
+
+  private async fetchReplays (cond: DateCondition, since: Date) {
+    const overview = await this.api.replay.getMyReplays(cond, since, this.perPage);
+
+    if (isRejectedResponse(overview)) {
       return;
     }
 
-    this.replays = replays;
+    this.overview = overview;
   }
 }
 </script>

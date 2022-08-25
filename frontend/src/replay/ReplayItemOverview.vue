@@ -18,7 +18,8 @@
 
 <style scoped>
 .replay-item {
-  min-width: 400px;
+  min-width: 300px;
+  min-height: 220px;
 }
 
 .replay-item-title {

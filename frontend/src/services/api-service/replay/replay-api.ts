@@ -1,6 +1,8 @@
 import { AxiosInstance } from 'axios';
 import { isRejectedResponse, RejectedResponse } from '../rejected-response';
-import { ReplayOverview } from './replay-overview';
+import { ReplaysOverview } from './replay-overview';
+
+export enum DateCondition { Greather = '$gt', Less = '$lt' }
 
 export default class ReplayApi {
   private http!: AxiosInstance;
@@ -9,11 +11,11 @@ export default class ReplayApi {
     this.http = httpClient;
   }
 
-  async getMyReplays (since: Date, limit: number): Promise<ReplayOverview[] | RejectedResponse> {
-    const replays = (await this.http.get<ReplayOverview[] | RejectedResponse>(`replay?since=${since.toISOString()}&limit=${limit}`)).data;
+  async getMyReplays (cond: DateCondition, since: Date, limit: number): Promise<ReplaysOverview| RejectedResponse> {
+    const overview = (await this.http.get<ReplaysOverview | RejectedResponse>(`replay?cond=${cond}&since=${since.toISOString()}&limit=${limit}`)).data;
 
-    return isRejectedResponse(replays)
-      ? replays
-      : replays.map(x => ({ ...x, createdAt: new Date(x.createdAt) }));
+    return isRejectedResponse(overview)
+      ? overview
+      : { total: overview.total, replays: overview.replays.map(x => ({ ...x, createdAt: new Date(x.createdAt) })) };
   }
 }
