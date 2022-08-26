@@ -10,6 +10,7 @@ import { StatsGathererService } from './stats-gatherer.service';
 import { ReplayStats } from './interfaces/replay-stats';
 import { Seconds } from '@/common/duration';
 import { ReplaysOverview } from './interfaces/replay-overview';
+import { ReplaySnapshot } from './interfaces/replay-snapshot';
 
 export enum DateCondition { Greather = '$gt', Less = '$lt' };
 
@@ -69,6 +70,52 @@ export class ReplayService {
           })),
           createdAt: x.createdAt
         }))};
+  }
+
+  async findReplayById(replayId: string): Promise<ReplaySnapshot> {
+    const replay = (await this.replay.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(replayId) }},
+      { $unwind: "$tracks" },
+      {
+        $lookup: {
+          from: "players",
+          localField: "tracks.player",
+          foreignField: "_id",
+          pipeline: [
+            { $project: { _id: 0, nickname: 1, discriminator: 1 }}
+          ],
+          as: "tracks.playerInfo"
+        }
+      },
+      { $unwind: "$tracks.playerInfo" },
+      {
+        $group: { 
+          _id: "$_id",
+          duration: { $first: "$duration" },
+          tracks: { $push: "$tracks" },
+          createdAt: { $first: "$createdAt"}
+        }
+      }]))
+      .map(x => ({
+        id: x._id,
+        duration: x.duration,
+        tracks: x.tracks.map(x => ({ 
+          player: {
+            id: x.player,
+            nickname: { nickname: x.playerInfo.nickname, discriminator: x.playerInfo.discriminator }
+          },
+          cpm: x.cpm,
+          accuracy: x.accuracy,
+          data: x.data
+        })),
+        createdAt: x.createdAt
+      }));
+
+    if (replay.length === 0) {
+      throw new BadRequestException('Unknown replay id');
+    }
+
+    return replay[0];
   }
 
   async upload(replay: ReplayDto, stats: readonly ReplayStats[]) {

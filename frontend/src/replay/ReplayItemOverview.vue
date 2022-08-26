@@ -1,7 +1,7 @@
 <template>
 <v-card class="replay-item ma-3">
   <v-card-title class="replay-item-title">
-    <div>{{ replay.id }}</div>
+    <router-link :to="toPlayer(replay.id)">{{ replay.id }}</router-link>
     <div class="replay-item-upload-date">{{ uploadDate }}</div>
   </v-card-title>
   <v-card-text>
@@ -44,6 +44,7 @@
 </style>
 
 <script lang="ts">
+import { RawLocation } from 'vue-router';
 import { Component, Prop, Mixins } from 'vue-property-decorator';
 
 import { Nickname, ReplayOverview } from '@/services/api-service/replay/replay-overview';
@@ -59,6 +60,10 @@ export default class ReplayItemOverview extends Mixins(StoreMixin) {
 
   fullNickname (nickname: Nickname): string {
     return `${nickname.nickname}#${nickname.discriminator}`;
+  }
+
+  toPlayer (id: string): RawLocation {
+    return { name: 'ReplayPlayer', params: { id } };
   }
 
   accuracyStr (accuracy: number): string {

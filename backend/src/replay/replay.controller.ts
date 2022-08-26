@@ -1,4 +1,4 @@
-import { Body, Controller, Get, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 
 import { ReplayDto } from './dto/replay-dto';
 import { JwtKnownSpawnerGuard } from '@/spawner/decorators/jwt-known-spawner.guard';
@@ -9,6 +9,7 @@ import { ReplaysOverview } from './interfaces/replay-overview';
 import { Player } from '@/player/decorators/player.decorator';
 import { Player as PlayerSchema } from '@/player/schemas/player.schema';
 import { EnumValidationPipe } from '@/common/pipes/enum-validation.pipe';
+import { ParseObjectIdPipe } from '@/common/pipes/parse-object-id.pipe';
 
 @Controller('replay')
 export class ReplayController {
@@ -25,6 +26,12 @@ export class ReplayController {
   ): Promise<ReplaysOverview> {
     return this.replay.findReplays(player.id, cond, since, limit);
   }
+
+  @Get(':id')
+  async replayById(@Param('id', ParseObjectIdPipe) replayId: string) {
+    return this.replay.findReplayById(replayId);
+  }
+
 
   @UseGuards(JwtKnownSpawnerGuard)
   @Post()
