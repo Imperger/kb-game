@@ -18,7 +18,7 @@ import { Component, Mixins } from 'vue-property-decorator';
 
 import ReplaysOverview from '@/replay/ReplaysOverview.vue';
 import { ApiServiceMixin } from '@/mixins';
-import { ReplayOverview, ReplaysOverview as IReplaysOverview } from '@/services/api-service/replay/replay-overview';
+import { ReplaysOverview as IReplaysOverview } from '@/services/api-service/replay/replay-overview';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
 import { DateCondition } from '@/services/api-service/replay/replay-api';
 

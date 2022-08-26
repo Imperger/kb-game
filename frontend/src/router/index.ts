@@ -10,6 +10,7 @@ import { game } from '@/game/game-router';
 import { scenario } from '@/scenario/scenario-router';
 import { Role } from './roles';
 import { playerStats } from '@/player-stats/player-router';
+import { replay } from '@/replay/replay-router';
 
 Vue.use(VueRouter);
 
@@ -18,6 +19,7 @@ const routes: Array<RouteConfig> = [
   ...game,
   ...scenario,
   ...playerStats,
+  ...replay,
   {
     path: '/',
     name: 'MainMenu',
