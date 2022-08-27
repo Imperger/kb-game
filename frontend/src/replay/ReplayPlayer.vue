@@ -16,6 +16,17 @@
     <v-col cols="10" class="replay-player-controls">
       <v-btn @click="playPause" icon><v-icon>{{ playBtnIcon }}</v-icon></v-btn>
       <v-progress-linear color="blue-grey" :value="currentSeek" class="replay-player-seek" />
+      <v-menu>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn icon v-bind="attrs" v-on="on"><v-icon>mdi-play-speed</v-icon></v-btn>
+        </template>
+        <v-list>
+          <v-list-item v-for="s in speedList" :key="s" @click="changeSpeed(s)">
+            <v-list-item-title>{{ formatSpeedUI(s) }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+      <div>{{ speedUI }}</div>
     </v-col>
   </v-row>
 </v-container>
@@ -23,6 +34,7 @@
 
 <style scoped>
 .replay-player-text {
+  font-size: 1.3em;
   text-align: left;
 }
 
@@ -58,7 +70,7 @@ interface MergedInputEvent {
 
 interface TextItemStyle {
   color?: string;
-  fontWeight?: string;
+  backgroundColor?: string;
 }
 
 interface TextItem {
@@ -78,13 +90,15 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
 
   private currentTime = 0;
 
-  private startPlaybackTime = 0;
+  private speed = 1;
+
+  private readonly speedList = [0.25, 0.5, 1, 1.5, 2, 2.5, 3, 5];
 
   private pendingEventIdx = 0;
 
   private playersProgress: number[] = [];
 
-  private playerToIdx = new Map<string, number>();
+  private playerToIdx!: Map<string, number>;
 
   private readonly colorPool = [
     '#f44336', '#8e24aa', '#1e88e5', '#00e5ff', '#4caf50',
@@ -97,30 +111,49 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
       this.replay = replay;
     }
 
-    this.playersProgress = Array.from({ length: this.replay.tracks.length }, x => -1);
+    this.resetPlayerProgress();
     this.playerToIdx = new Map(this.replay.tracks.map((x, i) => [x.player.id, i]));
   }
 
   playPause (): void {
     if (!this.isPlaying) {
-      this.startPlaybackTime = performance.now() - this.currentTime;
-      window.requestAnimationFrame(x => this.updatePlayerView(x));
+      if (this.isEnd) {
+        this.resetPlayer();
+      }
+
+      this.scheduleRAF();
     }
 
     this.isPlaying = !this.isPlaying;
   }
 
+  private scheduleRAF (): void {
+    const prev = performance.now();
+    window.requestAnimationFrame(x => this.updatePlayerView(x - prev));
+  }
+
+  private resetPlayer (): void {
+    this.currentTime = 0;
+    this.resetPlayerProgress();
+    this.pendingEventIdx = 0;
+  }
+
+  private resetPlayerProgress (): void {
+    this.playersProgress = Array.from({ length: this.replay.tracks.length }, x => -1);
+  }
+
   private updatePlayerView (elapsed: number): void {
-    this.currentTime = elapsed - this.startPlaybackTime;
+    this.currentTime += elapsed * this.speed;
 
     if (this.pendingEventIdx < this.mergedTracks.length &&
     this.currentTime >= this.mergedTracks[this.pendingEventIdx].timestamp) {
       const event = this.mergedTracks[this.pendingEventIdx];
 
+      const senderIdx = this.playerToIdx.get(event.playerId) ?? -1;
       this.$set(
         this.playersProgress,
-        this.playerToIdx.get(event.playerId) ?? -1,
-        this.playersProgress[this.playerToIdx.get(event.playerId) ?? -1] + 1);
+        senderIdx,
+        this.playersProgress[senderIdx] + 1);
 
       ++this.pendingEventIdx;
     }
@@ -129,7 +162,7 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
       if (this.isEnd) {
         this.isPlaying = false;
       } else {
-        window.requestAnimationFrame(x => this.updatePlayerView(x));
+        this.scheduleRAF();
       }
     }
   }
@@ -142,17 +175,21 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
     return `${nickname.nickname}#${nickname.discriminator}`;
   }
 
+  changeSpeed (speed: number): void {
+    this.speed = speed;
+  }
+
   get text (): TextItem[] {
     return this.replay.tracks[0]?.data
       .filter(x => x.correct)
-      .map((x, i) => ({ id: x.timestamp, char: x.char, style: this.itemStyle(i) })) ?? [];
+      .map((x, i) => ({ id: x.timestamp, char: x.char, style: this.characterStyle(i) })) ?? [];
   }
 
-  private itemStyle (idx: number): TextItemStyle {
+  private characterStyle (idx: number): TextItemStyle {
     const playerAtThisIdx = this.playersProgress.indexOf(idx);
 
     return playerAtThisIdx >= 0
-      ? { color: this.players[playerAtThisIdx].color, fontWeight: 'bold' }
+      ? { backgroundColor: this.players[playerAtThisIdx].color, color: 'white' }
       : { };
   }
 
@@ -170,6 +207,14 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
         nickname: this.fullNickname(x.player.nickname),
         color: this.colorPool[i]
       }));
+  }
+
+  get speedUI (): string {
+    return this.formatSpeedUI(this.speed);
+  }
+
+  formatSpeedUI (speed: number): string {
+    return `${speed}X`;
   }
 
   get mergedTracks (): MergedInputEvent[] {
