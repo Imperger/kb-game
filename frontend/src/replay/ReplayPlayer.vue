@@ -115,6 +115,10 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
     this.playerToIdx = new Map(this.replay.tracks.map((x, i) => [x.player.id, i]));
   }
 
+  destroyed (): void {
+    this.isPlaying = false;
+  }
+
   playPause (): void {
     if (!this.isPlaying) {
       if (this.isEnd) {
@@ -143,6 +147,7 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
   }
 
   private updatePlayerView (elapsed: number): void {
+    console.log(elapsed);
     this.currentTime += elapsed * this.speed;
 
     if (this.pendingEventIdx < this.mergedTracks.length &&
