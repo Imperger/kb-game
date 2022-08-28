@@ -4,13 +4,18 @@
     <v-col cols=10>
       <v-card>
         <v-card-text class="replay-player-text">
-        <span v-for="t in text" :key="t.id" :style="t.style">{{ t.char }}</span>
+          <span v-for="t in styledText" :key="t.id" :style="t.style">{{ t.char }}</span>
         </v-card-text>
         </v-card>
     </v-col>
     <v-col>
-      <div v-for="p in players" :key="p.nickname" :style="{ color: p.color }">{{ p.nickname }}</div>
+      <transition-group name="replay-player-player-list">
+        <div v-for="p in players" :key="p.nickname" :style="{ color: p.color }">{{ p.nickname }}</div>
+      </transition-group>
     </v-col>
+  </v-row>
+  <v-row class>
+    <v-col class="replay-player-playback-time" cols="10">{{ playbackTimeUI }}</v-col>
   </v-row>
   <v-row>
     <v-col cols="10" class="replay-player-controls">
@@ -38,6 +43,12 @@
   text-align: left;
 }
 
+.replay-player-playback-time {
+  margin-top: -10px;
+  margin-bottom: -20px;
+  padding: 0;
+}
+
 .replay-player-controls {
   display: flex;
   flex-direction: row;
@@ -47,6 +58,10 @@
 .replay-player-seek {
   margin-top: 16px;
 }
+
+.replay-player-player-list-move {
+  transition: transform 0.5s;
+}
 </style>
 
 <script lang="ts">
@@ -54,18 +69,11 @@ import { Component, Prop, Mixins } from 'vue-property-decorator';
 
 import { ApiServiceMixin } from '@/mixins';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
-import { Nickname, ReplaySnapshot } from '@/services/api-service/replay/replay-snapshot';
+import { InputEventSnapshot, Nickname, ReplaySnapshot, TrackSnapshot } from '@/services/api-service/replay/replay-snapshot';
 
 interface PlayerItem {
   nickname: string;
   color: string;
-}
-
-interface MergedInputEvent {
-  playerId: string;
-  char: string;
-  correct: boolean;
-  timestamp: number;
 }
 
 interface TextItemStyle {
@@ -79,12 +87,28 @@ interface TextItem {
   style: TextItemStyle;
 }
 
+interface Track extends TrackSnapshot {
+  colorIdx: number;
+  progress: number;
+}
+
+interface Replay extends ReplaySnapshot {
+  tracks: Track[];
+}
+
+interface MergedInputEvent {
+  track: Track;
+  char: string;
+  correct: boolean;
+  timestamp: number;
+}
+
 @Component
 export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
   @Prop({ required: true })
   private readonly id!: string;
 
-  private replay: ReplaySnapshot = { id: '', duration: 0, tracks: [], createdAt: new Date(0) };
+  private replay: Replay = { id: '', duration: 0, tracks: [], createdAt: new Date(0) };
 
   private isPlaying = false;
 
@@ -96,10 +120,6 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
 
   private pendingEventIdx = 0;
 
-  private playersProgress: number[] = [];
-
-  private playerToIdx!: Map<string, number>;
-
   private readonly colorPool = [
     '#f44336', '#8e24aa', '#1e88e5', '#00e5ff', '#4caf50',
     '#76ff03', '#fdd835', '#ff6f00', '#ff3d00', '#4e342e'];
@@ -108,11 +128,13 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
     const replay = await this.api.replay.getReplay(this.id);
 
     if (!isRejectedResponse(replay)) {
-      this.replay = replay;
+      this.replay = {
+        ...replay,
+        tracks: replay.tracks.map((x, i) => ({ ...x, colorIdx: i, progress: -1 }))
+      };
     }
 
     this.resetPlayerProgress();
-    this.playerToIdx = new Map(this.replay.tracks.map((x, i) => [x.player.id, i]));
   }
 
   destroyed (): void {
@@ -143,7 +165,7 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
   }
 
   private resetPlayerProgress (): void {
-    this.playersProgress = Array.from({ length: this.replay.tracks.length }, x => -1);
+    this.replay.tracks.forEach(x => (x.progress = -1));
   }
 
   private updatePlayerView (elapsed: number): void {
@@ -151,13 +173,7 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
 
     if (this.pendingEventIdx < this.mergedTracks.length &&
     this.currentTime >= this.mergedTracks[this.pendingEventIdx].timestamp) {
-      const event = this.mergedTracks[this.pendingEventIdx];
-
-      const senderIdx = this.playerToIdx.get(event.playerId) ?? -1;
-      this.$set(
-        this.playersProgress,
-        senderIdx,
-        this.playersProgress[senderIdx] + 1);
+      ++this.mergedTracks[this.pendingEventIdx].track.progress;
 
       ++this.pendingEventIdx;
     }
@@ -183,17 +199,23 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
     this.speed = speed;
   }
 
-  get text (): TextItem[] {
-    return this.replay.tracks[0]?.data
-      .filter(x => x.correct)
-      .map((x, i) => ({ id: x.timestamp, char: x.char, style: this.characterStyle(i) })) ?? [];
+  get text (): InputEventSnapshot[] {
+    return this.replay.tracks[0]?.data.filter(x => x.correct) ?? [];
+  }
+
+  get styledText (): TextItem[] {
+    return this.text.map((x, i) => ({
+      id: x.timestamp,
+      char: x.char,
+      style: this.characterStyle(i)
+    })) ?? [];
   }
 
   private characterStyle (idx: number): TextItemStyle {
-    const playerAtThisIdx = this.playersProgress.indexOf(idx);
+    const playerAtThisIdx = this.replay.tracks.find(x => x.progress === idx);
 
-    return playerAtThisIdx >= 0
-      ? { backgroundColor: this.players[playerAtThisIdx].color, color: 'white' }
+    return playerAtThisIdx
+      ? { backgroundColor: this.colorPool[playerAtThisIdx.colorIdx], color: 'white' }
       : { };
   }
 
@@ -206,15 +228,28 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
   }
 
   get players (): PlayerItem[] {
-    return this.replay.tracks
-      .map((x, i) => ({
+    return (this.isEnd
+      ? [...this.replay.tracks]
+      : [...this.replay.tracks].sort((a, b) => b.progress - a.progress))
+      .map(x => ({
         nickname: this.fullNickname(x.player.nickname),
-        color: this.colorPool[i]
+        color: this.colorPool[x.colorIdx]
       }));
   }
 
   get speedUI (): string {
     return this.formatSpeedUI(this.speed);
+  }
+
+  get playbackTimeUI () : string {
+    return `${this.msToTime(this.currentTime)} - ${this.msToTime(this.replay.duration * 1000)}`;
+  }
+
+  private msToTime (ms: number): string {
+    const seconds = ms / 1000;
+    const minutes = Math.floor(seconds / 60);
+    const remSeconds = Math.round(seconds - minutes * 60);
+    return `${minutes.toString().padStart(2, '0')}:${remSeconds.toString().padStart(2, '0')}`;
   }
 
   formatSpeedUI (speed: number): string {
@@ -229,7 +264,7 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
     while (!idxs.every((x, i) => x === this.replay.tracks[i].data.length)) {
       const closestIdx = this.minTimestampIdx(idxs);
       ret.push({
-        playerId: this.replay.tracks[closestIdx].player.id,
+        track: this.replay.tracks[closestIdx],
         ...this.replay.tracks[closestIdx].data[idxs[closestIdx]]
       });
 
