@@ -5,13 +5,14 @@
     <div class="replay-item-upload-date">{{ uploadDate }}</div>
   </v-card-title>
   <v-card-text>
-    <v-container>
+    <v-container class="replay-item-container">
     <v-row v-for="t in replay.tracks" :key="t.player.id" :class="{'highlight-yourself': isMe(t.player.id)}">
       <v-col cols="4" class="replay-item-col">{{ fullNickname(t.player.nickname)}}</v-col>
       <v-col cols="3" class="replay-item-col">{{ t.cpm }}</v-col>
       <v-col cols="3" class="replay-item-col">{{ accuracyStr(t.accuracy) }}</v-col>
     </v-row>
     </v-container>
+    <div class="replay-item-duration">{{ duration }}</div>
   </v-card-text>
 </v-card>
 </template>
@@ -19,7 +20,7 @@
 <style scoped>
 .replay-item {
   min-width: 300px;
-  min-height: 220px;
+  min-height: 264px;
 }
 
 .replay-item-title {
@@ -33,6 +34,10 @@
   margin: 0 5px 0 auto;
 }
 
+.replay-item-container {
+  align-content: flex-start;
+}
+
 .replay-item-col {
   margin: 0;
   padding: 0;
@@ -40,6 +45,12 @@
 
 .highlight-yourself {
   font-weight: bold;
+}
+
+.replay-item-duration {
+  position: absolute;
+  bottom: 0;
+  right: 7px;
 }
 </style>
 
@@ -49,9 +60,10 @@ import { Component, Prop, Mixins } from 'vue-property-decorator';
 
 import { Nickname, ReplayOverview } from '@/services/api-service/replay/replay-overview';
 import { StoreMixin } from '@/mixins';
+import { msToMmss } from '@/util/formatters/ms-to-mm-ss';
 
 @Component
-export default class ReplayItemOverview extends Mixins(StoreMixin) {
+export default class ReplayOverviewCard extends Mixins(StoreMixin) {
   @Prop({ required: true })
   private readonly currentPlayerId!: string;
 
@@ -85,6 +97,10 @@ export default class ReplayItemOverview extends Mixins(StoreMixin) {
       second: 'numeric',
       hour12: false
     }).format(d);
+  }
+
+  get duration () : string {
+    return msToMmss(this.replay.duration * 1000);
   }
 }
 </script>

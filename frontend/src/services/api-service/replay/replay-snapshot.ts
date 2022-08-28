@@ -10,13 +10,13 @@ interface PlayerSnapshot {
   nickname: Nickname;
 }
 
-interface InputEventSnapshot {
+export interface InputEventSnapshot {
   char: string;
   correct: boolean;
   timestamp: number;
 }
 
-interface TrackSnapshot {
+export interface TrackSnapshot {
   player: PlayerSnapshot;
   cpm: number;
   accuracy: number;

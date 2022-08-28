@@ -1,6 +1,6 @@
 <template>
 <div class="replays-overview">
-  <replay-item-overview v-for="r in replays" :key="r.id" :currentPlayerId="currentPlayerId" :replay="r" />
+  <replay-overview-card v-for="r in replays" :key="r.id" :currentPlayerId="currentPlayerId" :replay="r" />
 </div>
 </template>
 
@@ -17,13 +17,13 @@
 import { Component, Prop, Mixins } from 'vue-property-decorator';
 
 import { ApiServiceMixin } from '@/mixins';
-import ReplayItemOverview from './ReplayItemOverview.vue';
+import ReplayOverviewCard from './ReplayOverviewCard.vue';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
 import { ReplayOverview } from '@/services/api-service/replay/replay-overview';
 
 @Component({
   components: {
-    ReplayItemOverview
+    ReplayOverviewCard
   }
 })
 export default class ReplaysOverview extends Mixins(ApiServiceMixin) {
