@@ -68,6 +68,7 @@
 import { Component, Prop, Mixins } from 'vue-property-decorator';
 
 import { ApiServiceMixin } from '@/mixins';
+import { msToMmss } from '@/util/formatters/ms-to-mm-ss';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
 import { InputEventSnapshot, Nickname, ReplaySnapshot, TrackSnapshot } from '@/services/api-service/replay/replay-snapshot';
 
@@ -242,14 +243,7 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
   }
 
   get playbackTimeUI () : string {
-    return `${this.msToTime(this.currentTime)} - ${this.msToTime(this.replay.duration * 1000)}`;
-  }
-
-  private msToTime (ms: number): string {
-    const seconds = ms / 1000;
-    const minutes = Math.floor(seconds / 60);
-    const remSeconds = Math.round(seconds - minutes * 60);
-    return `${minutes.toString().padStart(2, '0')}:${remSeconds.toString().padStart(2, '0')}`;
+    return `${msToMmss(this.currentTime)} - ${msToMmss(this.replay.duration * 1000)}`;
   }
 
   formatSpeedUI (speed: number): string {
