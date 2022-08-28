@@ -147,7 +147,6 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
   }
 
   private updatePlayerView (elapsed: number): void {
-    console.log(elapsed);
     this.currentTime += elapsed * this.speed;
 
     if (this.pendingEventIdx < this.mergedTracks.length &&
