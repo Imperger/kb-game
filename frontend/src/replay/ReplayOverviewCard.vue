@@ -63,7 +63,7 @@ import { StoreMixin } from '@/mixins';
 import { msToMmss } from '@/util/formatters/ms-to-mm-ss';
 
 @Component
-export default class ReplayItemOverview extends Mixins(StoreMixin) {
+export default class ReplayOverviewCard extends Mixins(StoreMixin) {
   @Prop({ required: true })
   private readonly currentPlayerId!: string;
 
