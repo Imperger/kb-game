@@ -10,6 +10,7 @@ import { Player } from '@/player/decorators/player.decorator';
 import { Player as PlayerSchema } from '@/player/schemas/player.schema';
 import { EnumValidationPipe } from '@/common/pipes/enum-validation.pipe';
 import { ParseObjectIdPipe } from '@/common/pipes/parse-object-id.pipe';
+import { ReplaySnapshot } from './interfaces/replay-snapshot';
 
 @Controller('replay')
 export class ReplayController {
@@ -28,14 +29,14 @@ export class ReplayController {
   }
 
   @Get(':id')
-  async replayById(@Param('id', ParseObjectIdPipe) replayId: string) {
+  async replayById(@Param('id', ParseObjectIdPipe) replayId: string): Promise<ReplaySnapshot> {
     return this.replay.findReplayById(replayId);
   }
 
 
   @UseGuards(JwtKnownSpawnerGuard)
   @Post()
-  async uploadReplay(@Body() replay: ReplayDto) {
+  async uploadReplay(@Body() replay: ReplayDto): Promise<void> {
     await this.replay.uploadAndUpdateStats(replay);
   }
 }
