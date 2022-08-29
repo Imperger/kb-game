@@ -1,14 +1,16 @@
-import { AxiosResponse } from 'axios';
+import { first } from 'rxjs/operators';
 import Crypto from 'crypto';
 import { sign } from 'jsonwebtoken';
 
 import { Api } from "./api-interface";
 import { ApiTester, ApiTestResult } from "./api-tester";
-import { BackendApi } from './api/backend-api';
+import { BackendApi, DateCondition, ReplaysOverview } from './api/backend-api';
 import { RejectedResponse } from './api/types';
 import { delay } from './delay';
+import { GameClient } from './gameplay/game-client';
 import { Logger } from "./logger";
 import { Mailbox } from './mailbox';
+import { AxiosResponse } from 'axios';
 
 function genUser() {
     const id = Crypto.randomBytes(7).toString('hex');
@@ -561,9 +563,26 @@ async function quickGameFlow(api: Api, logger: Logger): Promise<boolean> {
     await participant2.loginUsername(participantCreds2.username, participantCreds2.password);
 
     await api.backend.addSpawner(spawner.url, spawner.secret);
-    const scenarioId = ((await api.backend.addScenario('QQQQQ', 'QQQQQQQQQQQQ')) as AxiosResponse<string>).data;
 
     const tester = new ApiTester(logger);
+
+    const oneScenario = await tester.test(
+        () => api.backend.listScenario(0, 2),
+        'Only an one scenario is available')
+        .status(200)
+        .response(x => x.total === 1)
+        .toPromise();
+    
+    if(!oneScenario.pass) {
+        await api.backend.removeSpawner(spawner.url);
+        return false;
+    }
+
+    const scenarioContent = await tester.test(
+        () => api.backend.getScenarioContent(oneScenario.data.scenarios[0].id),
+        'Get scenario content')
+        .status(200)
+        .toPromise();
 
     const p1Queue = tester.test(
         () => participant1.enterQuickQueue(),
@@ -603,10 +622,90 @@ async function quickGameFlow(api: Api, logger: Logger): Promise<boolean> {
         pass = (await Promise.all([p1Queue, p2Queue, p2LeaveQueue, p2QueueAgain])).every(x => x.pass);
     } catch (e) { }
 
-    await api.backend.removeScenario(scenarioId);
+    const replaysCountBeforeGame = 
+        (await participant1.findReplays(DateCondition.Greather, new Date(0), 25) as AxiosResponse<ReplaysOverview>).data.total;
+
+    const gc1 = new GameClient();
+    const gc2 = new GameClient();
+
+    const p1ConnInfo = (await p1Queue).data;
+    const p2ConnInfo = (await p2QueueAgain).data;
+
+    if (!(p1ConnInfo && p2ConnInfo)) {
+        return false;
+    }
+
+    logger.log('Awaiting for the players to connect to the server');
+
+    await gc1.connect(p1ConnInfo?.instanceUrl, p1ConnInfo?.playerToken);
+    await gc2.connect(p2ConnInfo?.instanceUrl, p2ConnInfo?.playerToken);
+    
+    logger.log('Awaiting for the game starts');
+    await Promise.all([awaitGameStart(gc1), awaitGameStart(gc2)]);
+    logger.log('The game have been started');
+
+
+    for(const char of scenarioContent.data.text) {
+        await gc1.sendKey(char);
+        await gc2.sendKey(char);
+    }
+
+    let retries = 10;
+
+    while(retries--) {
+        try {
+            const replaysCountAfterGame = 
+            (await participant1.findReplays(DateCondition.Greather, new Date(0), 25) as AxiosResponse<ReplaysOverview>).data.total;    
+
+            if (replaysCountAfterGame > replaysCountBeforeGame) {
+                break;
+            }
+        } catch(e) {
+
+        }
+
+        await delay(2000);
+    }
+
     await api.backend.removeSpawner(spawner.url);
 
-    return pass;
+    return  pass && retries > 0;
+}
+
+async function awaitGameStart(gameClient: GameClient) {
+    return new Promise<void>(async(ok) => {
+    if (gameClient.inQuickgGameLobby) {
+        await gameClient.quickGameLobby.awaitInitialization();
+        if (gameClient.inQuickgGameLobby) {
+          gameClient.quickGameLobby.$gameWillStart
+            .pipe(first())
+            .subscribe({ next: () => ok() });
+        } else if (gameClient.inGame) {
+          ok();
+        }
+      }
+
+      ok();
+    });
+}
+
+async function replayFlow(api: Api, logger: Logger): Promise<boolean> {
+    const tester = new ApiTester(logger);
+
+    const playerReplays = await tester.test(
+        () => api.backend.findReplays(DateCondition.Greather, new Date(0), 10),
+        'List current player replays')
+        .status(200)
+        .toPromise();
+
+    const unknownReplay = await tester.test(
+        () => api.backend.findReplay('1234567890'),
+        'Find replay with unknown id')
+        .status(400)
+        .toPromise();
+
+    return playerReplays.pass &&
+        unknownReplay.pass;
 }
 
 export async function testBackend(api: Api,): Promise<boolean> {
@@ -633,6 +732,8 @@ export async function testBackend(api: Api,): Promise<boolean> {
     success = await scenarioFlow(api, logger) && success;
 
     success = await quickGameFlow(api, logger) && success;
+
+    success = await replayFlow(api, logger) && success;
 
     return success;
 }

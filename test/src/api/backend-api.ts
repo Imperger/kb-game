@@ -109,7 +109,59 @@ export interface PlayerStats {
 export interface QuickGameDescriptor {
     instanceUrl: string;
     playerToken: string;
-  }  
+}
+
+export enum DateCondition { Greather = '$gt', Less = '$lt' };
+
+type Seconds = number;
+
+interface PlayerOverview {
+    id: string;
+    nickname: Nickname;
+}
+  
+interface TrackOverview {
+    player: PlayerOverview;
+    cpm: number;
+    accuracy: number;
+}
+  
+export interface ReplayOverview {
+    id: string;
+    duration: Seconds;
+    tracks: TrackOverview[];
+    createdAt: Date;
+}
+  
+export interface ReplaysOverview {
+    total: number;
+    replays: ReplayOverview[];
+}
+
+interface PlayerSnapshot {
+    id: string;
+    nickname: Nickname;
+  }
+  
+  interface InputEventSnapshot {
+    char: string;
+    correct: boolean;
+    timestamp: number;
+  }
+  
+  interface TrackSnapshot {
+    player: PlayerSnapshot;
+    cpm: number;
+    accuracy: number;
+    data: InputEventSnapshot[];
+  }
+  
+  export interface ReplaySnapshot {
+    id: string;
+    duration: Seconds;
+    tracks: TrackSnapshot[];
+    createdAt: Date;
+  }
 
 export class BackendApi {
     private token!: string;
@@ -231,6 +283,14 @@ export class BackendApi {
 
     currentPlayerStats(): Promise<AxiosResponse<PlayerStats>> | FailType<RejectedResponse> {
         return this.http.get<PlayerStats>('/player/me');
+    }
+
+    findReplays(cond: DateCondition, datePoint: Date, limit: number): Promise<AxiosResponse<ReplaysOverview>> | FailType<RejectedResponse> {
+        return this.http.get<ReplaysOverview>(`/replay?cond=${cond}&since=${datePoint.toISOString()}&limit=${limit}`);
+    }
+
+    findReplay(id: string): Promise<AxiosResponse<ReplaySnapshot>> | FailType<RejectedResponse> {
+        return this.http.get<ReplaySnapshot>(`replay/${id}`);
     }
 
     private async handleAuthToken(signin: () => Promise<AxiosResponse<LoginResponse>>): Promise<AxiosResponse<LoginResponse>> {
