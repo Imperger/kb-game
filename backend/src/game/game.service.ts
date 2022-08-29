@@ -70,6 +70,8 @@ export class GameService implements OnModuleInit {
       return;
     }
 
+    await Promise.all(group.map(x => this.player.leaveQuickGameQueue(x.playerId)));
+
     group
       .forEach(x => this.quickGameQueueResponder.resolve(x.playerId, {
         instanceUrl: instance.instanceUrl,
