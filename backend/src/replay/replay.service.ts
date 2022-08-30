@@ -36,7 +36,8 @@ export class ReplayService {
         { $sort : { createdAt : -1 } },
         { $limit: Math.min(25, limit) },
         ...ReplayService.populateTracksWithPlayerInfo(),
-        { $sort : { createdAt : -1 } }]))
+        { $sort : { createdAt : -1 } },
+        { $project: { 'tracks.data': 0 }}]))
         .map(x => ({
           id: x._id,
           duration: x.duration,
