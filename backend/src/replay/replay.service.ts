@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { Model } from 'mongoose';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { ReplayDto } from './dto/replay-dto';
@@ -74,7 +74,7 @@ export class ReplayService {
       }));
 
     if (replay.length === 0) {
-      throw new BadRequestException('Unknown replay id');
+      throw new NotFoundException('Unknown replay id');
     }
 
     return replay[0];
