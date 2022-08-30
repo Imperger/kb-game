@@ -11,7 +11,7 @@ import {
 } from './game-exception';
 import { Player } from '@/player/schemas/player.schema';
 import { MatchMakingService } from './matchmaking.service';
-import { PlayerGroup } from './match-making-strategies/match-makin-strategy';
+import { Participant, PlayerGroup } from './match-making-strategies/match-makin-strategy';
 import { QuickGameQueueResponderService } from './quick-game-queue-responder.service';
 import { PlayerDescriptor } from './interfaces/player-descriptor';
 import { ScenarioService } from '@/scenario/scenario.service';
@@ -49,7 +49,7 @@ export class GameService implements OnModuleInit {
     return this.player.enterQuickGameQueue(player.id);
   }
 
-  async leaveQuickQueue(player: Player) {
+  async leaveQuickQueue(player: Participant) {
     const leaved = await this.player.leaveQuickGameQueue(player.id);
 
     if (leaved) {
@@ -70,7 +70,7 @@ export class GameService implements OnModuleInit {
       return;
     }
 
-    await Promise.all(group.map(x => this.player.leaveQuickGameQueue(x.playerId)));
+    await Promise.all(group.map(x => this.leaveQuickQueue({ id: x.playerId, nickname: x.nickname })));
 
     group
       .forEach(x => this.quickGameQueueResponder.resolve(x.playerId, {

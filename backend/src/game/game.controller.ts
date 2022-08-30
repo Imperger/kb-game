@@ -33,20 +33,12 @@ export class GameController {
          * the player about the result of the matchmaking.
          */
         this.quickGameQueueResponder.register(player.id, resolve);
-        this.matchmaking.enterQueue(player);
-
-        let canceled = true;
-
-        req.raw.once('end', () => {
-          canceled = false;
-        });
+        this.matchmaking.enterQueue({ id: player.id, nickname: player.nickname });
 
         req.raw.once('close', () => {
-          // The player should being in the queue only while request in pending state
-          this.gameService.leaveQuickQueue(player);
-
-          if (canceled) {
-            this.quickGameQueueResponder.resolve(player.id, null);
+          // The player should being in the queue only while request in pending state   
+          if(this.quickGameQueueResponder.resolve(player.id, null)) {
+            this.gameService.leaveQuickQueue({ id: player.id, nickname: player.nickname});
           }
         });
       } else {
@@ -59,8 +51,8 @@ export class GameController {
   @UseGuards(JwtGuard, ScopeGuard(Scope.PlayGame))
   @Put('leave_quick')
   async leaveQuickGameQeue(@Player() player: PlayerSchema) {
-    await this.quickGameQueueResponder.resolve(player.id, null);
-    return this.gameService.leaveQuickQueue(player);
+    return await this.quickGameQueueResponder.resolve(player.id, null) &&
+     this.gameService.leaveQuickQueue({ id: player.id, nickname: player.nickname });
   }
 
   @UseGuards(JwtGuard, ScopeGuard(Scope.PlayGame))

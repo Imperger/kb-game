@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { Model } from 'mongoose';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { ReplayDto } from './dto/replay-dto';
@@ -25,38 +25,19 @@ export class ReplayService {
     const playerObjectId = new mongoose.Types.ObjectId(playerId);
 
     return {
-      total: await this.replay.countDocuments({ "tracks.player": playerObjectId }),
+      total: await this.replay.countDocuments({ 'tracks.player': playerObjectId }),
       replays: (await this.replay.aggregate([
         { $match: {
           $and: [
-            { "tracks.player": playerObjectId },
-            { "createdAt": { [cond]: timePoint }}
+            { 'tracks.player': playerObjectId },
+            { 'createdAt': { [cond]: timePoint }}
           ]
         }},
         { $sort : { createdAt : -1 } },
         { $limit: Math.min(25, limit) },
-        { $unwind: "$tracks" },
-        {
-          $lookup: {
-            from: "players",
-            localField: "tracks.player",
-            foreignField: "_id",
-            pipeline: [
-              { $project: { _id: 0, nickname: 1, discriminator: 1 }}
-            ],
-            as: "tracks.playerInfo"
-          }
-        },
-        { $unwind: "$tracks.playerInfo" },
-        {
-          $group: { 
-            _id: "$_id",
-            duration: { $first: "$duration" },
-            tracks: { $push: "$tracks" },
-            createdAt: { $first: "$createdAt"}
-          }
-        },
-        { $sort : { createdAt : -1 } }]))
+        ...ReplayService.populateTracksWithPlayerInfo(),
+        { $sort : { createdAt : -1 } },
+        { $project: { 'tracks.data': 0 }}]))
         .map(x => ({
           id: x._id,
           duration: x.duration,
@@ -75,27 +56,8 @@ export class ReplayService {
   async findReplayById(replayId: string): Promise<ReplaySnapshot> {
     const replay = (await this.replay.aggregate([
       { $match: { _id: new mongoose.Types.ObjectId(replayId) }},
-      { $unwind: "$tracks" },
-      {
-        $lookup: {
-          from: "players",
-          localField: "tracks.player",
-          foreignField: "_id",
-          pipeline: [
-            { $project: { _id: 0, nickname: 1, discriminator: 1 }}
-          ],
-          as: "tracks.playerInfo"
-        }
-      },
-      { $unwind: "$tracks.playerInfo" },
-      {
-        $group: { 
-          _id: "$_id",
-          duration: { $first: "$duration" },
-          tracks: { $push: "$tracks" },
-          createdAt: { $first: "$createdAt"}
-        }
-      }]))
+      ...ReplayService.populateTracksWithPlayerInfo()
+    ]))
       .map(x => ({
         id: x._id,
         duration: x.duration,
@@ -112,7 +74,7 @@ export class ReplayService {
       }));
 
     if (replay.length === 0) {
-      throw new BadRequestException('Unknown replay id');
+      throw new NotFoundException('Unknown replay id');
     }
 
     return replay[0];
@@ -156,6 +118,32 @@ export class ReplayService {
 
     await this.upload(replay, stats);
     await this.updateStats(stats);
+  }
+
+  private static populateTracksWithPlayerInfo() {
+    return [
+      { $unwind: '$tracks' },
+      {
+        $lookup: {
+          from: 'players',
+          localField: 'tracks.player',
+          foreignField: '_id',
+          pipeline: [
+            { $project: { _id: 0, nickname: 1, discriminator: 1 }}
+          ],
+          as: 'tracks.playerInfo'
+        }
+      },
+      { $unwind: '$tracks.playerInfo' },
+      {
+        $group: { 
+          _id: '$_id',
+          duration: { $first: '$duration' },
+          tracks: { $push: '$tracks' },
+          createdAt: { $first: '$createdAt'}
+        }
+      }
+    ];
   }
 
   private static extractDuration(replay: ReplayDto): Seconds {
