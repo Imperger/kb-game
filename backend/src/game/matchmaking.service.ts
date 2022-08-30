@@ -1,17 +1,16 @@
 import { Inject, Injectable } from "@nestjs/common";
 
-import { Player } from "@/player/schemas/player.schema";
-import { MatchMakingStrategy, matchMakingStrategyToken } from "./match-making-strategies/match-makin-strategy";
+import { MatchMakingStrategy, matchMakingStrategyToken, Participant } from "./match-making-strategies/match-makin-strategy";
 
 @Injectable()
 export class MatchMakingService {
   constructor(@Inject(matchMakingStrategyToken) private readonly strategy: MatchMakingStrategy) { }
 
-  enterQueue(player: Player) {
+  enterQueue(player: Participant) {
     this.strategy.enterQueue(player);
   }
 
-  leaveQueue(player: Player) {
+  leaveQueue(player: Participant) {
     this.strategy.leaveQueue(player);
   }
 
