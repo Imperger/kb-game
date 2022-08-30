@@ -35,27 +35,7 @@ export class ReplayService {
         }},
         { $sort : { createdAt : -1 } },
         { $limit: Math.min(25, limit) },
-        { $unwind: "$tracks" },
-        {
-          $lookup: {
-            from: "players",
-            localField: "tracks.player",
-            foreignField: "_id",
-            pipeline: [
-              { $project: { _id: 0, nickname: 1, discriminator: 1 }}
-            ],
-            as: "tracks.playerInfo"
-          }
-        },
-        { $unwind: "$tracks.playerInfo" },
-        {
-          $group: { 
-            _id: "$_id",
-            duration: { $first: "$duration" },
-            tracks: { $push: "$tracks" },
-            createdAt: { $first: "$createdAt"}
-          }
-        },
+        ...ReplayService.populateTracksWithPlayerInfo(),
         { $sort : { createdAt : -1 } }]))
         .map(x => ({
           id: x._id,
@@ -75,27 +55,8 @@ export class ReplayService {
   async findReplayById(replayId: string): Promise<ReplaySnapshot> {
     const replay = (await this.replay.aggregate([
       { $match: { _id: new mongoose.Types.ObjectId(replayId) }},
-      { $unwind: "$tracks" },
-      {
-        $lookup: {
-          from: "players",
-          localField: "tracks.player",
-          foreignField: "_id",
-          pipeline: [
-            { $project: { _id: 0, nickname: 1, discriminator: 1 }}
-          ],
-          as: "tracks.playerInfo"
-        }
-      },
-      { $unwind: "$tracks.playerInfo" },
-      {
-        $group: { 
-          _id: "$_id",
-          duration: { $first: "$duration" },
-          tracks: { $push: "$tracks" },
-          createdAt: { $first: "$createdAt"}
-        }
-      }]))
+      ...ReplayService.populateTracksWithPlayerInfo()
+    ]))
       .map(x => ({
         id: x._id,
         duration: x.duration,
@@ -156,6 +117,32 @@ export class ReplayService {
 
     await this.upload(replay, stats);
     await this.updateStats(stats);
+  }
+
+  private static populateTracksWithPlayerInfo() {
+    return [
+      { $unwind: "$tracks" },
+      {
+        $lookup: {
+          from: "players",
+          localField: "tracks.player",
+          foreignField: "_id",
+          pipeline: [
+            { $project: { _id: 0, nickname: 1, discriminator: 1 }}
+          ],
+          as: "tracks.playerInfo"
+        }
+      },
+      { $unwind: "$tracks.playerInfo" },
+      {
+        $group: { 
+          _id: "$_id",
+          duration: { $first: "$duration" },
+          tracks: { $push: "$tracks" },
+          createdAt: { $first: "$createdAt"}
+        }
+      }
+    ];
   }
 
   private static extractDuration(replay: ReplayDto): Seconds {
