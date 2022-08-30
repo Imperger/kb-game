@@ -7,11 +7,11 @@
 
 `frontend` - client for `backend`
 
-`backend` - authorization server. This component can request game instances from a `spawner` (game instance manager). Allows new users to register, log in already registered, stores all information about users.
+`backend` - responsible for authorization, matchmaking, storing and retrieving players statistics and replays. Requests game instances from a `spawner` (game instance manager).
 
-`spawner` - `game instance`s manager. Launches game instances upon request from the authorization server.
+`spawner` - `game instance` manager. Launches game instances upon request from the `backend`.
 
-`game instance` - A dedicated game server to which players connect to.
+`game instance` - A dedicated instance where the game takes place.
 
 
 ![](./doc/assets/arch.png)
