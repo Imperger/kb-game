@@ -647,12 +647,13 @@ async function quickGameFlow(api: Api, logger: Logger): Promise<boolean> {
 
     let retries = 10;
 
+    let replays: ReplaysOverview;
     while(retries--) {
         try {
-            const replaysCountAfterGame = 
-            (await participant1.findReplays(DateCondition.Greather, new Date(0), 25) as AxiosResponse<ReplaysOverview>).data.total;    
+            replays = 
+            (await participant1.findReplays(DateCondition.Greather, new Date(0), 25) as AxiosResponse<ReplaysOverview>).data;    
 
-            if (replaysCountAfterGame > replaysCountBeforeGame) {
+            if (replays.total > replaysCountBeforeGame) {
                 break;
             }
         } catch(e) {
@@ -662,9 +663,16 @@ async function quickGameFlow(api: Api, logger: Logger): Promise<boolean> {
         await delay(2000);
     }
 
+    const singleReplay = await tester.test(
+        () => api.backend.findReplay(replays.replays[0].id),
+        'Find exist replay')
+        .status(200)
+        .response(x => x.id === replays.replays[0].id)
+        .toPromise();
+
     await api.backend.removeSpawner(spawner.url);
 
-    return  pass && retries > 0;
+    return  pass && retries > 0 && singleReplay.pass;
 }
 
 async function awaitGameStart(gameClient: GameClient) {
@@ -693,14 +701,21 @@ async function replayFlow(api: Api, logger: Logger): Promise<boolean> {
         .status(200)
         .toPromise();
 
-    const unknownReplay = await tester.test(
-        () => api.backend.findReplay('1234567890'),
+    const singleUnknownReplay = await tester.test(
+        () => api.backend.findReplay('507f191e810c190000000000'),
         'Find replay with unknown id')
+        .status(404)
+        .toPromise();
+
+    const singleReplayInvalidId = await tester.test(
+        () => api.backend.findReplay('abcd=42*L'),
+        'Find replay with invalid id')
         .status(400)
         .toPromise();
 
     return playerReplays.pass &&
-        unknownReplay.pass;
+        singleUnknownReplay.pass &&
+        singleReplayInvalidId.pass;
 }
 
 export async function testBackend(api: Api,): Promise<boolean> {
