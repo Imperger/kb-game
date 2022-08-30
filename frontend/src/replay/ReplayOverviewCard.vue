@@ -7,7 +7,14 @@
   <v-card-text>
     <v-container class="replay-item-container">
     <v-row v-for="t in replay.tracks" :key="t.player.id" :class="{'highlight-yourself': isMe(t.player.id)}">
-      <v-col cols="4" class="replay-item-col">{{ fullNickname(t.player.nickname)}}</v-col>
+      <v-col cols="4" class="replay-item-col text-truncate">
+        <v-tooltip bottom open-delay="500">
+          <template v-slot:activator="{ on, attrs }">
+            <span v-bind="attrs" v-on="on">{{ fullNickname(t.player.nickname) }}</span>
+          </template>
+          <span>{{ fullNickname(t.player.nickname) }}</span>
+        </v-tooltip>
+      </v-col>
       <v-col cols="3" class="replay-item-col">{{ t.cpm }}</v-col>
       <v-col cols="3" class="replay-item-col">{{ accuracyStr(t.accuracy) }}</v-col>
     </v-row>
