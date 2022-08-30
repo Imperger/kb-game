@@ -25,12 +25,12 @@ export class ReplayService {
     const playerObjectId = new mongoose.Types.ObjectId(playerId);
 
     return {
-      total: await this.replay.countDocuments({ "tracks.player": playerObjectId }),
+      total: await this.replay.countDocuments({ 'tracks.player': playerObjectId }),
       replays: (await this.replay.aggregate([
         { $match: {
           $and: [
-            { "tracks.player": playerObjectId },
-            { "createdAt": { [cond]: timePoint }}
+            { 'tracks.player': playerObjectId },
+            { 'createdAt': { [cond]: timePoint }}
           ]
         }},
         { $sort : { createdAt : -1 } },
@@ -122,25 +122,25 @@ export class ReplayService {
 
   private static populateTracksWithPlayerInfo() {
     return [
-      { $unwind: "$tracks" },
+      { $unwind: '$tracks' },
       {
         $lookup: {
-          from: "players",
-          localField: "tracks.player",
-          foreignField: "_id",
+          from: 'players',
+          localField: 'tracks.player',
+          foreignField: '_id',
           pipeline: [
             { $project: { _id: 0, nickname: 1, discriminator: 1 }}
           ],
-          as: "tracks.playerInfo"
+          as: 'tracks.playerInfo'
         }
       },
-      { $unwind: "$tracks.playerInfo" },
+      { $unwind: '$tracks.playerInfo' },
       {
         $group: { 
-          _id: "$_id",
-          duration: { $first: "$duration" },
-          tracks: { $push: "$tracks" },
-          createdAt: { $first: "$createdAt"}
+          _id: '$_id',
+          duration: { $first: '$duration' },
+          tracks: { $push: '$tracks' },
+          createdAt: { $first: '$createdAt'}
         }
       }
     ];
