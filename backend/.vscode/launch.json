@@ -16,7 +16,8 @@
                 "${workspaceFolder}/src/main.ts",
                 "-c",
                 "config/settings.json"
-            ]
+            ],
+            "console": "integratedTerminal"
         },
         {
             "type": "node",
@@ -35,7 +36,8 @@
                 "${workspaceFolder}/src/main.ts",
                 "-c",
                 "config/settings.json"
-            ]
+            ],
+            "console": "integratedTerminal"
         }
     ]
 }
