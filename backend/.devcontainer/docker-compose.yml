@@ -60,6 +60,31 @@ services:
       - dev
     ports:
       - "1080:1080" # web/api interface
+  
+  prometheus:
+    image: prom/prometheus:v2.38.0
+    volumes:
+      - type: bind
+        source: ./prometheus/prometheus.yml
+        target: /etc/prometheus/prometheus.yml
+        read_only: true
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - dev
+    ports:
+      - '9090:9090'
+
+  grafana:
+    hostname: grafana.dev.wsl
+    image: grafana/grafana-oss:9.1.2
+    user: "1000"
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+    networks:
+      - dev
+    ports:
+      - "4000:3000"
 
 volumes:
   mongodb-data:
