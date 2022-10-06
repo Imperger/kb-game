@@ -65,7 +65,7 @@ export class ScenarioController {
 
   @UseGuards(JwtGuard, ScopeGuard(Scope.EditScenario))
   @Get(':id')
-  one(@Param('id') id: string) {
+  one(@Param('id', ParseObjectIdPipe) id: string) {
     return this.scenarioService.content(id);
   }
 
