@@ -101,9 +101,13 @@ export class ScenarioService implements OnModuleInit {
   }
 
   async content(id: string): Promise<ScenarioContent> {
-    return (({ title, text }) => ({ title, text }))(
-      await this.scenarioModel.findById(id)
-    );
+    const content = await this.scenarioModel.findById(id);
+
+    if (content === null) {
+      throw new ScenarioNotFoundException();
+    }
+
+    return (({ title, text }) => ({ title, text }))(content);
   }
 
   async text(id: string): Promise<string> {
