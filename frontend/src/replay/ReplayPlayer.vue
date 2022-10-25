@@ -4,7 +4,7 @@
     <v-col cols=10>
       <v-card>
         <v-card-text class="replay-player-text">
-          <span v-for="t in styledText" :key="t.id" :style="t.style">{{ t.char }}</span>
+          <span v-for="s in textSegments" :key="s.id" :style="s.style">{{ s.text }}</span>
         </v-card-text>
         </v-card>
     </v-col>
@@ -79,12 +79,12 @@ interface PlayerItem {
 
 interface TextItemStyle {
   color?: string;
-  backgroundColor?: string;
+  background?: string;
 }
 
-interface TextItem {
-  id: number;
-  char: string;
+interface TextSegment {
+  id: string;
+  text: string;
   style: TextItemStyle;
 }
 
@@ -200,24 +200,54 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
     this.speed = speed;
   }
 
-  get text (): InputEventSnapshot[] {
-    return this.replay.tracks[0]?.data.filter(x => x.correct) ?? [];
+  get text (): string {
+    return this.replay.tracks[0]?.data
+      .filter(x => x.correct)
+      .map(x => x.char).join('') ?? [];
   }
 
-  get styledText (): TextItem[] {
-    return this.text.map((x, i) => ({
-      id: x.timestamp,
-      char: x.char,
-      style: this.characterStyle(i)
-    })) ?? [];
+  get textSegments (): TextSegment[] {
+    const ret: TextSegment[] = [];
+
+    const tracksByProgress = [...this.replay.tracks]
+      .sort((a, b) => a.progress - b.progress);
+
+    let begin = 0;
+    for (let n = 0; n < tracksByProgress.length; begin = tracksByProgress[n].progress + 1, ++n) {
+      if (tracksByProgress[n].progress === -1) {
+        continue;
+      }
+
+      if (tracksByProgress[n].progress === tracksByProgress[n - 1]?.progress ?? -1) {
+        ret[ret.length - 1].style.background = this.mixBackgroundColors(ret[ret.length - 1].style.background ?? '#0000', this.colorPool[tracksByProgress[n].colorIdx]);
+        continue;
+      }
+
+      ret.push({
+        id: `${tracksByProgress[n].progress}_${n}_t`,
+        text: this.text.slice(begin, tracksByProgress[n].progress),
+        style: {}
+      });
+
+      ret.push({
+        id: `${tracksByProgress[n].progress}_${n}_h`,
+        text: this.text.slice(tracksByProgress[n].progress, tracksByProgress[n].progress + 1),
+        style: { background: this.colorPool[tracksByProgress[n].colorIdx], color: 'white' }
+      });
+    }
+
+    ret.push({ id: `${this.text.length - begin}_t`, text: this.text.slice(begin, this.text.length), style: {} });
+
+    return ret;
   }
 
-  private characterStyle (idx: number): TextItemStyle {
-    const playerAtThisIdx = this.replay.tracks.find(x => x.progress === idx);
+  private mixBackgroundColors (exists: string, color: string): string {
+    const gradientMode = 'linear-gradient';
+    if (exists.startsWith(gradientMode)) {
+      return `${exists.slice(0, -1)}, ${color})`;
+    }
 
-    return playerAtThisIdx
-      ? { backgroundColor: this.colorPool[playerAtThisIdx.colorIdx], color: 'white' }
-      : { };
+    return `${gradientMode}(${exists}, ${color})`;
   }
 
   get playBtnIcon (): string {
