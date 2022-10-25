@@ -16,6 +16,7 @@ import { ScenarioModule } from './scenario/scenario.module';
 import { LoggerModule } from './logger/logger.module';
 import { ReplayModule } from './replay/replay.module';
 import { ScoringModule } from './scoring/scoring.module';
+import { MetricsModule } from './metrics/metrics.module';
 import Config from './config';
 
 @Module({
@@ -58,7 +59,8 @@ import Config from './config';
     ScenarioModule,
     LoggerModule,
     ReplayModule,
-    ScoringModule
+    ScoringModule,
+    MetricsModule
   ]
 })
 export class AppModule {}

@@ -14,6 +14,8 @@ import {
 } from './strategies';
 import { PlayerModule } from '@/player/player.module';
 import { ConfigHelperModule } from '@/config/config-helper.module';
+import { MetricsModule } from '@/metrics/metrics.module';
+
 @Module({
   imports: [
     GoogleRecaptchaModule.forRootAsync({
@@ -28,7 +30,8 @@ import { ConfigHelperModule } from '@/config/config-helper.module';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     UserModule,
     PlayerModule,
-    ConfigHelperModule
+    ConfigHelperModule,
+    MetricsModule
   ],
   providers: [
     AuthService,

@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 5s
+scrape_configs:
+  - job_name: "backend-api-metrics"
+    metrics_path: /api/metrics
+    static_configs:
+      - targets: ["backend_api"]

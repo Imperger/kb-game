@@ -19,6 +19,7 @@ services:
       - edge
       - db
       - backend_spawner
+      - metrics
 
   db:
     image: mongo:focal
@@ -26,6 +27,31 @@ services:
       - mongodb-data-prod:/data/db
     networks:
       - db
+
+  prometheus:
+    image: prom/prometheus:v2.38.0
+    configs:
+      - source: prometheus_config
+        target: /etc/prometheus/prometheus.yml 
+    volumes:
+      - prometheus-data-prod:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - metrics
+
+  grafana:
+    hostname: grafana.dev.wsl
+    image: grafana/grafana-oss:9.1.2
+    user: "1000"
+    configs:
+      - source: grafana_config
+        target: /etc/grafana/grafana.ini
+    volumes:
+      - grafana-data-prod:/var/lib/grafana
+    networks:
+      - metrics
+      - edge
 
   proxy:
     hostname: backend.dev.wsl
@@ -48,6 +74,8 @@ services:
 
 volumes:
   mongodb-data-prod: {}
+  prometheus-data-prod: {}
+  grafana-data-prod: {}
   frontend_static:
     external: true
 configs:
@@ -55,6 +83,10 @@ configs:
     file: ./config/backend.json 
   nginx:
     file: ./nginx/nginx.conf
+  prometheus_config:
+    file: ./prometheus/prometheus.yml
+  grafana_config:
+    file: ./grafana/grafana.ini
 secrets:
   certs:
     file: ./config/server.cert
@@ -63,5 +95,6 @@ secrets:
 networks:
   edge: {}
   db: {}
+  metrics: {}
   backend_spawner:
     external: true
