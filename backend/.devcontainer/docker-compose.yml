@@ -53,6 +53,7 @@ services:
       - dev
     ports:
       - "3000:443"
+
   mail:
     hostname: mail.dev.wsl
     image: maildev/maildev
@@ -81,10 +82,12 @@ services:
     user: "1000"
     volumes:
       - ./grafana/data:/var/lib/grafana
+      - type: bind
+        source: ./grafana/grafana.ini
+        target: /etc/grafana/grafana.ini
+        read_only: true
     networks:
       - dev
-    ports:
-      - "4000:3000"
 
 volumes:
   mongodb-data:
