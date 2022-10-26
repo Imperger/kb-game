@@ -10,6 +10,9 @@ export interface ReplayMetrics {
 }
 type Ms = number;
 
+const interpolateToPerMinute = (samples: number[], samplingInterval: number) =>
+  samples.map((x) => (x * 60000) / samplingInterval);
+
 export const replayMetrics = (
   replay: readonly ReplayRecord[],
   gameDuration: Ms,
@@ -34,12 +37,8 @@ export const replayMetrics = (
     }
   }
 
-  for (let n = 0; n < samples.length - 1; ++n) {
-    samples[n] *= 60000 / samplingInterval;
-  }
-
-  samples[samples.length - 1] *=
-    60000 / (gameDuration % samplingInterval || samplingInterval);
-
-  return { accuracy: 1 - mistakes / Math.max(1, replay.length), cpm: samples };
+  return {
+    accuracy: 1 - mistakes / Math.max(1, replay.length),
+    cpm: interpolateToPerMinute(samples, samplingInterval),
+  };
 };
