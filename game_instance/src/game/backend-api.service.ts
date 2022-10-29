@@ -24,10 +24,12 @@ export interface InputEvent {
 
 export interface Track {
   playerId: string;
+  finished: boolean;
   data: InputEvent[];
 }
 
 export interface Replay {
+  duration: number;
   tracks: Track[];
 }
 

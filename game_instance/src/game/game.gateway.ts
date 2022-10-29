@@ -94,9 +94,4 @@ export abstract class GameGateway
   sendChar(@ConnectedSocket() client: Socket, @MessageBody() key: string) {
     return this.game.pressKey(client, key);
   }
-
-  @SubscribeMessage('game_state')
-  gameState(): GameState {
-    return this.game.game();
-  }
 }

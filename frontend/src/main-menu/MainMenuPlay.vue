@@ -44,7 +44,7 @@ export default class MainMenuPlay extends Mixins(ApiServiceMixin, GameMixin, Sto
 
       const descriptor = await this.api.game.enterQuickQueue();
 
-      if (isRejectedResponse(descriptor) || !descriptor) {
+      if (isRejectedResponse(descriptor)) {
         this.inQuickQueue = false;
         return;
       }

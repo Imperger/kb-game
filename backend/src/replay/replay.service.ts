@@ -83,7 +83,7 @@ export class ReplayService {
   async upload(replay: ReplayDto, stats: readonly ReplayStats[]) {
     try {
       await new this.replay({
-        duration: ReplayService.extractDuration(replay),
+        duration: Math.ceil(replay.duration / 1000),
         tracks: replay.tracks
           .sort((a, b) => stats.findIndex(x => x.playerId === a.playerId) - stats.findIndex(x => x.playerId === b.playerId))
           .map((x, i) => {
@@ -144,9 +144,5 @@ export class ReplayService {
         }
       }
     ];
-  }
-
-  private static extractDuration(replay: ReplayDto): Seconds {
-    return Math.ceil(Math.max(...replay.tracks.map(x => x.data[x.data.length - 1].timestamp)) / 1000);
   }
 }

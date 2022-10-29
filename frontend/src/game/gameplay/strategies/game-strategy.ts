@@ -31,6 +31,7 @@ type PlayerId = string;
 export interface PlayerStats {
   id: PlayerId;
   accuracy: number;
+  avgCpm: number;
   cpm: number[]; // Each number describe cpm on 5 seconds interval
 }
 
