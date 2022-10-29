@@ -31,8 +31,8 @@ export default class GameApi {
     this.http = httpClient;
   }
 
-  async enterQuickQueue (): Promise<QuickGameDescriptor | null | RejectedResponse> {
-    return (await this.http.put<QuickGameDescriptor | null>('game/enter_quick')).data;
+  async enterQuickQueue (): Promise<QuickGameDescriptor | RejectedResponse> {
+    return (await this.http.put<QuickGameDescriptor>('game/enter_quick')).data;
   }
 
   async leaveQuickQueue (): Promise<boolean | RejectedResponse> {

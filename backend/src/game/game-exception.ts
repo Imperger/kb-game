@@ -3,7 +3,8 @@ import { HttpStatus } from '@nestjs/common';
 
 export enum GameError {
   ConnectionFailed = 200,
-  RequestInstanceFailed
+  RequestInstanceFailed,
+  EnterQuickMatchQueueError
 }
 
 export class GameException extends AppException {}
@@ -18,6 +19,12 @@ export class RequestInstanceFailedException extends GameException {
   code = GameError.RequestInstanceFailed;
   status = HttpStatus.BAD_REQUEST;
   message = "Cant't request game instance";
+}
+
+export class EnterQuickMatchQueueException extends GameException {
+  code = GameError.EnterQuickMatchQueueError;
+  status = HttpStatus.BAD_REQUEST;
+  message = "The player already in a queue or in a running game";
 }
 
 export const isGameException = exceptionGuardFactory(GameException, {
