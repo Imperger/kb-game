@@ -67,10 +67,6 @@ export abstract class GameService {
 
   abstract get scenarioId(): string;
 
-  game(): GameState {
-    return { field: { textImg: '' } };
-  }
-
   async startGame(): Promise<boolean> {
     if (!this.scenarioId) return false;
 
