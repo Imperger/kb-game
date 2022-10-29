@@ -15,11 +15,17 @@ export class Track {
   @IsMongoId()
   readonly playerId: string;
 
+  @IsBoolean()
+  readonly finished: boolean;
+
   @IsArray()
   readonly data: InputEvent[];
 }
 
 export class ReplayDto {
+  @IsNumber()
+  readonly duration: number;
+
   @IsArray()
   readonly tracks: Track[];
 }

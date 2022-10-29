@@ -9,7 +9,7 @@
       <v-toolbar color="primary" dark>Summary</v-toolbar>
       <v-card-text>
         <div class="text-h2 mb-2 font-weight-bold">{{ winner }}</div>
-        <div class="text-h4 font-weight-medium">{{ cpm }} cpm. Accuracy: {{ accuracy }}</div>
+        <div class="text-h4 font-weight-medium">{{ cpm.toFixed(1) }} cpm. Accuracy: {{ accuracy }}</div>
         <v-data-table v-if="hasRival" :headers="headers" :items="participants">
           <template v-slot:[`item.cpm`]="{ item }">
             {{ item.cpm.toFixed(1) }}
@@ -66,7 +66,7 @@ export default class GameSummaryDlg extends Mixins(GameMixin) {
   get cpm (): number {
     if (!this.winnerStats) { return 0; }
 
-    return this.avgCPM(this.winnerStats.cpm);
+    return this.winnerStats.avgCpm;
   }
 
   get accuracy (): string {
@@ -84,7 +84,7 @@ export default class GameSummaryDlg extends Mixins(GameMixin) {
       .filter(x => x.id !== this.summary.winner)
       .map(x => ({
         nickname: this.nicknameById(x.id),
-        cpm: this.avgCPM(x.cpm),
+        cpm: x.avgCpm,
         accuracy: x.accuracy
       }));
   }
@@ -99,10 +99,6 @@ export default class GameSummaryDlg extends Mixins(GameMixin) {
 
   private get winnerStats (): PlayerStats | undefined {
     return this.summary.scores.find(p => p.id === this.summary.winner);
-  }
-
-  private avgCPM (samples: number[]): number {
-    return Math.round(samples.reduce((acc, x) => x + acc, 0) / samples.length);
   }
 
   private nicknameById (id: string): string {

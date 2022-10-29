@@ -127,6 +127,7 @@ export abstract class GameService {
   }
 
   async endGame(): Promise<void> {
+    const gameDuration = Date.now() - this.gameStartTime;
     this._gameEnded = true;
 
     const players = [...this.participant.players];
@@ -139,7 +140,8 @@ export abstract class GameService {
           id: p.id,
           ...replayMetrics(
             p.progressTracker.replay,
-            Date.now() - this.gameStartTime,
+            p.finished,
+            gameDuration,
             5000,
           ),
         })),
@@ -153,7 +155,9 @@ export abstract class GameService {
     await this.backendApi.unlinkGameAll(instanceUrl());
 
     await this.backendApi.uploadReplay({
+      duration: gameDuration,
       tracks: players.map((x) => ({
+        finished: x.finished,
         playerId: x.id,
         data: x.progressTracker.replay as InputEvent[],
       })),
