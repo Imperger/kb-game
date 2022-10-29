@@ -9,11 +9,11 @@ This software is a multiplayer typing game. It consists of several components: a
 
 `frontend` - client for `backend`
 
-`backend` - authorization server. This component can request game instances from a `spawner` (game instance manager). Allows new users to register, log in already registered, stores all information about users.
+`backend` - responsible for authorization, managing text's scenarios, matchmaking.
 
 `spawner` - `game instance`s manager. Launches game instances upon request from the authorization server.
 
-`game instance` - A dedicated game server to which players connect to.
+`game instance` - a dedicated game server to which players connect to.
 
 # Development environment
 
@@ -30,7 +30,7 @@ Each project runs in its own dev container. Some containers should be accessible
 
 ## Adding spawner
 
-A freshly launched authorization server needs some initial setup. First of all, you need to add at least one spawner, it is the spawner that serves the game instances. To add a spawner, you should know its hostname and secret.
+A freshly launched authorization server needs some initial setup. First of all, it required at least one spawner for properly functionating, it is the spawner that serves the game instances. To add a spawner, you should know its hostname and secret.
 
 So, when trying to add a spawner, the authorization server tries to make a request **GET** `spawner_host/info`. And if the request was successful, then the spawner is added to the list of known spawners.
 
@@ -41,53 +41,58 @@ When there are enough players for the game or the player tries to create a custo
 >Authorization server can use any of known spawners, spawner choosing strategy covered [here](#spawner-choice-strategy).
 
 # Protocol between `client` and `game instance`
-
-Immediately when connection has been established, the client must send a signed JWT, which he had been obtained from the `backend`.
+Socket.IO is used for communication. Immediately when connection has been established, the client must emit `auth` event with a signed JWT so called `player token`, which he had been obtained from the `backend`.
 
 ```
 // C->S
 {
-    instanceId: string,
-    playerId: string,
-    nickname: string,
-    exp: number
-    // Possible more info for avoiding additional request from instance to backend
+    instanceId: string;
+    playerId: string;
+    nickname: string;
+    iat: number;
+    exp: number;
 }
 ```
 
-Immediately after, the server will send uint8 with following meaning 
+> If the server does not receive the `player token` within a certain period of time, the server will terminate the connection.
 
->0 - player not verified and the server has terminated the connection; 1 - custom game; 2 - quick game;
+Next, the server will respond with a number with the following meaning:
+
+0 - a player not verified and the server has terminated the connection\
+1 - custom game\
+2 - quick game
 
 ```js
 // S->C
-uint8
+0 | 1 | 2
 ``` 
 
 ## Lobby protocol
 
 If the server returned 1 in the previous step, the client enters the lobby state.
 
-First the client gets the state of the lobby by calling rpc `lobby_state`.
+First, the client gets the state of the lobby by emitting `lobby_state` event.
 
 ```js
-// Lobby state
 {
-    players: [ 
-        { 
-            id: string;
-            nickname: string;
-            slot: number;
-        }
-    ]
+    ownerId: string;
+    players: LobbyPlayer[];
+    scenarios: Scenario[];
 }
 ```
 
-# One user - one game instance
+# Team building algorithm in a quick game
 
-At the user authorization phase, the game instance sends a request to assign the user to itself. If the user has no links to other instances, he is assigned to the current one. If the user is already associated with another instance, that instance disconnects the user.
+The main rule - seeks to assemble a team with the smallest elo spread. Better is form small team but with tight elo.
 
-When a user requests a game instance, `backend` first check if he already has link, if so request rejected. Else the backend mark his with reference to the game instance and next requests will be rejected while the reference exists. Game instance on finalization phase send an intention request to `backend` about that. Then all who were assotiated with this instance again may request a game instance, or connects to some else.
+# One player - one game instance
+## Connecting to an already created instance
+
+At a player authorization phase, the game instance sends a request to assign the player to itself. If the player has no links to other instances, he is assigned to the current one. If the player is already associated with another instance, that instance disconnects the player.
+
+## Requesting a new instance
+
+When a player requests a game instance, `backend` first check if he already has link, if so request rejected. Else the backend mark his with reference to the game instance and next requests will be rejected while the reference exists. Game instance on finalization phase send an intention request to `backend` about that. Then all who were assotiated with this instance again may request a game instance, or connects to some else.
 
 # Spawner api
 
@@ -126,9 +131,8 @@ Authorization: Bearer <NewCustomGameToken>
 ```
 
 ```
-// NewCustomGame
 }
-    ownerId: string, // player id that has moderator access
+    ownerId: string, // the player who can tune the game settings
     backendApi: string // for uploading game results
 }
 ```
@@ -137,8 +141,7 @@ Authorization: Bearer <NewCustomGameToken>
 
 ```
 {
-    instanceId: string;
-    instanceUrl: string;
+  instanceUrl: string;
 }
 ```
 
@@ -154,12 +157,10 @@ Authorization: Bearer <NewQuickGameToken>
 ```
 
 ```
-// NewQuickGameToken
-}
-    ownerId: string, // player id that has moderator access
-    backendApi: string // for uploading game results
-    type: string, // 'FFA' or 'Teams'
-    text: string // text content ??
+{
+    players: string[];
+    scenarioId: string;
+    backendApi: string;
 }
 ```
 
@@ -167,14 +168,13 @@ Authorization: Bearer <NewQuickGameToken>
 
 ```
 {
-    instanceId: string;
-    instanceUrl: string;
+    instanceUrl: string; // spawner.host/{instanceId}
 }
 ```
 
-**WS** `/game/{request}`
+**WS** `spawner.host/instanceId`
 
-Connects player to the dedicated game instance. Used by `frontend`. The *request* part is a same field from body of **POST** `/game/new_{quick|custom}`
+Connects player to the dedicated game instance. Used by `frontend`.
 
 
 
@@ -182,11 +182,11 @@ Connects player to the dedicated game instance. Used by `frontend`. The *request
 
 ## Rights
 
-**access manager** - Add & remove rights for users.
+**assign scope** - Add & remove rights for users.
 
 **server maintainer** - Can change server settings
 
-**scenario maker** - Add & edit texts.
+**edit scenario** - Add & edit texts.
 
 **chat moderator** - Hide messages from other users. Mute users.
 
