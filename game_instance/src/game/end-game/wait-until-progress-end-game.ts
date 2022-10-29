@@ -34,7 +34,7 @@ export class WaitUntilProgressEndGame implements EndGameStrategy {
 
   tick(emitter: Player): void {
     if ([...this.players].every((p) => p.finished)) {
-      this.idleUnsub.unsubscribe();
+      this.idleUnsub?.unsubscribe();
       this.endGame();
       return;
     }
