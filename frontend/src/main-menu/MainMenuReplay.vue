@@ -35,7 +35,7 @@ export default class MainMenuReplay extends Mixins(ApiServiceMixin) {
   private overview: IReplaysOverview = { total: 0, replays: [] };
 
   created (): void{
-    this.fetchReplays(DateCondition.Greather, new Date(0));
+    this.fetchReplays(DateCondition.Less, new Date());
   }
 
   async prev (): Promise<void> {

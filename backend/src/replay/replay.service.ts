@@ -33,7 +33,7 @@ export class ReplayService {
             { 'createdAt': { [cond]: timePoint }}
           ]
         }},
-        { $sort : { createdAt : -1 } },
+        { $sort : { createdAt : cond === DateCondition.Greather ? 1 : -1 } },
         { $limit: Math.min(25, limit) },
         ...ReplayService.populateTracksWithPlayerInfo(),
         { $sort : { createdAt : -1 } },
