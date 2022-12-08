@@ -34,32 +34,45 @@ export default class MainMenuReplay extends Mixins(ApiServiceMixin) {
 
   private overview: IReplaysOverview = { total: 0, replays: [] };
 
+  private prevLocked = false;
+
+  private nextLocked = false;
+
   created (): void{
     this.fetchReplays(DateCondition.Less, new Date());
   }
 
   async prev (): Promise<void> {
+    this.prevLocked = true;
+
     await this.fetchReplays(
       DateCondition.Greather,
       this.overview.replays[0].createdAt);
 
     --this.page;
+
+    this.prevLocked = false;
   }
 
   async next (): Promise<void> {
+    this.nextLocked = true;
+
     await this.fetchReplays(
       DateCondition.Less,
       this.overview.replays[this.overview.replays.length - 1].createdAt);
 
     ++this.page;
+
+    this.nextLocked = false;
   }
 
   get prevDisabled (): boolean {
-    return this.page === 1;
+    return this.prevLocked || this.page === 1;
   }
 
   get nextDisabled (): boolean {
-    return this.overview.replays.length < this.perPage ||
+    return this.nextLocked ||
+      this.overview.replays.length < this.perPage ||
       this.page * this.perPage === this.overview.total;
   }
 
