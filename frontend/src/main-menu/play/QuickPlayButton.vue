@@ -1,5 +1,5 @@
 <template>
-    <v-btn :disabled="!App.canPlay" @click="click" class="btn-tile" plain>{{ caption }}</v-btn>
+    <v-btn v-bind="$attrs" v-on="$listeners" @click="click" class="btn-tile" plain>{{ caption }}</v-btn>
 </template>
 
 <style scoped src="./../styles.css">
