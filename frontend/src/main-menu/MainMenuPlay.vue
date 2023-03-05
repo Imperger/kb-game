@@ -2,7 +2,7 @@
 <v-container>
     <v-row>
         <v-col md="auto" class="pa-1">
-            <v-btn :disabled="!App.canPlay" @click="clickQuickGame" class="btn-tile" plain>{{ quickGameButtonCaption }}</v-btn>
+            <QuickPlayButton />
         </v-col>
         <v-col md="auto" class="pa-1">
             <v-btn :disabled="!App.canPlay" @click="newCustomGame" class="btn-tile" plain>Custom game</v-btn>
@@ -14,13 +14,7 @@
 </v-container>
 </template>
 
-<style scoped>
-.btn-tile {
-    width: 250px;
-    min-height: 140px;
-    color: white;
-    background-color: #039be5;
-}
+<style scoped src="./styles.css">
 </style>
 
 <script lang="ts">
@@ -29,38 +23,14 @@ import { Component, Mixins } from 'vue-property-decorator';
 import { ApiServiceMixin, GameMixin, StoreMixin } from '@/mixins';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
 import { AuthResult } from '@/game/gameplay/strategies/auth-strategy';
+import QuickPlayButton from './play/QuickPlayButton.vue';
 
-@Component
-export default class MainMenuPlay extends Mixins(ApiServiceMixin, GameMixin, StoreMixin) {
-  private inQuickQueue = false;
-
-  async clickQuickGame (): Promise<void> {
-    if (this.inQuickQueue) {
-      if (await this.api.game.leaveQuickQueue()) {
-        this.inQuickQueue = false;
-      }
-    } else {
-      this.inQuickQueue = true;
-
-      const descriptor = await this.api.game.enterQuickQueue();
-
-      if (isRejectedResponse(descriptor)) {
-        this.inQuickQueue = false;
-        return;
-      }
-
-      switch (await this.gameClient.connect(descriptor.instanceUrl, descriptor.playerToken)) {
-        case AuthResult.CustomGame:
-          break;
-        case AuthResult.QuickGame:
-          this.$router.push({ name: 'QuickGameLobby' });
-          break;
-        case AuthResult.Unauthorized:
-          break;
-      }
-    }
+@Component({
+  components: {
+    QuickPlayButton
   }
-
+})
+export default class MainMenuPlay extends Mixins(ApiServiceMixin, GameMixin, StoreMixin) {
   async newCustomGame (): Promise<void> {
     const gi = await this.api.game.newCustom();
     if (isRejectedResponse(gi)) {
@@ -80,10 +50,6 @@ export default class MainMenuPlay extends Mixins(ApiServiceMixin, GameMixin, Sto
 
   openServerBrowser (): void {
     this.$router.push({ name: 'MainMenuServerBrowser' });
-  }
-
-  get quickGameButtonCaption (): string {
-    return this.inQuickQueue ? 'Cancel' : 'Quick Game';
   }
 }
 </script>
