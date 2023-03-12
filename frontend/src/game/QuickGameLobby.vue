@@ -26,9 +26,11 @@ export default class QuickGameLobby extends Mixins(GameMixin) {
         this.gameClient.quickGameLobby.$gameWillStart
           .pipe(first())
           .subscribe({ next: () => this.$router.push({ name: 'GameView' }) });
-      } else if (this.gameClient.inGame) {
-        this.$router.push({ name: 'GameView' });
       }
+    }
+
+    if (this.gameClient.inGame) {
+      this.$router.push({ name: 'GameView' });
     }
   }
 }

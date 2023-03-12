@@ -9,7 +9,7 @@ export interface PlayerLeavesEvent {
 }
 
 export enum LobbyEventType {
-  PlayerJoined,
+  PlayerJoined = 200,
   PlayerLeaves,
   GameWillStart,
 }

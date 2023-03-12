@@ -49,6 +49,12 @@ export class ProgressTracker {
     });
   }
 
+  get width(): number {
+    const width = this.tracks[this.line].widths[this.inTrackIdx];
+
+    return this.inTrackIdx === 0 ? 0 : width;
+  }
+
   get finished() {
     return this.inScenarionIdx >= this.scenario.length;
   }
@@ -59,5 +65,20 @@ export class ProgressTracker {
 
   get replay(): readonly ReplayRecord[] {
     return this._replay;
+  }
+
+  get cursorPosition(): { width: number; line: number } {
+    const ret = { width: 0, line: 0 };
+
+    if (this.inTrackIdx > 0) {
+      ret.width = this.tracks[this.line].widths[this.inTrackIdx - 1];
+      ret.line = this.line;
+    } else if (this.line > 0) {
+      ret.line = this.line - 1;
+      ret.width =
+        this.tracks[ret.line].widths[this.tracks[ret.line].widths.length - 1];
+    }
+
+    return ret;
   }
 }

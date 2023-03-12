@@ -10,7 +10,7 @@ import {
 import type { Server, Socket } from 'socket.io';
 
 import { JwtArg } from '../decorators/jwt-arg';
-import { GameService, GameState } from './game.service';
+import { GameService } from './game.service';
 import { ParticipantService } from './participant.service';
 import { WsServerRefService } from './ws-server-ref.service';
 import { ConfigService } from './config.service';
@@ -53,11 +53,6 @@ export abstract class GameGateway
   }
 
   handleConnection(client: Socket) {
-    if (this.game.isStarted) {
-      client.disconnect();
-      return;
-    }
-
     this.participant.newClient(client);
   }
 

@@ -26,7 +26,7 @@ export default class QuickPlayButton extends Mixins(ApiServiceMixin, GameMixin, 
 
       const descriptor = await this.api.game.enterQuickQueue();
 
-      if (isRejectedResponse(descriptor)) {
+      if (isRejectedResponse(descriptor) || descriptor === null) {
         this.inQuickQueue = false;
         return;
       }

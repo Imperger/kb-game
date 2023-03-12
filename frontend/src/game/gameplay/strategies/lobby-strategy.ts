@@ -31,8 +31,6 @@ export class LobbyStrategy extends Strategy {
   private _scenarios!: Scenario[];
   private _scenario!: Scenario;
 
-  private lobbyEventHandler = (e: LobbyEvent) => this.lobbyEvent(e);
-
   private switchStrategy!: (strategy: Strategy) => void;
 
   public readonly $gameWillStart = new Subject();
@@ -41,7 +39,7 @@ export class LobbyStrategy extends Strategy {
     this.socket = socket;
     this.switchStrategy = switchStrategy;
 
-    this.socket.on('lobby_event', this.lobbyEventHandler);
+    await super.activate(socket, switchStrategy);
 
     let players: Player[];
 
@@ -54,7 +52,7 @@ export class LobbyStrategy extends Strategy {
   }
 
   async deactivate (): Promise<void> {
-    this.socket.off('lobby_event', this.lobbyEventHandler);
+    await super.deactivate();
   }
 
   async selectScenario (id: string): Promise<void> {
@@ -71,18 +69,20 @@ export class LobbyStrategy extends Strategy {
     return remoteCall(this.socket, 'start_game');
   }
 
-  private lobbyEvent (e: LobbyEvent): void {
+  async onEvent (e: LobbyEvent): Promise<boolean> {
     switch (e.type) {
       case LobbyEventType.PlayerJoined:
         this.playerJoinedEvent(e.data as PlayerJoinedEvent);
-        break;
+        return true;
       case LobbyEventType.PlayerLeaves:
         this.playerLeavesEvent(e.data as PlayerLeavesEvent);
-        break;
+        return true;
       case LobbyEventType.GameWillStart:
         this.switchStrategy(new GameStrategy());
         this.$gameWillStart.next();
-        break;
+        return true;
+      default:
+        return false;
     }
   }
 

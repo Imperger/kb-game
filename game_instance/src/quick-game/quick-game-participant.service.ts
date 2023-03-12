@@ -8,6 +8,7 @@ import { PlayerDesc } from '@/game/game.service';
 import { instanceUrl } from '@/game/instance-url';
 import { LobbyEventType } from '@/game/interfaces/lobby-event.interface';
 import { QuickGameService } from './quick-game.service';
+import { GameEventType } from '@/game/interfaces/game-event.interface';
 
 @Injectable()
 export class QuickGameparticiantService extends ParticipantService {
@@ -23,6 +24,7 @@ export class QuickGameparticiantService extends ParticipantService {
       this.config.players.includes(player.id)
     ) {
       if (
+        !this.game.isStarted &&
         !(await this.backendApi.linkGame(player.id, {
           instanceUrl: instanceUrl(),
         }))
@@ -44,7 +46,14 @@ export class QuickGameparticiantService extends ParticipantService {
         data: { id: player.id, nickname: player.nickname, slot: p.slot },
       });
 
-      if (this.config.players.length === this.players.length) {
+      if (this.game.isStarted) {
+        await this.prepareReconnectedPlayer(p);
+      }
+
+      if (
+        !this.game.isStarted &&
+        this.config.players.length === this.players.length
+      ) {
         await this.game.startGame();
       }
 
@@ -57,6 +66,19 @@ export class QuickGameparticiantService extends ParticipantService {
   }
 
   async playerDisconnected(player: Player): Promise<void> {
-    await this.backendApi.unlinkGame(player.id);
+    if (!this.game.isStarted) {
+      await this.backendApi.unlinkGame(player.id);
+    }
+  }
+
+  private async prepareReconnectedPlayer(
+    reconnectedPlayer: Player,
+  ): Promise<void> {
+    this.game.attachProgressTracker(reconnectedPlayer);
+    this.eventEmitter.emitLobbyEvent({ type: LobbyEventType.GameWillStart });
+    this.eventEmitter.emitGameEvent({
+      type: GameEventType.SetTypingProgress,
+      data: reconnectedPlayer.progressTracker.cursorPosition,
+    });
   }
 }
