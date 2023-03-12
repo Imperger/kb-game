@@ -1,12 +1,19 @@
 <template>
 <v-container>
     <v-row>
+      <template v-if="canPlay">
         <v-col md="auto" class="pa-1">
-            <v-btn :disabled="!App.canPlay" @click="clickQuickGame" class="btn-tile" plain>{{ quickGameButtonCaption }}</v-btn>
+            <QuickPlayButton :disabled="gameDisabled" />
         </v-col>
         <v-col md="auto" class="pa-1">
-            <v-btn :disabled="!App.canPlay" @click="newCustomGame" class="btn-tile" plain>Custom game</v-btn>
+            <v-btn :disabled="gameDisabled" @click="newCustomGame" class="btn-tile" plain>Custom game</v-btn>
         </v-col>
+      </template>
+      <template v-else-if="canReconnect">
+        <v-col md="auto" class="pa-1">
+          <v-btn @click="reconnect" class="reconnect-btn-tile" plain>Reconnect</v-btn>
+        </v-col>
+      </template>
         <v-col md="auto" class="pa-1">
             <v-btn :disabled="!App.canPlay" @click="openServerBrowser" class="btn-tile" plain>Browse servers</v-btn>
         </v-col>
@@ -14,9 +21,11 @@
 </v-container>
 </template>
 
+<style scoped src="./styles.css"></style>
+
 <style scoped>
-.btn-tile {
-    width: 250px;
+.reconnect-btn-tile {
+    width: 508px;
     min-height: 140px;
     color: white;
     background-color: #039be5;
@@ -26,39 +35,25 @@
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
 
-import { ApiServiceMixin, GameMixin, StoreMixin } from '@/mixins';
+import { ApiServiceMixin, GameMixin, StoreMixin, WatchMixin } from '@/mixins';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
 import { AuthResult } from '@/game/gameplay/strategies/auth-strategy';
+import { PlayerStats } from '@/services/api-service/player/player-stats';
+import QuickPlayButton from './play/QuickPlayButton.vue';
 
-@Component
-export default class MainMenuPlay extends Mixins(ApiServiceMixin, GameMixin, StoreMixin) {
-  private inQuickQueue = false;
+@Component({
+  components: {
+    QuickPlayButton
+  }
+})
+export default class MainMenuPlay extends Mixins(ApiServiceMixin, GameMixin, StoreMixin, WatchMixin) {
+  private gameInstanceUrl: string | null = null;
 
-  async clickQuickGame (): Promise<void> {
-    if (this.inQuickQueue) {
-      if (await this.api.game.leaveQuickQueue()) {
-        this.inQuickQueue = false;
-      }
-    } else {
-      this.inQuickQueue = true;
-
-      const descriptor = await this.api.game.enterQuickQueue();
-
-      if (isRejectedResponse(descriptor)) {
-        this.inQuickQueue = false;
-        return;
-      }
-
-      switch (await this.gameClient.connect(descriptor.instanceUrl, descriptor.playerToken)) {
-        case AuthResult.CustomGame:
-          break;
-        case AuthResult.QuickGame:
-          this.$router.push({ name: 'QuickGameLobby' });
-          break;
-        case AuthResult.Unauthorized:
-          break;
-      }
-    }
+  async created (): Promise<void> {
+    this.watch(
+      () => this.api.player.currentPlayerInfo(),
+      (stats) => this.maintainIngameStatus(stats),
+      20000);
   }
 
   async newCustomGame (): Promise<void> {
@@ -78,12 +73,45 @@ export default class MainMenuPlay extends Mixins(ApiServiceMixin, GameMixin, Sto
     }
   }
 
+  public async reconnect (): Promise<void> {
+    if (this.gameInstanceUrl) {
+      const game = await this.api.game.connect(this.gameInstanceUrl);
+
+      if (isRejectedResponse(game)) {
+        return;
+      }
+
+      switch (await this.gameClient.connect(this.gameInstanceUrl, game.playerToken)) {
+        case AuthResult.CustomGame:
+          this.$router.push({ name: 'GameLobby' });
+          break;
+        case AuthResult.QuickGame:
+          this.$router.push({ name: 'QuickGameLobby' });
+          break;
+        case AuthResult.Unauthorized:
+          break;
+      }
+    }
+  }
+
   openServerBrowser (): void {
     this.$router.push({ name: 'MainMenuServerBrowser' });
   }
 
-  get quickGameButtonCaption (): string {
-    return this.inQuickQueue ? 'Cancel' : 'Quick Game';
+  private maintainIngameStatus (stats: PlayerStats) {
+    this.gameInstanceUrl = stats.game?.instanceUrl ?? '';
+  }
+
+  public get gameDisabled (): boolean {
+    return !(this.App.canPlay && this.gameInstanceUrl?.length === 0);
+  }
+
+  public get canPlay (): boolean {
+    return !this.gameInstanceUrl;
+  }
+
+  public get canReconnect (): boolean {
+    return this.gameInstanceUrl !== null && this.gameInstanceUrl.length > 0;
   }
 }
 </script>

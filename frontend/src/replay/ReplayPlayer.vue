@@ -117,7 +117,7 @@ export default class ReplayPlayer extends Mixins(ApiServiceMixin) {
 
   private speed = 1;
 
-  private readonly speedList = [0.25, 0.5, 1, 1.5, 2, 2.5, 3, 5];
+  public readonly speedList = [0.25, 0.5, 1, 1.5, 2, 2.5, 3, 5];
 
   private pendingEventIdx = 0;
 

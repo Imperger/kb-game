@@ -11,8 +11,9 @@ interface GameImageField {
 }
 
 enum GameEventType {
-  PlayerProgress,
-  EndGame
+  PlayerProgress = 100,
+  EndGame,
+  SetTypingProgress,
 }
 
 // Describes the player's typing progress
@@ -45,7 +46,20 @@ export interface EndGameEvent {
   data: GameSummary;
 }
 
-type GameEvent = PlayersProgressEvent | EndGameEvent;
+export interface SetTypingProgress {
+  width: number;
+  line: number;
+}
+
+export interface SetTypingProgressEvent {
+  type: GameEventType.SetTypingProgress;
+  data: SetTypingProgress;
+}
+
+export type GameEvent =
+  | PlayersProgressEvent
+  | EndGameEvent
+  | SetTypingProgressEvent;
 
 const WrongChar = -1;
 type WidthToThis = number;
@@ -66,16 +80,17 @@ export class GameStrategy extends Strategy {
 
   private _players!: Player[];
 
-  private gameEventHandler = (e: GameEvent) => this.gameEvent(e);
-
   private readonly playersProgress = new Subject<PlayerProgress[]>();
   private readonly endGame = new Subject<GameSummary>();
+  private readonly setTypingProgress = new Subject<SetTypingProgress>();
+
+  private _cursorPosition: SetTypingProgress = { width: 0, line: 0 };
 
   async activate (socket: Socket, switchStrategy: SwitchStrategy): Promise<void> {
     this.socket = socket;
     this.switchStrategy = switchStrategy;
 
-    this.socket.on('game_event', this.gameEventHandler);
+    await super.activate(socket, switchStrategy);
 
     this._fieldImg = (await this.fetchFieldImg()).field;
   }
@@ -92,6 +107,10 @@ export class GameStrategy extends Strategy {
     return this.endGame;
   }
 
+  get $setTypingProgress (): Observable<SetTypingProgress> {
+    return this.setTypingProgress;
+  }
+
   get fieldImg (): Base64Image {
     return this._fieldImg;
   }
@@ -104,20 +123,28 @@ export class GameStrategy extends Strategy {
     return this._players;
   }
 
-  async deactivate (): Promise<void> {
-    this.socket.off('game_event', this.gameEventHandler);
+  get cursorPosition (): SetTypingProgress {
+    return this._cursorPosition;
   }
 
-  private gameEvent (e: GameEvent) {
+  async deactivate (): Promise<void> {
+    await super.deactivate();
+  }
+
+  async onEvent (e: GameEvent): Promise<boolean> {
     switch (e.type) {
       case GameEventType.PlayerProgress:
         this.playerProgressEvent(e.data as PlayerProgress[]);
-        break;
+        return true;
       case GameEventType.EndGame:
         this.endGameEvent(e.data as GameSummary);
-        break;
+        return true;
+      case GameEventType.SetTypingProgress:
+        this.setTypingProgress.next(e.data);
+        this._cursorPosition = e.data;
+        return true;
       default:
-        throw new Error(`Unknown game event '${e}'`);
+        return false;
     }
   }
 

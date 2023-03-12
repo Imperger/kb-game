@@ -1,6 +1,7 @@
 export enum GameEventType {
-  PlayerProgress,
+  PlayerProgress = 100,
   EndGame,
+  SetTypingProgress,
 }
 
 // Describes the player's typing progress
@@ -32,4 +33,17 @@ export interface EndGameEvent {
   data: GameSummary;
 }
 
-export type GameEvent = PlayersProgressEvent | EndGameEvent;
+export interface SetTypingProgress {
+  width: number;
+  line: number;
+}
+
+export interface SetTypingProgressEvent {
+  type: GameEventType.SetTypingProgress;
+  data: SetTypingProgress;
+}
+
+export type GameEvent =
+  | PlayersProgressEvent
+  | EndGameEvent
+  | SetTypingProgressEvent;

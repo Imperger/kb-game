@@ -4,7 +4,7 @@ import type { AxiosResponse } from 'axios';
 
 import { DockerService } from './docker.service';
 import { HttpService } from '@nestjs/axios';
-import { catchError, firstValueFrom, forkJoin, map, Observable, tap } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, Observable } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InstanceNameResolverService } from './instance-name-resolver.service';
@@ -31,7 +31,7 @@ export interface InstanceRequestResult {
   instanceUrl: string;
 };
 
-enum InstanceType { Custom = 'custom', Quick = 'quick' }
+export enum InstanceType { Custom = 'custom', Quick = 'quick' }
 
 interface CustomGameInstanceOptions {
   instanceId: string;
@@ -74,7 +74,7 @@ export class SpawnerService implements OnModuleInit {
 
   private readonly gameInstanceImageName = 'game_instance';
 
-  private readonly instancesHost = new Map<string, InstanceType>();
+  protected readonly instancesHost = new Map<string, InstanceType>();
 
   constructor(
     private readonly configService: ConfigService,

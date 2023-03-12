@@ -6,7 +6,7 @@
     :value="progress100(p.progress)"
     color="blue-grey"
     height="25">
-      <template v-slot:default="">
+      <template v-slot>
         <strong>{{ nameFromId(p.id) }}</strong>
       </template>
   </v-progress-linear>

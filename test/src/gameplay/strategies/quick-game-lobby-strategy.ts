@@ -22,11 +22,7 @@ export class QuickGameLobbyStrategy extends Strategy {
 
   private _players: Player[] = [];
 
-  private _bufferedEvents!: LobbyEvent[];
-
   private switchStrategy!: (strategy: Strategy) => void;
-
-  private lobbyEventHandler = (e: LobbyEvent) => this.lobbyEvent(e);
 
   public readonly $gameWillStart = new Subject<void>();
 
@@ -34,43 +30,34 @@ export class QuickGameLobbyStrategy extends Strategy {
     this.socket = socket;
     this.switchStrategy = switchStrategy;
 
-    setTimeout(() => this.replayBufferedEvents(), 0);
+    await super.activate(socket, switchStrategy);
 
     ({ players: this._players } = (await this.fetchLobbyState()));
-
-    this.socket.on('lobby_event', this.lobbyEventHandler);
   }
 
   async deactivate (): Promise<void> {
-    this.socket.off('lobby_event', this.lobbyEventHandler);
+    await super.deactivate();
   }
 
-  private lobbyEvent (e: LobbyEvent): void {
+  async onEvent (e: LobbyEvent): Promise<boolean> {
     switch (e.type) {
       case LobbyEventType.PlayerJoined:
         this.playerJoinedEvent(e.data as PlayerJoinedEvent);
-        break;
+        return true;
       case LobbyEventType.PlayerLeaves:
         this.playerLeavesEvent(e.data as PlayerLeavesEvent);
-        break;
+        return true;
       case LobbyEventType.GameWillStart:
         this.switchStrategy(new GameStrategy());
         this.$gameWillStart.next();
-        break;
+        return true;
+      default:
+        return false;
     }
   }
 
   get players (): Player[] {
     return this._players;
-  }
-
-  set bufferedEvents (events: unknown) {
-    this._bufferedEvents = events as LobbyEvent[];
-  }
-
-  private replayBufferedEvents () {
-    this._bufferedEvents.forEach(x => this.lobbyEvent(x));
-    this._bufferedEvents = [];
   }
 
   private playerJoinedEvent (e: PlayerJoinedEvent): void {

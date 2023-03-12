@@ -33,20 +33,23 @@ import LobbyScenarioList from './LobbyScenarioList.vue';
   }
 })
 export default class GameLobby extends Mixins(GameMixin) {
-  private roomCapacity = 10;
-  private ownerId = '';
-  private players: Player[] = [];
+  public roomCapacity = 10;
+  public ownerId = '';
+  public players: Player[] = [];
   private scenario: Scenario = { id: '', title: '' };
 
   async created (): Promise<void> {
     if (this.gameClient.inLobby) {
+      this.gameClient.lobby.$gameWillStart
+        .pipe(first())
+        .subscribe({ next: () => this.$router.push({ name: 'GameView' }) });
+
       await this.gameClient.lobby.awaitInitialization();
 
       this.ownerId = this.gameClient.lobby.ownerId;
       this.players = this.gameClient.lobby.players;
-      this.gameClient.lobby.$gameWillStart
-        .pipe(first())
-        .subscribe({ next: () => this.$router.push({ name: 'GameView' }) });
+    } else if (this.gameClient.inGame) {
+      this.$router.push({ name: 'GameView' });
     }
   }
 

@@ -16,6 +16,8 @@ import { LobbyEventType } from './interfaces/lobby-event.interface';
 import { GameEventType } from './interfaces/game-event.interface';
 import { instanceUrl } from './instance-url';
 
+type PlayerId = string;
+
 type Nickname = string;
 export interface ServerDescription {
   owner: Nickname;
@@ -58,6 +60,8 @@ export abstract class GameService {
 
   private broadcastProgressTimer!: NodeJS.Timer;
 
+  private playerProgress = new Map<PlayerId, ProgressTracker>();
+
   constructor(
     private readonly eventEmitter: EventEmitterService,
     protected readonly participant: ParticipantService,
@@ -85,15 +89,7 @@ export abstract class GameService {
     );
 
     this.gameStartTime = Date.now();
-    this.participant.players.forEach(
-      (p) =>
-        (p.progressTracker = new ProgressTracker(
-          this.scenarioText,
-          this.scenarioImgDescription,
-          this.gameStartTime,
-        )),
-    );
-
+    this.participant.players.forEach((p) => this.attachProgressTracker(p));
     this.eventEmitter.emitLobbyEvent({ type: LobbyEventType.GameWillStart });
 
     this.broadcastProgressTimer = setInterval(
@@ -164,6 +160,22 @@ export abstract class GameService {
     });
 
     setTimeout(() => this.shutdownService.shutdown(), 10000);
+  }
+
+  attachProgressTracker(player: Player) {
+    let progressTracker = this.playerProgress.get(player.id);
+
+    if (!progressTracker) {
+      progressTracker = new ProgressTracker(
+        this.scenarioText,
+        this.scenarioImgDescription,
+        this.gameStartTime,
+      );
+
+      this.playerProgress.set(player.id, progressTracker);
+    }
+
+    player.progressTracker = progressTracker;
   }
 
   get isStarted(): boolean {

@@ -12,14 +12,10 @@ export class AuthStrategy extends Strategy {
 
   private socket!: Socket;
 
-  private bufferEventHandler = (e: unknown) => this.bufferEvent(e);
-
-  public readonly bufferedEvents: unknown[] = [];
-
   async activate (socket: Socket, switchStrategy: (strategy: Strategy) => void): Promise<void> {
-    this.socket = socket;
+    await super.activate(socket, switchStrategy);
 
-    this.socket.on('lobby_event', this.bufferEventHandler);
+    this.socket = socket;
 
     switch (await this.auth()) {
       case AuthResult.CustomGame:
@@ -34,7 +30,11 @@ export class AuthStrategy extends Strategy {
   }
 
   async deactivate (): Promise<void> {
-    this.socket.off('lobby_event', this.bufferEventHandler);
+    await super.deactivate();
+  }
+
+  async onEvent (x: unknown): Promise<boolean> {
+    return false;
   }
 
   set playerToken (token: string) {
@@ -43,9 +43,5 @@ export class AuthStrategy extends Strategy {
 
   private async auth (): Promise<AuthResult> {
     return remoteCall(this.socket, 'auth', this.token);
-  }
-
-  private bufferEvent (e: unknown) {
-    this.bufferedEvents.push(e);
   }
 }

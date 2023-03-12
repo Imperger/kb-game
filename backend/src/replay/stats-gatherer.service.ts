@@ -25,7 +25,7 @@ export class StatsGathererService {
       ...track,
       playTime: track.finished ? track.data[track.data.length - 1].timestamp : gameDuration,
       correctHits,
-      accuracy: correctHits / (track.data.length ?? 1)
+      accuracy: correctHits / (track.data.length || 1)
     };
   }
 

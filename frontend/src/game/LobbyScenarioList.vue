@@ -27,7 +27,7 @@ import { GameMixin } from '@/mixins';
 
 @Component
 export default class LobbyScenarioList extends Mixins(GameMixin) {
-  private scenarios: Scenario[] = [];
+  public scenarios: Scenario[] = [];
   private selected: Scenario = { id: '', title: '' };
 
   @Emit('select')
@@ -39,8 +39,10 @@ export default class LobbyScenarioList extends Mixins(GameMixin) {
     if (this.gameClient.inLobby) {
       await this.gameClient.lobby.awaitInitialization();
 
-      this.scenarios = this.gameClient.lobby.scenarios;
-      this.selected = this.scenarios[0];
+      if (this.gameClient.inLobby) {
+        this.scenarios = this.gameClient.lobby.scenarios;
+        this.selected = this.scenarios[0];
+      }
     }
   }
 

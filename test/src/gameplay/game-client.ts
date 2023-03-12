@@ -1,3 +1,4 @@
+import { first } from 'rxjs/operators';
 import { io, Socket } from 'socket.io-client';
 
 import { AuthResult, AuthStrategy } from './strategies/auth-strategy';
@@ -66,14 +67,16 @@ export class GameClient {
     if (this.state instanceof AuthStrategy && strategy instanceof LobbyStrategy) {
       this.authResult(AuthResult.CustomGame);
     } else if (this.state instanceof AuthStrategy && strategy instanceof QuickGameLobbyStrategy) {
-      strategy.bufferedEvents = this.state.bufferedEvents;
       this.authResult(AuthResult.QuickGame);
     } else if (this.state instanceof LobbyStrategy && strategy instanceof GameStrategy) {
       strategy.players = this.state.players.map(x => ({ ...x, progress: 0 }));
+      strategy.$endGame.pipe(first()).subscribe(() => strategy.deactivate());
     } else if (this.state instanceof QuickGameLobbyStrategy && strategy instanceof GameStrategy) {
       strategy.players = this.state.players.map(x => ({ ...x, progress: 0 }));
+      strategy.$endGame.pipe(first()).subscribe(() => strategy.deactivate());
     }
 
+    strategy.bufferedEvents = this.state.bufferedEvents ?? [];
     this.state.deactivate();
     this.state = strategy;
     this.state.use(this.socket, s => this.switchStrategy(s));

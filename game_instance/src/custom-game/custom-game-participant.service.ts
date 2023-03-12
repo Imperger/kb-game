@@ -8,6 +8,7 @@ import { CustomGameConfigService } from './custom-game-config.service';
 import { instanceUrl } from '@/game/instance-url';
 import { Player } from '@/game/Player';
 import { LobbyEventType } from '@/game/interfaces/lobby-event.interface';
+import { GameEventType } from '@/game/interfaces/game-event.interface';
 
 @Injectable()
 export class CustomGameParticipantService extends ParticipantService {
@@ -22,6 +23,7 @@ export class CustomGameParticipantService extends ParticipantService {
 
     if (this._players.size < capacity && !this.isPlayerIn(player.id)) {
       if (
+        !this.game.isStarted &&
         player.id !== this.config.ownerId &&
         !(await this.backendApi.linkGame(player.id, {
           instanceUrl: instanceUrl(),
@@ -46,6 +48,10 @@ export class CustomGameParticipantService extends ParticipantService {
         data: { id: player.id, nickname: player.nickname, slot: p.slot },
       });
 
+      if (this.game.isStarted) {
+        await this.prepareReconnectedPlayer(p);
+      }
+
       return true;
     } else {
       setImmediate(() => player.socket.disconnect());
@@ -57,7 +63,7 @@ export class CustomGameParticipantService extends ParticipantService {
   async playerDisconnected(player: Player): Promise<void> {
     if (player.id === this.config.ownerId) {
       this._$ownerPresence.next(false);
-    } else {
+    } else if (!this.game.isStarted) {
       await this.backendApi.unlinkGame(player.id);
     }
   }
@@ -71,5 +77,16 @@ export class CustomGameParticipantService extends ParticipantService {
 
   get $ownerPresence(): Observable<boolean> {
     return this._$ownerPresence;
+  }
+
+  private async prepareReconnectedPlayer(
+    reconnectedPlayer: Player,
+  ): Promise<void> {
+    this.game.attachProgressTracker(reconnectedPlayer);
+    this.eventEmitter.emitLobbyEvent({ type: LobbyEventType.GameWillStart });
+    this.eventEmitter.emitGameEvent({
+      type: GameEventType.SetTypingProgress,
+      data: reconnectedPlayer.progressTracker.cursorPosition,
+    });
   }
 }

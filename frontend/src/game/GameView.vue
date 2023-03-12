@@ -19,7 +19,7 @@ import KeyboardInputMixin from './KeyboardInputMixin';
 import TypingTextTracker from './TypingTextTracker.vue';
 import PlayersProgressPanel from './PlayersProgressPanel.vue';
 import GameSummaryDlg from './GameSummaryDlg.vue';
-import { GameSummary, PlayerProgress } from './gameplay/strategies/game-strategy';
+import { GameSummary, PlayerProgress, SetTypingProgress } from './gameplay/strategies/game-strategy';
 
 @Component({
   components: {
@@ -29,29 +29,32 @@ import { GameSummary, PlayerProgress } from './gameplay/strategies/game-strategy
   }
 })
 export default class GameView extends Mixins(GameMixin, KeyboardInputMixin) {
-  private fieldImg = '';
+  public fieldImg = '';
 
-  private scroll = 0;
+  public scroll = 0;
 
-  private carriage = 0;
+  public carriage = 0;
 
   private $playerProgressUnsub!: Subscription;
 
-  private playersProgress: PlayerProgress[] = [];
+  public playersProgress: PlayerProgress[] = [];
 
-  private summaryDlgShow = false;
+  public summaryDlgShow = false;
 
-  private gameSummary: GameSummary = { winner: '', scores: [] };
+  public gameSummary: GameSummary = { winner: '', scores: [] };
 
   async created (): Promise<void> {
     if (this.gameClient.inGame) {
       await this.gameClient.game.awaitInitialization();
+
+      this.setTypingProgress(this.gameClient.game.cursorPosition);
     }
 
     this.fieldImg = this.gameClient.game.fieldImg;
 
     this.$playerProgressUnsub = this.gameClient.game.$playersProgress.subscribe(x => (this.playersProgress = x));
     this.gameClient.game.$endGame.pipe(first()).subscribe(x => this.endGame(x));
+    this.gameClient.game.$setTypingProgress.pipe(first()).subscribe(x => this.setTypingProgress(x));
   }
 
   destroyed (): void {
@@ -72,6 +75,11 @@ export default class GameView extends Mixins(GameMixin, KeyboardInputMixin) {
   endGame (summary: GameSummary): void {
     this.gameSummary = summary;
     this.summaryDlgShow = true;
+  }
+
+  private setTypingProgress (progress: SetTypingProgress): void {
+    this.carriage = progress.width;
+    this.scroll = progress.line;
   }
 }
 </script>
