@@ -12,15 +12,15 @@
 		}
 	},
 	"runArgs": [
-		"--name=game_instance_dev.dev.wsl",
+		"--name=ga_00000000000000000000000000000000",
 		"--network=dev",
 		"--label", "traefik.enable=true",
-		"--label", "traefik.http.routers.random_generated_instance_id.rule=PathPrefix(`/random_generated_instance_id`)",
-		"--label", "traefik.http.routers.random_generated_instance_id.middlewares=random_generated_instance_id-strip-prefix",
-		"--label", "traefik.http.middlewares.random_generated_instance_id-strip-prefix.stripprefix.prefixes=/random_generated_instance_id",
-		"--label", "traefik.http.services.random_generated_instance_id.loadbalancer.server.port=80",
-		"--label", "traefik.http.routers.random_generated_instance_id.entrypoints=websecure",
-		"--label", "traefik.http.routers.random_generated_instance_id.tls=true"
+		"--label", "traefik.http.routers.ga_00000000000000000000000000000000.rule=PathPrefix(`/00000000000000000000000000000000`)",
+		"--label", "traefik.http.routers.ga_00000000000000000000000000000000.middlewares=ga_00000000000000000000000000000000-strip-prefix",
+		"--label", "traefik.http.middlewares.ga_00000000000000000000000000000000-strip-prefix.stripprefix.prefixes=/00000000000000000000000000000000",
+		"--label", "traefik.http.services.ga_00000000000000000000000000000000.loadbalancer.server.port=80",
+		"--label", "traefik.http.routers.ga_00000000000000000000000000000000.entrypoints=websecure",
+		"--label", "traefik.http.routers.ga_00000000000000000000000000000000.tls=true"
 	],
 	"postCreateCommand": "target=${containerWorkspaceFolder}/.devcontainer/scripts/postCreateCommand.sh && chmod +x $target && $target",
 	// Set *default* container specific settings.json values on container create.
