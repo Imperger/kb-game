@@ -4,7 +4,7 @@
     <v-col class="text-h3">{{ nicknameFull }}</v-col>
   </v-row>
   <v-row justify="center">
-    <v-col cols="5" class="text-h5">Played time</v-col>
+    <v-col cols="5" class="text-h5">Time in game</v-col>
     <v-col cols="5" class="text-h5">{{ playedTime }}</v-col>
   </v-row>
   <v-row justify="center">

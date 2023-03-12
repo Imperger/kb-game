@@ -10,7 +10,7 @@ function InjectGameModule() {
     case 'quick':
       return QuickGameModule;
     default:
-      throw new Error('Inknown game type');
+      throw new Error('Unknown game type');
   }
 }
 
