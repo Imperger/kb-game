@@ -1,10 +1,10 @@
 import { UserService } from '@/user/user.service';
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, Type } from '@nestjs/common';
 import { InvalidCredentialsException } from '../auth-exception';
 
 import { AuthService } from '../auth.service';
 
-export function AuthGoogleGuard(populateUser: boolean) {
+export function AuthGoogleGuard(populateUser: boolean): Type<CanActivate> {
   @Injectable()
   class AuthGoogleGuard implements CanActivate {
     constructor(
