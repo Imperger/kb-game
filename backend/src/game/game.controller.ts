@@ -38,8 +38,8 @@ export class GameController {
 
         req.raw.once('close', () => {
           // The player should being in the queue only while request in pending state   
-          if(this.quickGameQueueResponder.resolve(player.id, null)) {
-            this.gameService.leaveQuickQueue({ id: player.id, nickname: player.nickname});
+          if (this.quickGameQueueResponder.resolve(player.id, null)) {
+            this.gameService.leaveQuickQueue({ id: player.id, nickname: player.nickname });
           }
         });
       } else {
@@ -53,7 +53,7 @@ export class GameController {
   @Put('leave_quick')
   async leaveQuickGameQeue(@Player() player: PlayerSchema) {
     return await this.quickGameQueueResponder.resolve(player.id, null) &&
-     this.gameService.leaveQuickQueue({ id: player.id, nickname: player.nickname });
+      this.gameService.leaveQuickQueue({ id: player.id, nickname: player.nickname });
   }
 
   @UseGuards(JwtGuard, ScopeGuard(Scope.PlayGame))
