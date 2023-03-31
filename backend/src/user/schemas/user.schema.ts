@@ -6,7 +6,7 @@ import { Player } from '@/player/schemas/player.schema';
 
 @Schema({ timestamps: { createdAt: false, updatedAt: false } })
 class ExternalIdentity {
-  @Prop({ unique: true })
+  @Prop()
   google?: string;
 }
 
@@ -85,3 +85,5 @@ export class User extends Document {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.index({ ['externalIdentity.google']: 1 }, { unique: true, sparse: true });
