@@ -10,7 +10,6 @@
         </v-list-item>
         <add-spawner-item @add="add" />
     </v-list>
-    <v-snackbar v-model="notify.show" :color="notifyColor">{{ notify.message }}</v-snackbar>
 </v-card>
 </template>
 
@@ -23,12 +22,13 @@
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
 
-import { ApiServiceMixin } from '@/mixins';
+import { ApiServiceMixin, StoreMixin } from '@/mixins';
 import AddSpawnerItem from './AddSpawnerItem.vue';
 import SpawnerTable from './SpawnerTable.vue';
 import { SpawnerInfo } from '@/services/api-service/spawner/spawner-api';
 import { LoadingController } from './loading-controller';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
+import { NotifyType } from '@/store/notify';
 
 @Component({
   components: {
@@ -36,10 +36,8 @@ import { isRejectedResponse } from '@/services/api-service/rejected-response';
     SpawnerTable
   }
 })
-export default class SpawnerManager extends Mixins(ApiServiceMixin) {
+export default class SpawnerManager extends Mixins(ApiServiceMixin, StoreMixin) {
   private spawners: SpawnerInfo[] = [];
-
-  private notify = { message: '', error: false, show: false };
 
   async created (): Promise<void> {
     this.spawners = await this.api.spawner.listAll();
@@ -51,10 +49,10 @@ export default class SpawnerManager extends Mixins(ApiServiceMixin) {
     const spawner = await this.api.spawner.add(url, secret);
 
     if (isRejectedResponse(spawner)) {
-      this.showNotify(spawner.message ?? '', true);
+      this.Notify.show({ message: spawner.message ?? '', type: NotifyType.Error });
     } else {
       this.spawners.push({ ...spawner, url });
-      this.showNotify('Added', false);
+      this.Notify.show({ message: 'Added', type: NotifyType.Message });
     }
 
     loading.addBtn = false;
@@ -63,16 +61,6 @@ export default class SpawnerManager extends Mixins(ApiServiceMixin) {
   async remove (url: string): Promise<void> {
     await this.api.spawner.remove(url);
     this.spawners.splice(this.spawners.findIndex(x => x.url === url), 1);
-  }
-
-  showNotify (message: string, error: boolean): void {
-    this.notify.message = message;
-    this.notify.error = error;
-    this.notify.show = true;
-  }
-
-  get notifyColor (): string {
-    return this.notify.error ? 'red accent-2' : 'light-blue lighten-1';
   }
 
   get hasSpawner (): boolean {
