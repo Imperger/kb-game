@@ -74,7 +74,7 @@ export default class ApiService {
       if (isAxiosError(e)) {
         if (e.response) {
           const status = e.response?.status;
-          if (status >= 400 && status < 500) {
+          if (status >= 400 && status < 600) {
             return { ...e.response, data: JSON.stringify({ ...JSON.parse(e.response.data as string), rejectedResponse: true }) };
           }
         }

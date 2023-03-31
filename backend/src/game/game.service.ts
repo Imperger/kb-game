@@ -186,6 +186,10 @@ export class GameService implements OnModuleInit {
     return ret;
   }
 
+  async cantStartGame(): Promise<boolean> {
+    return (await this.spawnerService.listAll()).length > 0;
+  }
+
   static instanceIdFromUrl(instanceUrl: string): string {
     return new URL(instanceUrl).pathname.slice(1);
   }

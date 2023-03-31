@@ -40,6 +40,7 @@ import { isRejectedResponse } from '@/services/api-service/rejected-response';
 import { AuthResult } from '@/game/gameplay/strategies/auth-strategy';
 import { PlayerStats } from '@/services/api-service/player/player-stats';
 import QuickPlayButton from './play/QuickPlayButton.vue';
+import { NotifyType } from '@/store/notify';
 
 @Component({
   components: {
@@ -59,6 +60,7 @@ export default class MainMenuPlay extends Mixins(ApiServiceMixin, GameMixin, Sto
   async newCustomGame (): Promise<void> {
     const gi = await this.api.game.newCustom();
     if (isRejectedResponse(gi)) {
+      this.Notify.show({ message: gi.message ?? "Can't start the game", type: NotifyType.Warning });
       return;
     }
 

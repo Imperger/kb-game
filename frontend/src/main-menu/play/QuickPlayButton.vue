@@ -11,6 +11,7 @@ import { Mixins } from 'vue-property-decorator';
 import { ApiServiceMixin, GameMixin, StoreMixin } from '@/mixins';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
 import { AuthResult } from '@/game/gameplay/strategies/auth-strategy';
+import { NotifyType } from '@/store/notify';
 
 @Component
 export default class QuickPlayButton extends Mixins(ApiServiceMixin, GameMixin, StoreMixin) {
@@ -26,9 +27,13 @@ export default class QuickPlayButton extends Mixins(ApiServiceMixin, GameMixin, 
 
       const descriptor = await this.api.game.enterQuickQueue();
 
-      if (isRejectedResponse(descriptor) || descriptor === null) {
+      if (isRejectedResponse(descriptor)) {
         this.inQuickQueue = false;
+
+        this.Notify.show({ message: descriptor?.message ?? "Can't enter queue", type: NotifyType.Warning });
         return;
+      } else if (descriptor === null) {
+        this.inQuickQueue = false;
       }
 
       switch (await this.gameClient.connect(descriptor.instanceUrl, descriptor.playerToken)) {
