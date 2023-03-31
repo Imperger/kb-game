@@ -4,6 +4,12 @@ import * as mongoose from 'mongoose';
 
 import { Player } from '@/player/schemas/player.schema';
 
+@Schema({ timestamps: { createdAt: false, updatedAt: false } })
+class ExternalIdentity {
+  @Prop()
+  google?: string;
+}
+
 @Schema({ timestamps: { createdAt: false } })
 class UserSecret {
   @Prop()
@@ -53,14 +59,17 @@ export class User extends Document {
   })
   email: string;
 
+  @Prop({ type: ExternalIdentity })
+  externalIdentity: ExternalIdentity;
+
   @Prop({ default: false })
   confirmed: boolean;
 
   @Prop({ default: '' })
   avatar: string;
 
-  @Prop({ required: true, type: UserSecret })
-  secret: UserSecret;
+  @Prop({ type: UserSecret })
+  secret?: UserSecret;
 
   @Prop({ required: true, type: Scopes })
   scopes: Scopes;
@@ -76,3 +85,5 @@ export class User extends Document {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.index({ ['externalIdentity.google']: 1 }, { unique: true, sparse: true });

@@ -29,8 +29,8 @@
 </style>
 
 <script lang="ts">
-import { interval } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { interval, fromEvent, Subscription } from 'rxjs';
+import { take, tap } from 'rxjs/operators';
 import { Component, Vue, Prop, Watch, Ref } from 'vue-property-decorator';
 
 interface VImg {
@@ -40,23 +40,40 @@ interface VImg {
 @Component
 export default class TypingTextTracker extends Vue {
   @Ref('img')
-  readonly img!: VImg;
+  public readonly img!: VImg;
 
   @Prop({ required: true, type: String })
-  readonly textImage!: string;
+  public readonly textImage!: string;
 
   // Scroll measured in text rows
   @Prop({ type: Number, default: 0 })
-  readonly scroll!: number;
+  public readonly scroll!: number;
 
   @Prop({ type: Number, default: 0 })
-  readonly carriage!: number;
+  public readonly carriage!: number;
 
-  private innerScroll = 0;
+  public innerScroll = 0;
 
   private readonly imgNativeWidth = 800;
 
   private readonly imgNativeLineHeight = 50;
+
+  private $resizeListener!: Subscription;
+
+  private clientWidth = 0;
+
+  public mounted (): void {
+    this.clientWidth = this.img?.$el.clientWidth;
+
+    this.$resizeListener = fromEvent(window, 'resize')
+      .subscribe(() => {
+        this.clientWidth = this.img?.$el.clientWidth;
+      });
+  }
+
+  public destroyed (): void {
+    this.$resizeListener.unsubscribe();
+  }
 
   @Watch('scroll')
   scrollChanged (x: number, old: number): void {
@@ -73,7 +90,7 @@ export default class TypingTextTracker extends Vue {
   }
 
   imgScale (): number {
-    return (this.img?.$el.clientWidth ?? this.imgNativeWidth) / this.imgNativeWidth;
+    return (this.clientWidth ?? this.imgNativeWidth) / this.imgNativeWidth;
   }
 }
 </script>

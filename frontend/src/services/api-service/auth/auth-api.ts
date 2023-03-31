@@ -55,6 +55,12 @@ export default class AuthApi {
       { headers: { recaptcha: reCaptchaResponse } })).data;
   }
 
+  async registerGoogle (idToken: string, reCaptchaResponse: string): Promise<EmptyObject | RejectedResponse> {
+    return (await this.http.post<EmptyObject>('auth/register/google',
+      { idToken },
+      { headers: { recaptcha: reCaptchaResponse } })).data;
+  }
+
   async confirmRegistration (
     code: string
   ): Promise<EmptyObject | RejectedResponse> {
@@ -93,6 +99,18 @@ export default class AuthApi {
   ): Promise<LoginResponse | RejectedResponse> {
     const response: LoginResponse = (await this.http.post('auth/login/email',
       { email, password },
+      { headers: { recaptcha: reCaptchaResponse } })).data;
+
+    if (!isRejectedResponse(response)) {
+      this.accessToken = response.token as string;
+    }
+
+    return response;
+  }
+
+  async loginGoogle (idToken: string, reCaptchaResponse: string): Promise<LoginResponse | RejectedResponse> {
+    const response: LoginResponse = (await this.http.post('auth/login/google',
+      { idToken },
       { headers: { recaptcha: reCaptchaResponse } })).data;
 
     if (!isRejectedResponse(response)) {

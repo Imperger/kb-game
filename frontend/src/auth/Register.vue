@@ -7,12 +7,19 @@
     :status="signupResult"
     @secureInteract="secureInteract"
     @submit="doRegister"/>
+  <div class="registration-alternatives-separator">OR</div>
+  <google-auth-button text="signup-with" @credentials="registerGoogle" />
 </div>
 </template>
 
 <style scoped>
 .register-component {
   margin: auto;
+}
+
+.registration-alternatives-separator {
+  position: relative;
+  margin: 10px 0;
 }
 
 .language-selector {
@@ -27,24 +34,25 @@ import { Component, Mixins } from 'vue-property-decorator';
 
 import { AuthError } from '@/services/api-service/auth/auth-error';
 import ApiServiceMixin from '@/mixins/api-service-mixin';
-import { isAxiosError } from '@/typeguards/axios-typeguard';
 import KeyboardBackground from '@/components/KeyboardBackground.vue';
 import AppLanguageSelector from '@/components/AppLanguageSelector.vue';
 import RegistrationForm, { RegistrationData } from '@/components/RegistrationForm.vue';
+import GoogleAuthButton from '@/components/auth/GoogleAuthButton.vue';
 
 @Component({
   components: {
+    GoogleAuthButton,
     KeyboardBackground,
     AppLanguageSelector,
     RegistrationForm
   }
 })
 export default class Register extends Mixins(ApiServiceMixin) {
-  private registrationData: RegistrationData = { username: '', email: '', password: '' };
+  public registrationData: RegistrationData = { username: '', email: '', password: '' };
 
-  private signupResult: AuthError | null = null;
+  public signupResult: AuthError | null = null;
 
-  private interactiveBackground = true;
+  public interactiveBackground = true;
 
   async doRegister (): Promise<void> {
     if (!(this.registrationData.username.length &&
@@ -61,6 +69,14 @@ export default class Register extends Mixins(ApiServiceMixin) {
       this.registrationData.email,
       this.registrationData.password,
       token)).code ?? 0;
+  }
+
+  public async registerGoogle (credentials: string): Promise<void> {
+    await this.$recaptchaLoaded();
+
+    const token = await this.$recaptcha('REGISTER_GOOGLE');
+
+    await this.api.auth.registerGoogle(credentials, token);
   }
 
   secureInteract (active: boolean): void {

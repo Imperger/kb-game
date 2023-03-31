@@ -11,7 +11,7 @@ import { LoggerService } from '@/logger/logger.service';
 import { QuickGameDescriptor } from './interfaces/quick-game-descriptor';
 import { QuickGameQueueResponderService } from './quick-game-queue-responder.service';
 import { MatchMakingService } from './matchmaking.service';
-import { EnterQuickMatchQueueException } from './game-exception';
+import { CantStartGameException, EnterQuickMatchQueueException } from './game-exception';
 
 @Controller('game')
 export class GameController {
@@ -25,6 +25,10 @@ export class GameController {
   @UseGuards(JwtGuard, ScopeGuard(Scope.PlayGame))
   @Put('enter_quick')
   async enterQuickGameQeue(@Req() req: any, @Player() player: PlayerSchema) {
+    if (!await this.gameService.cantStartGame()) {
+      throw new CantStartGameException();
+    }
+
     return new Promise<QuickGameDescriptor>(async (resolve, reject) => {
       // Trying to enter the quick game queue
       if (await this.gameService.enterQuickQueue(player)) {
@@ -38,8 +42,8 @@ export class GameController {
 
         req.raw.once('close', () => {
           // The player should being in the queue only while request in pending state   
-          if(this.quickGameQueueResponder.resolve(player.id, null)) {
-            this.gameService.leaveQuickQueue({ id: player.id, nickname: player.nickname});
+          if (this.quickGameQueueResponder.resolve(player.id, null)) {
+            this.gameService.leaveQuickQueue({ id: player.id, nickname: player.nickname });
           }
         });
       } else {
@@ -53,7 +57,7 @@ export class GameController {
   @Put('leave_quick')
   async leaveQuickGameQeue(@Player() player: PlayerSchema) {
     return await this.quickGameQueueResponder.resolve(player.id, null) &&
-     this.gameService.leaveQuickQueue({ id: player.id, nickname: player.nickname });
+      this.gameService.leaveQuickQueue({ id: player.id, nickname: player.nickname });
   }
 
   @UseGuards(JwtGuard, ScopeGuard(Scope.PlayGame))

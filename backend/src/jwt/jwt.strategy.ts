@@ -5,6 +5,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthToken } from './interfaces/auth-token';
 import { UserService } from '@/user/user.service';
 import { ConfigService } from '@nestjs/config';
+import type { User } from '@/user/schemas/user.schema';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -25,7 +26,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new UnauthorizedException();
     }
 
-    if (token.iat * 1000 < user.secret.updatedAt.getTime()) {
+    // The user may not have a secret if registration occurs through an external service
+    if (user.secret && token.iat * 1000 < user.secret.updatedAt.getTime()) {
       throw new UnauthorizedException();
     }
 

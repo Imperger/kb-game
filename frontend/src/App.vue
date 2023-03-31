@@ -1,6 +1,7 @@
 <template>
   <v-app>
     <router-view/>
+    <v-snackbar v-model="isNotifyShow" :color="Notify.color">{{ Notify.message }}</v-snackbar>
   </v-app>
 </template>
 
@@ -97,6 +98,14 @@ export default class App extends Mixins(ApiServiceMixin, StoreMixin) {
         this.$router.push({ name: 'Login' });
       }
     });
+  }
+
+  public get isNotifyShow (): boolean {
+    return this.Notify.isShow;
+  }
+
+  public set isNotifyShow (value: boolean) {
+    this.Notify.setIsShow(value);
   }
 }
 

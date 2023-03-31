@@ -64,7 +64,6 @@ import { Component, Emit, Model, Vue, Prop } from 'vue-property-decorator';
 import { ValidationObserver, ValidationProvider } from 'vee-validate';
 
 import { AuthError } from '@/services/api-service/auth/auth-error';
-import { AuthResult } from '@/game/gameplay/strategies/auth-strategy';
 
 export interface RegistrationData {
   username: string;
