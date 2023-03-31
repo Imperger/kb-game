@@ -5,6 +5,7 @@ export enum AuthError {
   CaptchaFailed = 300,
   UsernameIsTaken,
   EmailIsTaken,
+  GoogleIdIsTaken,
   MissingUserForConfirmRegistration,
   RegistrationAlreadyConfirmed,
   InvalidCredentials,
@@ -25,6 +26,12 @@ export class EmailIsTakenException extends AuthException {
   code = AuthError.EmailIsTaken;
   status = HttpStatus.CONFLICT;
   message = 'Email already taken.';
+}
+
+export class GoogleIdIsTaken extends AuthException {
+  code = AuthError.GoogleIdIsTaken;
+  status = HttpStatus.CONFLICT;
+  message = 'Google id already taken.';
 }
 
 export class InvalidCredentialsException extends AuthException {
