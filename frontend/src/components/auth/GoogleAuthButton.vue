@@ -8,8 +8,6 @@ import { Emit, Mixins, Prop, Ref, Watch } from 'vue-property-decorator';
 import { ApiServiceMixin, StoreMixin } from '@/mixins';
 import { injectScript } from '@/util/inject-script';
 
-type CredentialResponse = Parameters<Exclude<Parameters<typeof window.google.accounts.id.initialize>[0]['callback'], undefined>>[0];
-
 type IdToken = string;
 
 @Component
