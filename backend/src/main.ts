@@ -9,8 +9,13 @@ import { DtoValidationPipe } from './common/pipes/dto-validation.pipe';
 import { AppExceptionFilter } from './common/filters/app-exception.filter';
 import { LoggerService } from './logger/logger.service';
 import { GoogleRecaptchaFilter } from './common/filters/recaptcha-exception.filter';
+import { setupTestEnvironment } from './setup-test-environment';
 
 async function bootstrap() {
+  if(process.env.NODE_ENV === 'test') {
+    await setupTestEnvironment();
+  }
+
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter()
