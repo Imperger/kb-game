@@ -185,6 +185,12 @@ export class BackendApi {
     return this.http.post<void>('/auth/register', user);
   }
 
+  registerGoogle(
+    idToken: string
+  ): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
+    return this.http.post<void>('/auth/register/google', { idToken });
+  }
+
   confirmRegistration(
     token: string
   ): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
@@ -210,6 +216,12 @@ export class BackendApi {
     return this.handleAuthToken(() =>
       this.http.post<LoginResponse>('/auth/login/email', { email, password })
     );
+  }
+
+  loginGoogle(
+    idToken: string
+  ): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
+    return this.http.post<void>('/auth/login/google', { idToken });
   }
 
   me(): Promise<AxiosResponse<CurrentUser>> | FailType<RejectedResponse> {

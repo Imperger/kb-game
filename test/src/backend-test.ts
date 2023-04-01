@@ -11,6 +11,7 @@ import { GameClient } from './gameplay/game-client';
 import { Logger } from './logger';
 import { Mailbox } from './mailbox';
 import { AxiosResponse } from 'axios';
+import { DateModifier, GoogleIdentity, IdToken } from './google-identity';
 
 function genUser() {
   const id = Crypto.randomBytes(7).toString('hex');
@@ -19,6 +20,27 @@ function genUser() {
     username: id,
     email: `${id}@dev.wsl`,
     password: '1234567890'
+  };
+}
+
+function genGoogleIdTokenPayload(aud: string): IdToken {
+  const noise = Crypto.randomBytes(7).toString('hex');
+
+  return {
+    "iss": "https://accounts.google.com",
+    "nbf": Math.round(Date.now() / 1000 - 3600),
+    "aud": aud,
+    "sub": `111111111111111111111_${noise}`,
+    "email": `johndoe_${noise}@gmail.com`,
+    "email_verified": true,
+    "azp": aud,
+    "name": `John Doe_${noise}`,
+    "picture": "https://lh3.googleusercontent.com/a/12345",
+    "given_name": `John_${noise}`,
+    "family_name": `Doe_${noise}`,
+    "iat": Math.round(Date.now() / 1000),
+    "exp": Math.round(Date.now() / 1000 + 86400),
+    "jti": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   };
 }
 
@@ -49,6 +71,110 @@ async function dtoValidation(api: Api, logger: Logger): Promise<boolean> {
     .toPromise();
 
   return emptyPayload.pass && invalidPayload.pass;
+}
+
+async function googleAuthFlow(api: Api, logger: Logger): Promise<boolean> {
+  const tester = new ApiTester(logger);
+
+  const gi = new GoogleIdentity();
+
+  await gi.init();
+
+  const aud = process.env.GOOGLE_CLIENT_ID ?? '';
+
+  if (!aud) {
+    logger.error('Missing GOOGLE_CLIENT_ID env variable');
+    return false;
+  }
+
+  const token = genGoogleIdTokenPayload(aud);
+
+  const signupExpired = await tester
+    .test(
+      () => api.backend.registerGoogle(gi.signIdTokenAndModifyDate(token, DateModifier.Expired)),
+      'Signup with expired google id token')
+    .status(401)
+    .toPromise();
+
+  const signupNotValidBefore= await tester
+    .test(
+      () => api.backend.registerGoogle(gi.signIdTokenAndModifyDate(token, DateModifier.NotValidBefore)),
+      'Signup with not valid before google id token')
+    .status(401)
+    .toPromise();
+
+  const signupUnsuitableAudience = await tester
+    .test(
+      () => api.backend.registerGoogle(gi.signIdTokenAndSetInvalidAudiene(token)),
+      'Signup with unsuitable audience in google id token')
+    .status(401)
+    .toPromise();
+
+  const signupValid = await tester
+    .test(
+      () => api.backend.registerGoogle(gi.signIdTokenAndModifyDate(token, DateModifier.Valid)),
+      'Signup with valid google id token')
+    .status(201)
+    .toPromise();
+
+  const sameEmailToken = { ...token };
+  sameEmailToken.sub += '_';
+
+  const signupExistingEmail = await tester
+    .test(
+      () => api.backend.registerGoogle(gi.signIdTokenAndModifyDate(sameEmailToken, DateModifier.Valid)),
+      'Signup with google id token that contain an already registered email')
+    .status(409)
+    .toPromise();
+
+  const sameSub = { ...token };
+  sameSub.email += '_';
+  
+  const signupExistingSub= await tester
+    .test(
+      () => api.backend.registerGoogle(gi.signIdTokenAndModifyDate(sameSub, DateModifier.Valid)),
+      'Signup with google id token that contain an already registered google id')
+    .status(409)
+    .toPromise();
+
+  const loginExpired = await tester
+    .test(
+      () => api.backend.loginGoogle(gi.signIdTokenAndModifyDate(token, DateModifier.Expired)),
+      'Login with expired google id token')
+    .status(401)
+    .toPromise();
+
+  const loginNotValidBefore= await tester
+    .test(
+      () => api.backend.loginGoogle(gi.signIdTokenAndModifyDate(token, DateModifier.NotValidBefore)),
+      'Login with not valid before google id token')
+    .status(401)
+    .toPromise();
+
+  const loginГnsuitableAudience = await tester
+    .test(
+      () => api.backend.loginGoogle(gi.signIdTokenAndSetInvalidAudiene(token)),
+      'Login with unsuitable audience in google id token')
+    .status(401)
+    .toPromise();
+
+  const loginValid= await tester
+    .test(
+      () => api.backend.loginGoogle(gi.signIdTokenAndModifyDate(token, DateModifier.Valid)),
+      'Login with valid google id token')
+    .status(200)
+    .toPromise();
+
+  return signupExpired.pass &&
+      signupNotValidBefore.pass &&
+      signupUnsuitableAudience.pass &&
+      signupValid.pass &&
+      signupExistingEmail.pass &&
+      signupExistingSub.pass &&
+      loginExpired.pass && 
+      loginNotValidBefore.pass && 
+      loginГnsuitableAudience.pass && 
+      loginValid.pass;
 }
 
 async function signinInvalidCreds(api: Api, logger: Logger): Promise<boolean> {
@@ -893,6 +1019,7 @@ export async function testBackend(api: Api): Promise<boolean> {
 
   let success = true;
   success = (await dtoValidation(api, logger)) && success;
+  success = (await googleAuthFlow(api, logger)) && success;
   success = (await signinInvalidCreds(api, logger)) && success;
   success = (await registrationFlow(api, logger)) && success;
   success = (await signinFlow(api, logger)) && success;

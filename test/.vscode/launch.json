@@ -12,7 +12,10 @@
                 "<node_internals>/**"
             ],
             "env": {
-                "NODE_EXTRA_CA_CERTS": "./.vscode/certs/root.crt"
+                "NODE_EXTRA_CA_CERTS": "./.vscode/certs/root.crt",
+                "GOOGLE_IDENTITY_CERT": "./certs/google_identity.crt",
+                "GOOGLE_IDENTITY_KEY": "./certs/google_identity.key",
+                "GOOGLE_CLIENT_ID": "[client id]"
             },
             "program": "${workspaceFolder}/src/main.ts",
             "preLaunchTask": "tsc: build - tsconfig.json",
