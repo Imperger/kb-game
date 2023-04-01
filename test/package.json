@@ -5,13 +5,21 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node main.js"
+    "start": "node main.js",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format:eslint": "eslint --fix --ext .ts ."
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/jsonwebtoken": "^8.5.8",
     "@types/node": "^18.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "@typescript-eslint/parser": "^5.57.0",
+    "eslint": "^8.37.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-import": "^2.27.5",
+    "prettier": "^2.8.7",
     "typescript": "^4.7.4"
   },
   "dependencies": {
