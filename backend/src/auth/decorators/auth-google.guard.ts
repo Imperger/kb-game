@@ -22,7 +22,7 @@ export function AuthGoogleGuard(populateUser: boolean): Type<CanActivate> {
         
       const credentials = await this.authService.verifyGoolgeCredentials(idToken);
         
-      if (credentials.getPayload().email_verified) {
+      if (credentials?.getPayload().email_verified) {
         request.credentials = credentials;
           
 
