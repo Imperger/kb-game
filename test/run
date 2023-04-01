@@ -8,6 +8,11 @@ npm i -g c8
 
 mkdir -p -- ./spawner/coverage ./backend/coverage
 
+mkdir -p ../deploy/docker-compose/shared
+echo "$TEST_GOOGLE_IDENTITY_CERT" > '../deploy/docker-compose/shared/google_identity.crt'
+echo "$TEST_GOOGLE_IDENTITY_KEY" > '../deploy/docker-compose/shared/google_identity.key'
+sed -i "s/\[clientId\]/$TEST_GOOGLE_CLIENT_ID/" ../deploy/docker-compose/backend/config/backend.json
+
 # Setup backend
 echo "$SSL_CA" > '../deploy/docker-compose/backend/config/root.crt'
 echo "$SSL_CERTS" > '../deploy/docker-compose/backend/config/server.cert'
@@ -39,6 +44,10 @@ docker build --no-cache \
     --build-arg SSL_CA="$SSL_CA" \
     -t tester . && \
 docker run --rm --name tester \
+    -e GOOGLE_IDENTITY_CERT='/google-identity/google_identity.crt' \
+    -e GOOGLE_IDENTITY_KEY='/google-identity/google_identity.key' \
+    -e GOOGLE_CLIENT_ID=$TEST_GOOGLE_CLIENT_ID \
+    -v ${PWD}/../deploy/docker-compose/shared:/google-identity \
     --network backend_spawner -t \
     tester
 

@@ -11,7 +11,9 @@
                 "-r",
                 "tsconfig-paths/register"
             ],
-            "env": { "NODE_EXTRA_CA_CERTS": "./.vscode/certs/root.crt" },
+            "env": {
+                "NODE_EXTRA_CA_CERTS": "./.vscode/certs/root.crt"
+            },
             "args": [
                 "${workspaceFolder}/src/main.ts",
                 "-c",
@@ -29,9 +31,11 @@
                 "-r",
                 "tsconfig-paths/register"
             ],
-            "env": { 
-                "NODE_EXTRA_CA_CERTS": "./.vscode/certs/root.crt", 
-                "NODE_ENV": "test" },
+            "env": {
+                "NODE_EXTRA_CA_CERTS": "./.vscode/certs/root.crt",
+                "NODE_ENV": "test",
+                "TEST_GOOGLE_IDENTITY_CERT": "./certs/google_identity.crt"
+            },
             "args": [
                 "${workspaceFolder}/src/main.ts",
                 "-c",

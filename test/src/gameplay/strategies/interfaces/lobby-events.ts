@@ -2,7 +2,8 @@ export enum LobbyEventType {
   PlayerJoined = 200,
   PlayerLeaves,
   GameWillStart,
-  FetchGameField }
+  FetchGameField
+}
 
 export interface PlayerJoinedEvent {
   id: string;

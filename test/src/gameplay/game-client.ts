@@ -14,7 +14,7 @@ export class GameClient {
 
   private authResult!: (s: AuthResult) => void;
 
-  async connect (instanceUrl: string, playerToken: string): Promise<AuthResult> {
+  async connect(instanceUrl: string, playerToken: string): Promise<AuthResult> {
     const url = new URL(instanceUrl);
     this.socket = io(url.origin, { path: `${url.pathname}/socket.io` });
 
@@ -26,12 +26,12 @@ export class GameClient {
 
     this.state.use(this.socket, s => this.switchStrategy(s));
 
-    return new Promise<AuthResult>((resolve, reject) => {
+    return new Promise<AuthResult>((resolve, _reject) => {
       this.authResult = resolve;
     });
   }
 
-  async sendKey (key: string): Promise<number> {
+  async sendKey(key: string): Promise<number> {
     if (!(this.state instanceof GameStrategy)) {
       return -1;
     }
@@ -39,39 +39,51 @@ export class GameClient {
     return this.state.sendKey(key);
   }
 
-  get inLobby (): boolean {
+  get inLobby(): boolean {
     return this.state instanceof LobbyStrategy;
   }
 
-  get lobby (): LobbyStrategy {
+  get lobby(): LobbyStrategy {
     return this.state as LobbyStrategy;
   }
 
-  get inQuickgGameLobby () : boolean {
+  get inQuickgGameLobby(): boolean {
     return this.state instanceof QuickGameLobbyStrategy;
   }
 
-  get quickGameLobby (): QuickGameLobbyStrategy {
+  get quickGameLobby(): QuickGameLobbyStrategy {
     return this.state as QuickGameLobbyStrategy;
   }
 
-  get inGame () : boolean {
+  get inGame(): boolean {
     return this.state instanceof GameStrategy;
   }
 
-  get game (): GameStrategy {
+  get game(): GameStrategy {
     return this.state as GameStrategy;
   }
 
-  private async switchStrategy (strategy: Strategy) {
-    if (this.state instanceof AuthStrategy && strategy instanceof LobbyStrategy) {
+  private async switchStrategy(strategy: Strategy) {
+    if (
+      this.state instanceof AuthStrategy &&
+      strategy instanceof LobbyStrategy
+    ) {
       this.authResult(AuthResult.CustomGame);
-    } else if (this.state instanceof AuthStrategy && strategy instanceof QuickGameLobbyStrategy) {
+    } else if (
+      this.state instanceof AuthStrategy &&
+      strategy instanceof QuickGameLobbyStrategy
+    ) {
       this.authResult(AuthResult.QuickGame);
-    } else if (this.state instanceof LobbyStrategy && strategy instanceof GameStrategy) {
+    } else if (
+      this.state instanceof LobbyStrategy &&
+      strategy instanceof GameStrategy
+    ) {
       strategy.players = this.state.players.map(x => ({ ...x, progress: 0 }));
       strategy.$endGame.pipe(first()).subscribe(() => strategy.deactivate());
-    } else if (this.state instanceof QuickGameLobbyStrategy && strategy instanceof GameStrategy) {
+    } else if (
+      this.state instanceof QuickGameLobbyStrategy &&
+      strategy instanceof GameStrategy
+    ) {
       strategy.players = this.state.players.map(x => ({ ...x, progress: 0 }));
       strategy.$endGame.pipe(first()).subscribe(() => strategy.deactivate());
     }
@@ -82,7 +94,9 @@ export class GameClient {
     this.state.use(this.socket, s => this.switchStrategy(s));
   }
 
-  private waitForConnected (): Promise<void> {
-    return new Promise<void>((resolve, reject) => this.socket.once('connect', () => resolve()));
+  private waitForConnected(): Promise<void> {
+    return new Promise<void>((resolve, _reject) =>
+      this.socket.once('connect', () => resolve())
+    );
   }
 }

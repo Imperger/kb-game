@@ -9,6 +9,9 @@ jobs:
         env:
           SSL_CA: ${{ secrets.SSL_CA }}
           SSL_CERTS: ${{ secrets.SSL_CERTS }}
+          TEST_GOOGLE_CLIENT_ID: ${{ secrets.TEST_GOOGLE_CLIENT_ID }}
+          TEST_GOOGLE_IDENTITY_CERT: ${{ secrets.TEST_GOOGLE_IDENTITY_CERT }}
+          TEST_GOOGLE_IDENTITY_KEY: ${{ secrets.TEST_GOOGLE_IDENTITY_KEY }}
         run: cd test && chmod +x ./run && ./run
       - name: Upload backend codecov
         uses: codecov/codecov-action@v3

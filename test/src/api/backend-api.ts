@@ -1,305 +1,403 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
-import type { FailType } from "../api-tester";
-import { RejectedResponse } from "./types";
+import type { FailType } from '../api-tester';
+import { RejectedResponse } from './types';
 
 export interface NewUser {
-    username: string;
-    email: string;
-    password: string;
+  username: string;
+  email: string;
+  password: string;
 }
 
 export interface LoginResponse {
-    token: string;
+  token: string;
 }
 
 export interface CurrentUser {
-    username: string;
-    email: string;
-    avatar: string;
-    registeredAt: Date;
-    scopes: {
-        assignScope: boolean;
-        serverMaintainer: boolean;
-        blockedUntil: Date;
-        editScenario: boolean;
-        moderateChat: boolean;
-        mutedUntil: Date;
-    }
+  username: string;
+  email: string;
+  avatar: string;
+  registeredAt: Date;
+  scopes: {
+    assignScope: boolean;
+    serverMaintainer: boolean;
+    blockedUntil: Date;
+    editScenario: boolean;
+    moderateChat: boolean;
+    mutedUntil: Date;
+  };
 }
 
 export interface CustomGameDescriptor {
-    instanceUrl: string;
-    playerToken: string;
+  instanceUrl: string;
+  playerToken: string;
 }
 
 export interface ConnectionDescriptor {
-    playerToken: string;
+  playerToken: string;
 }
 
 export interface ConnectGameOptions {
-    instanceUrl: string;
+  instanceUrl: string;
 }
 
 type Nickname = string;
 export interface ServerDescription {
-    url: string;
-    owner: Nickname;
-    capacity: number;
-    occupancy: number;
-    started: boolean;
+  url: string;
+  owner: Nickname;
+  capacity: number;
+  occupancy: number;
+  started: boolean;
 }
 
 export interface ScenarioContent {
-    title: string;
-    text: string;
+  title: string;
+  text: string;
 }
 
 export interface Scenario {
-    id: string;
-    title: string;
-    text: string;
-    createdAt?: Date;
-    updatedAt?: Date;
+  id: string;
+  title: string;
+  text: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface ScenarioPage {
-    total: number;
-    scenarios: Scenario[];
+  total: number;
+  scenarios: Scenario[];
 }
 
 export interface RequestedSpawnerInfo {
-    name: string;
-    capacity: number;
+  name: string;
+  capacity: number;
 }
 
 export interface SpawnerInfo {
-    url: string;
-    name: string;
-    capacity: number;
+  url: string;
+  name: string;
+  capacity: number;
 }
 
 export interface ScenarioTitle {
-    id: string;
-    title: string;
+  id: string;
+  title: string;
 }
 
 export interface ScenarioText {
-    text: string;
+  text: string;
 }
 
 export interface CurrentGame {
-    instanceUrl: string;
-    updatedAt?: Date;
+  instanceUrl: string;
+  updatedAt?: Date;
 }
 
 export interface PlayerStats {
-    nickname: string;
-    discriminator: number;
-    game: CurrentGame | null;
-    hoursInGame: number;
-    elo: number;
-    totalPlayed: number;
-    totalWins: number;
-    averageCpm: number;
-    maxCpm: number;
-    quickGameQueue: Date | null;
+  nickname: string;
+  discriminator: number;
+  game: CurrentGame | null;
+  hoursInGame: number;
+  elo: number;
+  totalPlayed: number;
+  totalWins: number;
+  averageCpm: number;
+  maxCpm: number;
+  quickGameQueue: Date | null;
 }
 
 export interface QuickGameDescriptor {
-    instanceUrl: string;
-    playerToken: string;
+  instanceUrl: string;
+  playerToken: string;
 }
 
-export enum DateCondition { Greather = '$gt', Less = '$lt' };
+export enum DateCondition {
+  Greather = '$gt',
+  Less = '$lt'
+}
 
 type Seconds = number;
 
 interface PlayerOverview {
-    id: string;
-    nickname: Nickname;
+  id: string;
+  nickname: Nickname;
 }
-  
+
 interface TrackOverview {
-    player: PlayerOverview;
-    cpm: number;
-    accuracy: number;
+  player: PlayerOverview;
+  cpm: number;
+  accuracy: number;
 }
-  
+
 export interface ReplayOverview {
-    id: string;
-    duration: Seconds;
-    tracks: TrackOverview[];
-    createdAt: Date;
+  id: string;
+  duration: Seconds;
+  tracks: TrackOverview[];
+  createdAt: Date;
 }
-  
+
 export interface ReplaysOverview {
-    total: number;
-    replays: ReplayOverview[];
+  total: number;
+  replays: ReplayOverview[];
 }
 
 interface PlayerSnapshot {
-    id: string;
-    nickname: Nickname;
-  }
-  
-  interface InputEventSnapshot {
-    char: string;
-    correct: boolean;
-    timestamp: number;
-  }
-  
-  interface TrackSnapshot {
-    player: PlayerSnapshot;
-    cpm: number;
-    accuracy: number;
-    data: InputEventSnapshot[];
-  }
-  
-  export interface ReplaySnapshot {
-    id: string;
-    duration: Seconds;
-    tracks: TrackSnapshot[];
-    createdAt: Date;
-  }
+  id: string;
+  nickname: Nickname;
+}
+
+interface InputEventSnapshot {
+  char: string;
+  correct: boolean;
+  timestamp: number;
+}
+
+interface TrackSnapshot {
+  player: PlayerSnapshot;
+  cpm: number;
+  accuracy: number;
+  data: InputEventSnapshot[];
+}
+
+export interface ReplaySnapshot {
+  id: string;
+  duration: Seconds;
+  tracks: TrackSnapshot[];
+  createdAt: Date;
+}
 
 export class BackendApi {
-    private token!: string;
-    private http!: AxiosInstance;
-    constructor(
-        public entry: string
-    ) {
-        this.http = axios.create({ baseURL: entry });
-    }
+  private token!: string;
+  private http!: AxiosInstance;
+  constructor(public entry: string) {
+    this.http = axios.create({ baseURL: entry });
+  }
 
-    raw<TSuccess, TError>(config: AxiosRequestConfig<any>): Promise<AxiosResponse<TSuccess>> | FailType<TError> {
-        return this.http.request(config);
-    }
+  raw<TSuccess, TError>(
+    config: AxiosRequestConfig<any>
+  ): Promise<AxiosResponse<TSuccess>> | FailType<TError> {
+    return this.http.request(config);
+  }
 
-    register(user: NewUser): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
-        return this.http.post<void>('/auth/register', user);
-    }
+  register(
+    user: NewUser
+  ): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
+    return this.http.post<void>('/auth/register', user);
+  }
 
-    confirmRegistration(token: string): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
-        return this.http.patch<void>('/auth/registration/confirm', { code: token });
-    }
+  registerGoogle(
+    idToken: string
+  ): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
+    return this.http.post<void>('/auth/register/google', { idToken });
+  }
 
-    loginUsername(username: string, password: string): Promise<AxiosResponse<LoginResponse>> | FailType<RejectedResponse> {
-        return this.handleAuthToken(() => this.http.post<LoginResponse>('/auth/login/username', { username, password }));
-    }
+  confirmRegistration(
+    token: string
+  ): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
+    return this.http.patch<void>('/auth/registration/confirm', { code: token });
+  }
 
-    loginEmail(email: string, password: string): Promise<AxiosResponse<LoginResponse>> | FailType<RejectedResponse> {
-        return this.handleAuthToken(() => this.http.post<LoginResponse>('/auth/login/email', { email, password }));
-    }
+  loginUsername(
+    username: string,
+    password: string
+  ): Promise<AxiosResponse<LoginResponse>> | FailType<RejectedResponse> {
+    return this.handleAuthToken(() =>
+      this.http.post<LoginResponse>('/auth/login/username', {
+        username,
+        password
+      })
+    );
+  }
 
-    me(): Promise<AxiosResponse<CurrentUser>> | FailType<RejectedResponse> {
-        return this.http.get<CurrentUser>('/user/me')
-    }
+  loginEmail(
+    email: string,
+    password: string
+  ): Promise<AxiosResponse<LoginResponse>> | FailType<RejectedResponse> {
+    return this.handleAuthToken(() =>
+      this.http.post<LoginResponse>('/auth/login/email', { email, password })
+    );
+  }
 
-    newCustomGame(): Promise<AxiosResponse<CustomGameDescriptor>> | FailType<RejectedResponse> {
-        return this.http.post<CustomGameDescriptor>('game/new_custom');
-    }
+  loginGoogle(
+    idToken: string
+  ): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
+    return this.http.post<void>('/auth/login/google', { idToken });
+  }
 
-    connectToGame(options: ConnectGameOptions): Promise<AxiosResponse<ConnectionDescriptor>> | FailType<RejectedResponse> {
-        return this.http.post<ConnectionDescriptor>('game/connect', options);
-    }
+  me(): Promise<AxiosResponse<CurrentUser>> | FailType<RejectedResponse> {
+    return this.http.get<CurrentUser>('/user/me');
+  }
 
-    listGames(): Promise<AxiosResponse<ServerDescription[]>> | FailType<RejectedResponse> {
-        return this.http.get<ServerDescription[]>('/game/list');
-    }
+  newCustomGame():
+  | Promise<AxiosResponse<CustomGameDescriptor>>
+  | FailType<RejectedResponse> {
+    return this.http.post<CustomGameDescriptor>('game/new_custom');
+  }
 
-    enterQuickQueue() {
-        return this.http.put<QuickGameDescriptor | null>('/game/enter_quick');
-    }
+  connectToGame(
+    options: ConnectGameOptions
+  ): Promise<AxiosResponse<ConnectionDescriptor>> | FailType<RejectedResponse> {
+    return this.http.post<ConnectionDescriptor>('game/connect', options);
+  }
 
-    leaveQuickQueue() {
-        return this.http.put<boolean>('/game/leave_quick');
-    }
+  listGames():
+  | Promise<AxiosResponse<ServerDescription[]>>
+  | FailType<RejectedResponse> {
+    return this.http.get<ServerDescription[]>('/game/list');
+  }
 
-    addScenario(title: string, text: string): Promise<AxiosResponse<string>> | FailType<RejectedResponse> {
-        return this.http.post<string>('/scenario', { title, text });
-    }
+  enterQuickQueue() {
+    return this.http.put<QuickGameDescriptor | null>('/game/enter_quick');
+  }
 
-    updateScenario(id: string, content: ScenarioContent): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
-        return this.http.put<boolean>(`/scenario/${id}`, content);
-    }
+  leaveQuickQueue() {
+    return this.http.put<boolean>('/game/leave_quick');
+  }
 
-    removeScenario(id: string): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
-        return this.http.delete<void>(`/scenario/${id}`);
-    }
+  addScenario(
+    title: string,
+    text: string
+  ): Promise<AxiosResponse<string>> | FailType<RejectedResponse> {
+    return this.http.post<string>('/scenario', { title, text });
+  }
 
-    listScenario(offset: number, limit: number): Promise<AxiosResponse<ScenarioPage>> | FailType<RejectedResponse> {
-        return this.http.get<ScenarioPage>(`/scenario?offset=${offset}&limit=${limit}`);
-    }
+  updateScenario(
+    id: string,
+    content: ScenarioContent
+  ): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
+    return this.http.put<boolean>(`/scenario/${id}`, content);
+  }
 
-    getScenarioContent(id: string): Promise<AxiosResponse<ScenarioContent>> | FailType<RejectedResponse> {
-        return this.http.get<ScenarioContent>(`/scenario/${id}`);
-    }
+  removeScenario(
+    id: string
+  ): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
+    return this.http.delete<void>(`/scenario/${id}`);
+  }
 
-    getAllScenarioTitles(accessToken: string): Promise<AxiosResponse<ScenarioTitle[]>> | FailType<RejectedResponse> {
-        return this.http.get<ScenarioTitle[]>('/scenario/titles', { headers: { Authorization: `Bearer ${accessToken}` } });
-    }
+  listScenario(
+    offset: number,
+    limit: number
+  ): Promise<AxiosResponse<ScenarioPage>> | FailType<RejectedResponse> {
+    return this.http.get<ScenarioPage>(
+      `/scenario?offset=${offset}&limit=${limit}`
+    );
+  }
 
-    getScenarioText(id: string, accessToken: string): Promise<AxiosResponse<ScenarioText>> | FailType<RejectedResponse> {
-        return this.http.get<ScenarioText>(`/scenario/text/${id}`, { headers: { Authorization: `Bearer ${accessToken}` } });
-    }
+  getScenarioContent(
+    id: string
+  ): Promise<AxiosResponse<ScenarioContent>> | FailType<RejectedResponse> {
+    return this.http.get<ScenarioContent>(`/scenario/${id}`);
+  }
 
-    addSpawner(url: string, secret: string): Promise<AxiosResponse<RequestedSpawnerInfo>> | FailType<RejectedResponse> {
-        return this.http.post<RequestedSpawnerInfo>('/spawner', { url, secret });
-    }
+  getAllScenarioTitles(
+    accessToken: string
+  ): Promise<AxiosResponse<ScenarioTitle[]>> | FailType<RejectedResponse> {
+    return this.http.get<ScenarioTitle[]>('/scenario/titles', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+  }
 
-    removeSpawner(url: string): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
-        return this.http.delete<void>(`/spawner/${Buffer.from(url).toString('base64')}`);
-    }
+  getScenarioText(
+    id: string,
+    accessToken: string
+  ): Promise<AxiosResponse<ScenarioText>> | FailType<RejectedResponse> {
+    return this.http.get<ScenarioText>(`/scenario/text/${id}`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+  }
 
-    listSpawners(): Promise<AxiosResponse<SpawnerInfo>> | FailType<RejectedResponse> {
-        return this.http.get<SpawnerInfo>('/spawner');
-    }
+  addSpawner(
+    url: string,
+    secret: string
+  ): Promise<AxiosResponse<RequestedSpawnerInfo>> | FailType<RejectedResponse> {
+    return this.http.post<RequestedSpawnerInfo>('/spawner', { url, secret });
+  }
 
-    linkGamePlayer(playerId: string, instanceUrl: string, accessToken: string): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
-        return this.http.patch<boolean>(
-            `/player/${playerId}/link_game`,
-            { instanceUrl },
-            { headers: { Authorization: `Bearer ${accessToken}` } });
-    }
+  removeSpawner(
+    url: string
+  ): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
+    return this.http.delete<void>(
+      `/spawner/${Buffer.from(url).toString('base64')}`
+    );
+  }
 
-    unlinkGamePlayer(playerId: string, accessToken: string): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
-        return this.http.patch<boolean>(
-            `/player/${playerId}/unlink_game`,
-            {},
-            { headers: { Authorization: `Bearer ${accessToken}` } });
-    }
+  listSpawners():
+  | Promise<AxiosResponse<SpawnerInfo>>
+  | FailType<RejectedResponse> {
+    return this.http.get<SpawnerInfo>('/spawner');
+  }
 
-    unlinkGamePlayers(instanceUrl: string, accessToken: string): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
-        return this.http.patch<boolean>(
-            '/player/unlink_game',
-            { instanceUrl },
-            { headers: { Authorization: `Bearer ${accessToken}` } });
-    }
+  linkGamePlayer(
+    playerId: string,
+    instanceUrl: string,
+    accessToken: string
+  ): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
+    return this.http.patch<boolean>(
+      `/player/${playerId}/link_game`,
+      { instanceUrl },
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+  }
 
-    getPlayerStats(nickname: string): Promise<AxiosResponse<PlayerStats>> | FailType<RejectedResponse> {
-        return this.http.get<PlayerStats>(`/player/${nickname}`);
-    }
+  unlinkGamePlayer(
+    playerId: string,
+    accessToken: string
+  ): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
+    return this.http.patch<boolean>(
+      `/player/${playerId}/unlink_game`,
+      {},
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+  }
 
-    currentPlayerStats(): Promise<AxiosResponse<PlayerStats>> | FailType<RejectedResponse> {
-        return this.http.get<PlayerStats>('/player/me');
-    }
+  unlinkGamePlayers(
+    instanceUrl: string,
+    accessToken: string
+  ): Promise<AxiosResponse<boolean>> | FailType<RejectedResponse> {
+    return this.http.patch<boolean>(
+      '/player/unlink_game',
+      { instanceUrl },
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+  }
 
-    findReplays(cond: DateCondition, datePoint: Date, limit: number): Promise<AxiosResponse<ReplaysOverview>> | FailType<RejectedResponse> {
-        return this.http.get<ReplaysOverview>(`/replay?cond=${cond}&since=${datePoint.toISOString()}&limit=${limit}`);
-    }
+  getPlayerStats(
+    nickname: string
+  ): Promise<AxiosResponse<PlayerStats>> | FailType<RejectedResponse> {
+    return this.http.get<PlayerStats>(`/player/${nickname}`);
+  }
 
-    findReplay(id: string): Promise<AxiosResponse<ReplaySnapshot>> | FailType<RejectedResponse> {
-        return this.http.get<ReplaySnapshot>(`replay/${id}`);
-    }
+  currentPlayerStats():
+  | Promise<AxiosResponse<PlayerStats>>
+  | FailType<RejectedResponse> {
+    return this.http.get<PlayerStats>('/player/me');
+  }
 
-    private async handleAuthToken(signin: () => Promise<AxiosResponse<LoginResponse>>): Promise<AxiosResponse<LoginResponse>> {
-        const ret = await signin();
+  findReplays(
+    cond: DateCondition,
+    datePoint: Date,
+    limit: number
+  ): Promise<AxiosResponse<ReplaysOverview>> | FailType<RejectedResponse> {
+    return this.http.get<ReplaysOverview>(
+      `/replay?cond=${cond}&since=${datePoint.toISOString()}&limit=${limit}`
+    );
+  }
 
-        this.token = ret.data.token;
+  findReplay(
+    id: string
+  ): Promise<AxiosResponse<ReplaySnapshot>> | FailType<RejectedResponse> {
+    return this.http.get<ReplaySnapshot>(`replay/${id}`);
+  }
 
-        this.http.defaults.headers.common.Authorization = `Bearer ${this.token}`;
+  private async handleAuthToken(
+    signin: () => Promise<AxiosResponse<LoginResponse>>
+  ): Promise<AxiosResponse<LoginResponse>> {
+    const ret = await signin();
 
-        return ret;
-    }
+    this.token = ret.data.token;
+
+    this.http.defaults.headers.common.Authorization = `Bearer ${this.token}`;
+
+    return ret;
+  }
 }
