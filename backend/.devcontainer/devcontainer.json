@@ -16,7 +16,7 @@
 		"mongodb.mongodb-vscode" ,
 		"humao.rest-client"
 	],
-	"postCreateCommand": "npm i -g @nestjs/cli",
+	"postCreateCommand": "npm i -g @nestjs/cli@^9.0.0",
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [3000, 27017],

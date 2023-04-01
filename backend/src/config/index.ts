@@ -3,5 +3,6 @@ import launchParams from '@/launch-params';
 import { ConfigPopulateOptionals } from './config-populate-optionals';
 
 export default ConfigPopulateOptionals(
-  new ConfigLoader().load(launchParams.config)
+  // TODO fix the type inference
+  new ConfigLoader().load((launchParams as any).config)
 );
