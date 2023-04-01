@@ -7,8 +7,12 @@ services:
       dockerfile: Dockerfile.test
     environment:
       - NODE_ENV=test
+      - TEST_GOOGLE_IDENTITY_CERT=/app/config/google_identity.crt
     volumes:
       - ../../../backend/coverage:/backend/coverage
+    secrets:
+      - source: google-identity-cert
+        target: /app/config/google_identity.crt
   mail:
     hostname: mail.dev.wsl
     image: maildev/maildev
@@ -19,3 +23,6 @@ services:
   db:
     networks:
       - backend_spawner
+secrets:
+  google-identity-cert:
+    file: ../shared/google_identity.crt
