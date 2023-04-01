@@ -1,7 +1,17 @@
 import { Socket } from 'socket.io-client';
 
-export const remoteCall = <T extends unknown[], R = unknown>(socket: Socket, event: string, ...args: T): Promise<R> =>
+export const remoteCall = <T extends unknown[], R = unknown>(
+  socket: Socket,
+  event: string,
+  ...args: T
+): Promise<R> =>
   new Promise<R>((resolve, reject) => {
-    const timeout = setTimeout(() => reject(new Error('Remote call timeout')), 5000);
-    socket.emit(event, ...args, (ret: R) => { clearTimeout(timeout); resolve(ret); });
+    const timeout = setTimeout(
+      () => reject(new Error('Remote call timeout')),
+      5000
+    );
+    socket.emit(event, ...args, (ret: R) => {
+      clearTimeout(timeout);
+      resolve(ret);
+    });
   });

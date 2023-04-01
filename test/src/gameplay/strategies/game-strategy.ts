@@ -13,7 +13,7 @@ interface GameImageField {
 enum GameEventType {
   PlayerProgress = 100,
   EndGame,
-  SetTypingProgress,
+  SetTypingProgress
 }
 
 // Describes the player's typing progress
@@ -86,7 +86,10 @@ export class GameStrategy extends Strategy {
 
   private _cursorPosition: SetTypingProgress = { width: 0, line: 0 };
 
-  async activate (socket: Socket, switchStrategy: SwitchStrategy): Promise<void> {
+  async activate(
+    socket: Socket,
+    switchStrategy: SwitchStrategy
+  ): Promise<void> {
     this.socket = socket;
     this.switchStrategy = switchStrategy;
 
@@ -95,43 +98,43 @@ export class GameStrategy extends Strategy {
     this._fieldImg = (await this.fetchFieldImg()).field;
   }
 
-  sendKey (key: string): Promise<PressKeyResult> {
+  sendKey(key: string): Promise<PressKeyResult> {
     return remoteCall(this.socket, 'send_key', key);
   }
 
-  get $playersProgress (): Observable<PlayerProgress[]> {
+  get $playersProgress(): Observable<PlayerProgress[]> {
     return this.playersProgress;
   }
 
-  get $endGame (): Observable<GameSummary> {
+  get $endGame(): Observable<GameSummary> {
     return this.endGame;
   }
 
-  get $setTypingProgress (): Observable<SetTypingProgress> {
+  get $setTypingProgress(): Observable<SetTypingProgress> {
     return this.setTypingProgress;
   }
 
-  get fieldImg (): Base64Image {
+  get fieldImg(): Base64Image {
     return this._fieldImg;
   }
 
-  set players (players: Player[]) {
+  set players(players: Player[]) {
     this._players = players;
   }
 
-  get players (): Player[] {
+  get players(): Player[] {
     return this._players;
   }
 
-  get cursorPosition (): SetTypingProgress {
+  get cursorPosition(): SetTypingProgress {
     return this._cursorPosition;
   }
 
-  async deactivate (): Promise<void> {
+  async deactivate(): Promise<void> {
     await super.deactivate();
   }
 
-  async onEvent (e: GameEvent): Promise<boolean> {
+  async onEvent(e: GameEvent): Promise<boolean> {
     switch (e.type) {
       case GameEventType.PlayerProgress:
         this.playerProgressEvent(e.data as PlayerProgress[]);
@@ -148,15 +151,15 @@ export class GameStrategy extends Strategy {
     }
   }
 
-  private playerProgressEvent (e: PlayerProgress[]) {
+  private playerProgressEvent(e: PlayerProgress[]) {
     this.playersProgress.next(e);
   }
 
-  private endGameEvent (summary: GameSummary): void {
+  private endGameEvent(summary: GameSummary): void {
     this.endGame.next(summary);
   }
 
-  private async fetchFieldImg (): Promise<GameImageField> {
+  private async fetchFieldImg(): Promise<GameImageField> {
     return await remoteCall(this.socket, 'game_field');
   }
 }

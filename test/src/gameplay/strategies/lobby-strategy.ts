@@ -3,7 +3,12 @@ import { Socket } from 'socket.io-client';
 
 import { remoteCall } from '../remote-call';
 import { GameStrategy } from './game-strategy';
-import { LobbyEvent, LobbyEventType, PlayerJoinedEvent, PlayerLeavesEvent } from './interfaces/lobby-events';
+import {
+  LobbyEvent,
+  LobbyEventType,
+  PlayerJoinedEvent,
+  PlayerLeavesEvent
+} from './interfaces/lobby-events';
 import { Strategy } from './strategy';
 
 export interface Player {
@@ -35,7 +40,10 @@ export class LobbyStrategy extends Strategy {
 
   public readonly $gameWillStart = new Subject<void>();
 
-  async activate (socket: Socket, switchStrategy: (strategy: Strategy) => void): Promise<void> {
+  async activate(
+    socket: Socket,
+    switchStrategy: (strategy: Strategy) => void
+  ): Promise<void> {
     this.socket = socket;
     this.switchStrategy = switchStrategy;
 
@@ -43,19 +51,22 @@ export class LobbyStrategy extends Strategy {
 
     let players: Player[];
 
-    ({ ownerId: this._ownerId, players, scenarios: this._scenarios } =
-      await this.fetchLobbyState());
+    ({
+      ownerId: this._ownerId,
+      players,
+      scenarios: this._scenarios
+    } = await this.fetchLobbyState());
 
     this._players.push(...players);
 
     this._scenario = this.scenarios[0];
   }
 
-  async deactivate (): Promise<void> {
+  async deactivate(): Promise<void> {
     await super.deactivate();
   }
 
-  async selectScenario (id: string): Promise<void> {
+  async selectScenario(id: string): Promise<void> {
     const selected = this.scenarios.find(x => x.id === id);
 
     if (selected) {
@@ -65,11 +76,11 @@ export class LobbyStrategy extends Strategy {
     }
   }
 
-  public startGame (): Promise<boolean> {
+  public startGame(): Promise<boolean> {
     return remoteCall(this.socket, 'start_game');
   }
 
-  async onEvent (e: LobbyEvent): Promise<boolean> {
+  async onEvent(e: LobbyEvent): Promise<boolean> {
     switch (e.type) {
       case LobbyEventType.PlayerJoined:
         this.playerJoinedEvent(e.data as PlayerJoinedEvent);
@@ -86,27 +97,30 @@ export class LobbyStrategy extends Strategy {
     }
   }
 
-  private playerJoinedEvent (e: PlayerJoinedEvent): void {
+  private playerJoinedEvent(e: PlayerJoinedEvent): void {
     this.players.push(e);
   }
 
-  private playerLeavesEvent (e: PlayerLeavesEvent): void {
-    this.players.splice(this.players.findIndex(x => x.id === e.id), 1);
+  private playerLeavesEvent(e: PlayerLeavesEvent): void {
+    this.players.splice(
+      this.players.findIndex(x => x.id === e.id),
+      1
+    );
   }
 
-  private async fetchLobbyState (): Promise<LobbyState> {
+  private async fetchLobbyState(): Promise<LobbyState> {
     return await remoteCall(this.socket, 'lobby_state');
   }
 
-  get ownerId (): string {
+  get ownerId(): string {
     return this._ownerId;
   }
 
-  get players (): Player[] {
+  get players(): Player[] {
     return this._players;
   }
 
-  get scenarios (): Scenario[] {
+  get scenarios(): Scenario[] {
     return this._scenarios;
   }
 }
