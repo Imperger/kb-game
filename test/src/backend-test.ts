@@ -87,7 +87,28 @@ async function googleAuthFlow(api: Api, logger: Logger): Promise<boolean> {
     return false;
   }
 
+  const withoutIdToken = await tester
+    .test(
+      () =>
+        api.backend.raw({
+          method: 'post',
+          url: '/auth/register/google',
+          headers: { 'Content-Type': 'application/json' },
+          data: { unexpectedIdToken: '12345' }
+        }),
+      'Missing id token'
+    )
+    .status(401)
+    .toPromise();
+
   const token = genGoogleIdTokenPayload(aud);
+
+  const loginValidTokenNonExistUser= await tester
+    .test(
+      () => api.backend.loginGoogle(gi.signIdTokenAndModifyDate(token, DateModifier.Valid)),
+      'Login with valid google id token but unknown user')
+    .status(401)
+    .toPromise();
 
   const signupExpired = await tester
     .test(
@@ -165,7 +186,9 @@ async function googleAuthFlow(api: Api, logger: Logger): Promise<boolean> {
     .status(200)
     .toPromise();
 
-  return signupExpired.pass &&
+  return withoutIdToken.pass &&
+      loginValidTokenNonExistUser.pass &&
+      signupExpired.pass &&
       signupNotValidBefore.pass &&
       signupUnsuitableAudience.pass &&
       signupValid.pass &&
@@ -495,14 +518,22 @@ async function gameFlow(api: Api, logger: Logger): Promise<boolean> {
 async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
   const tester = new ApiTester(logger);
 
+  const scenario = { id: '', title: 'Sample title', text: 'Scenario content' };
+
+  const newScenarioWithoutPermission = await tester
+    .test(
+      () => api.backend.addScenario(scenario.title, scenario.text),
+      'Add new scenario without the permission'
+    )
+    .status(403)
+    .toPromise();
+
   await api.mongo
     .collection('users')
     .updateOne(
       { email: user.cred.email },
       { $set: { 'scopes.editScenario': true } }
     );
-
-  const scenario = { id: '', title: 'Sample title', text: 'Scenario content' };
 
   const newScenario = await tester
     .test(
@@ -611,6 +642,7 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
   }
 
   return (
+    newScenarioWithoutPermission.pass &&
     newScenario.pass &&
     updateScenario.pass &&
     scenarioContent.pass &&
