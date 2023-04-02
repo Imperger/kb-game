@@ -1,16 +1,20 @@
-import { CanActivate, ExecutionContext, Injectable, mixin, Type } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  mixin,
+  Type
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 
-import { User } from '@/user/schemas/user.schema';
 import { Scope } from '@/auth/scopes';
 import { LoggerService } from '@/logger/logger.service';
+import { User } from '@/user/schemas/user.schema';
 
 export const ScopeGuard = (...scopes: Scope[]): Type<CanActivate> => {
   @Injectable()
   class ScopeGuardMixin implements CanActivate {
-    constructor(
-      private readonly logger: LoggerService
-    ) { }
+    constructor(private readonly logger: LoggerService) {}
 
     canActivate(
       context: ExecutionContext
@@ -49,4 +53,4 @@ export const ScopeGuard = (...scopes: Scope[]): Type<CanActivate> => {
   }
 
   return mixin(ScopeGuardMixin);
-}
+};

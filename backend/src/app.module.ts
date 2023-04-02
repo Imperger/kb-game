@@ -6,18 +6,18 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 
 import { AuthModule } from './auth/auth.module';
-import { UserModule } from './user/user.module';
-import { JwtModule } from './jwt/jwt.module';
-import { SpawnerModule } from './spawner/spawner.module';
-import { GameModule } from './game/game.module';
-import { PlayerModule } from './player/player.module';
-import { ConfigHelperModule } from './config/config-helper.module';
-import { ScenarioModule } from './scenario/scenario.module';
-import { LoggerModule } from './logger/logger.module';
-import { ReplayModule } from './replay/replay.module';
-import { ScoringModule } from './scoring/scoring.module';
-import { MetricsModule } from './metrics/metrics.module';
 import Config from './config';
+import { ConfigHelperModule } from './config/config-helper.module';
+import { GameModule } from './game/game.module';
+import { JwtModule } from './jwt/jwt.module';
+import { LoggerModule } from './logger/logger.module';
+import { MetricsModule } from './metrics/metrics.module';
+import { PlayerModule } from './player/player.module';
+import { ReplayModule } from './replay/replay.module';
+import { ScenarioModule } from './scenario/scenario.module';
+import { ScoringModule } from './scoring/scoring.module';
+import { SpawnerModule } from './spawner/spawner.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [

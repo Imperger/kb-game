@@ -1,10 +1,11 @@
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
-
-import { UserConfirmationToken } from '@/auth/interfaces/user-confirmation-token';
-import { RegistrationConfirmStrategyName } from '@/auth/constants';
 import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+
+import { RegistrationConfirmStrategyName } from '@/auth/constants';
+import { UserConfirmationToken } from '@/auth/interfaces/user-confirmation-token';
+
 
 @Injectable()
 export class RegistrationConfirmStrategy extends PassportStrategy(

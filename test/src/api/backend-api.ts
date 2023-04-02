@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 import type { FailType } from '../api-tester';
+
 import { RejectedResponse } from './types';
 
 export interface NewUser {
@@ -229,8 +230,8 @@ export class BackendApi {
   }
 
   newCustomGame():
-  | Promise<AxiosResponse<CustomGameDescriptor>>
-  | FailType<RejectedResponse> {
+    | Promise<AxiosResponse<CustomGameDescriptor>>
+    | FailType<RejectedResponse> {
     return this.http.post<CustomGameDescriptor>('game/new_custom');
   }
 
@@ -241,8 +242,8 @@ export class BackendApi {
   }
 
   listGames():
-  | Promise<AxiosResponse<ServerDescription[]>>
-  | FailType<RejectedResponse> {
+    | Promise<AxiosResponse<ServerDescription[]>>
+    | FailType<RejectedResponse> {
     return this.http.get<ServerDescription[]>('/game/list');
   }
 
@@ -322,8 +323,8 @@ export class BackendApi {
   }
 
   listSpawners():
-  | Promise<AxiosResponse<SpawnerInfo>>
-  | FailType<RejectedResponse> {
+    | Promise<AxiosResponse<SpawnerInfo>>
+    | FailType<RejectedResponse> {
     return this.http.get<SpawnerInfo>('/spawner');
   }
 
@@ -368,8 +369,8 @@ export class BackendApi {
   }
 
   currentPlayerStats():
-  | Promise<AxiosResponse<PlayerStats>>
-  | FailType<RejectedResponse> {
+    | Promise<AxiosResponse<PlayerStats>>
+    | FailType<RejectedResponse> {
     return this.http.get<PlayerStats>('/player/me');
   }
 

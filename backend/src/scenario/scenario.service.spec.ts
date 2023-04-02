@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { ScenarioService } from './scenario.service';
 
 describe('ScenarioService', () => {

@@ -1,5 +1,5 @@
-import { JwtService } from '@nestjs/jwt';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
 import { SpawnerService } from '@/spawner/spawner.service';
 

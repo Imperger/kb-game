@@ -1,6 +1,9 @@
 import { Module, Provider } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { PrometheusModule, makeCounterProvider } from '@willsoto/nestjs-prometheus';
+import {
+  PrometheusModule,
+  makeCounterProvider
+} from '@willsoto/nestjs-prometheus';
 import {
   CounterConfiguration,
   GaugeConfiguration,
@@ -16,31 +19,40 @@ import {
 import { RequestCounterInterceptor } from './request-counter-interceptor';
 
 type MetricConfig<T extends string> =
-  CounterConfiguration<T> |
-  GaugeConfiguration<T> |
-  HistogramConfiguration<T> |
-  SummaryConfiguration<T>;
+  | CounterConfiguration<T>
+  | GaugeConfiguration<T>
+  | HistogramConfiguration<T>
+  | SummaryConfiguration<T>;
 
-type MetricFactory<T extends string> = (options: MetricConfig<T>) => Provider<any>;
+type MetricFactory<T extends string> = (
+  options: MetricConfig<T>
+) => Provider<any>;
 
-function makeProvider<T extends string>(name: string, help: string, factory: MetricFactory<T>) {
+function makeProvider<T extends string>(
+  name: string,
+  help: string,
+  factory: MetricFactory<T>
+) {
   return factory({ name, help });
 }
 
 const loginSuccessCountTotalProvider = makeProvider(
   loginSuccessCountTotalToken,
   'Number of successful authentication',
-  makeCounterProvider);
+  makeCounterProvider
+);
 
 const loginUnsuccessCountTotalProvider = makeProvider(
   loginUnsuccessCountTotalToken,
   'Number of unsuccessful authentication',
-  makeCounterProvider);
+  makeCounterProvider
+);
 
 const globalRequestCountTotalProvider = makeProvider(
   globalRequestCounterTotalToken,
   'Number of total request',
-  makeCounterProvider);
+  makeCounterProvider
+);
 
 @Module({
   imports: [PrometheusModule.register()],
@@ -51,11 +63,13 @@ const globalRequestCountTotalProvider = makeProvider(
     {
       provide: APP_INTERCEPTOR,
       useClass: RequestCounterInterceptor
-    }],
+    }
+  ],
   controllers: [],
   exports: [
     loginSuccessCountTotalProvider,
     loginUnsuccessCountTotalProvider,
-    globalRequestCountTotalProvider]
+    globalRequestCountTotalProvider
+  ]
 })
-export class MetricsModule { }
+export class MetricsModule {}

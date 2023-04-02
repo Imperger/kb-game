@@ -1,11 +1,12 @@
-import ms from 'ms';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import ms from 'ms';
 
 import { LinkedGame } from './interfaces/linked-game';
 import { Player } from './schemas/player.schema';
+
 import { ReplayStats } from '@/replay/interfaces/replay-stats';
 import { EloCalculatorService } from '@/scoring/elo-calculator.service';
 
@@ -15,7 +16,7 @@ export class PlayerService {
     private readonly config: ConfigService,
     @InjectModel(Player.name) private readonly player: Model<Player>,
     private readonly elo: EloCalculatorService
-  ) { }
+  ) {}
 
   async newPlayer(nickname: string): Promise<Player> {
     const freeDiscriminator = await this.player.aggregate([
@@ -51,26 +52,38 @@ export class PlayerService {
   }
 
   async enterQuickGameQueue(id: string): Promise<boolean> {
-    return (await this.player.updateOne(
-      { _id: id, quickGameQueue: null, game: null },
-      { $currentDate: { quickGameQueue: true } })).modifiedCount > 0;
+    return (
+      (
+        await this.player.updateOne(
+          { _id: id, quickGameQueue: null, game: null },
+          { $currentDate: { quickGameQueue: true } }
+        )
+      ).modifiedCount > 0
+    );
   }
 
   async leaveQuickGameQueue(id: string): Promise<boolean> {
-    return (await this.player.updateOne(
-      { _id: id, quickGameQueue: { $ne: null } },
-      { $set: { quickGameQueue: null } })).modifiedCount > 0;
+    return (
+      (
+        await this.player.updateOne(
+          { _id: id, quickGameQueue: { $ne: null } },
+          { $set: { quickGameQueue: null } }
+        )
+      ).modifiedCount > 0
+    );
   }
 
   async resetQuickQueueForAll(): Promise<boolean> {
-    return (await this.player.updateMany(
-      { quickGameQueue: { $ne: null } },
-      { $set: { quickGameQueue: null } }
-    )).acknowledged;
+    return (
+      await this.player.updateMany(
+        { quickGameQueue: { $ne: null } },
+        { $set: { quickGameQueue: null } }
+      )
+    ).acknowledged;
   }
 
   /**
-   * 
+   *
    * @param id Player id
    * @param game Reference to the game instance
    * @param acquireId Used for linking without previous unlinking
@@ -95,7 +108,7 @@ export class PlayerService {
               { _id: id, quickGameQueue: null },
               {
                 $or: [
-                  { 'game': null },
+                  { game: null },
                   { 'game.instanceUrl': acquireId },
                   {
                     $expr: {
@@ -123,38 +136,62 @@ export class PlayerService {
 
   async unlinkGame(id: string): Promise<boolean> {
     return (
-      (await this.player.updateOne(
-        { _id: id },
-        [{
-          $set: {
-            hoursInGame: {
-              $sum: [
-                '$hoursInGame',
-                { $divide: [{ $dateDiff: { startDate: '$game.updatedAt', endDate: '$$NOW', unit: 'second' } }, 3600] }]
-            },
-            game: null
+      (
+        await this.player.updateOne({ _id: id }, [
+          {
+            $set: {
+              hoursInGame: {
+                $sum: [
+                  '$hoursInGame',
+                  {
+                    $divide: [
+                      {
+                        $dateDiff: {
+                          startDate: '$game.updatedAt',
+                          endDate: '$$NOW',
+                          unit: 'second'
+                        }
+                      },
+                      3600
+                    ]
+                  }
+                ]
+              },
+              game: null
+            }
           }
-        }]))
-        .modifiedCount > 0
+        ])
+      ).modifiedCount > 0
     );
   }
 
   async unlinkGameAll(instanceUrl: string): Promise<boolean> {
     return (
       (
-        await this.player.updateMany(
-          { 'game.instanceUrl': instanceUrl },
-          [{
+        await this.player.updateMany({ 'game.instanceUrl': instanceUrl }, [
+          {
             $set: {
               hoursInGame: {
                 $sum: [
                   '$hoursInGame',
-                  { $divide: [{ $dateDiff: { startDate: '$game.updatedAt', endDate: '$$NOW', unit: 'second' } }, 3600] }]
+                  {
+                    $divide: [
+                      {
+                        $dateDiff: {
+                          startDate: '$game.updatedAt',
+                          endDate: '$$NOW',
+                          unit: 'second'
+                        }
+                      },
+                      3600
+                    ]
+                  }
+                ]
               },
               game: null
             }
-          }]
-        )
+          }
+        ])
       ).modifiedCount > 0
     );
   }
@@ -164,30 +201,45 @@ export class PlayerService {
       return;
     }
 
-    const participants = await this.player.find({ _id: { $in: stats.map(x => x.playerId) } });
-    
-    const updatedElo = this.elo
-      .newRating(stats.map(x => participants.find(p => p.id === x.playerId).elo));
+    const participants = await this.player.find({
+      _id: { $in: stats.map(x => x.playerId) }
+    });
 
-    return (await this.player.bulkWrite(participants.map(p => {
-      const statsIdx = stats.findIndex(x => x.playerId === p.id);
-      const s = stats[statsIdx];
-      const elo = updatedElo[statsIdx];
+    const updatedElo = this.elo.newRating(
+      stats.map(x => participants.find(p => p.id === x.playerId).elo)
+    );
 
-      return {
-        updateOne: {
-          filter: { _id: p.id },
-          update: { 
-            $inc: { 
-              totalPlayed: 1, 
-              totalWins: +(stats[0].playerId === p.id) },
-            $set: { 
-              averageCpm: Math.round((p.averageCpm * p.totalPlayed + s.cpm) / (p.totalPlayed + 1)),
-              elo },
-            $max: { maxCpm: Math.round(s.cpm) }
-          }
-        }
-      };}))).modifiedCount === stats.length;
+    return (
+      (
+        await this.player.bulkWrite(
+          participants.map(p => {
+            const statsIdx = stats.findIndex(x => x.playerId === p.id);
+            const s = stats[statsIdx];
+            const elo = updatedElo[statsIdx];
+
+            return {
+              updateOne: {
+                filter: { _id: p.id },
+                update: {
+                  $inc: {
+                    totalPlayed: 1,
+                    totalWins: +(stats[0].playerId === p.id)
+                  },
+                  $set: {
+                    averageCpm: Math.round(
+                      (p.averageCpm * p.totalPlayed + s.cpm) /
+                        (p.totalPlayed + 1)
+                    ),
+                    elo
+                  },
+                  $max: { maxCpm: Math.round(s.cpm) }
+                }
+              }
+            };
+          })
+        )
+      ).modifiedCount === stats.length
+    );
   }
 
   get model() {

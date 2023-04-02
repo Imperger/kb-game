@@ -1,3 +1,5 @@
-import { QuickGameDescriptor } from "./quick-game-descriptor";
+import { QuickGameDescriptor } from './quick-game-descriptor';
 
-export type QuickGameRequestResolver = (resolve: QuickGameDescriptor | null) => void;
+export type QuickGameRequestResolver = (
+  resolve: QuickGameDescriptor | null
+) => void;

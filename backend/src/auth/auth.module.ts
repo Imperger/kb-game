@@ -1,20 +1,21 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { GoogleRecaptchaModule } from '@nestlab/google-recaptcha';
-import { ConfigService } from '@nestjs/config';
 
-import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { User, UserSchema } from '@/user/schemas/user.schema';
-import { UserModule } from '@/user/user.module';
+import { AuthService } from './auth.service';
 import {
   LoginByEmailStrategy,
   LoginByUsernameStrategy,
   RegistrationConfirmStrategy
 } from './strategies';
-import { PlayerModule } from '@/player/player.module';
+
 import { ConfigHelperModule } from '@/config/config-helper.module';
 import { MetricsModule } from '@/metrics/metrics.module';
+import { PlayerModule } from '@/player/player.module';
+import { User, UserSchema } from '@/user/schemas/user.schema';
+import { UserModule } from '@/user/user.module';
 
 @Module({
   imports: [

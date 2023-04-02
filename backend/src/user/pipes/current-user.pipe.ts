@@ -5,7 +5,7 @@ import { User as UserSchema } from '@/user/schemas/user.schema';
 
 @Injectable()
 export class CurrentUserPipe implements PipeTransform {
-  transform(user: UserSchema, metadata: ArgumentMetadata): CurrentUser {
+  transform(user: UserSchema, _metadata: ArgumentMetadata): CurrentUser {
     return {
       username: user.username,
       email: user.email,

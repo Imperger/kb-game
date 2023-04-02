@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { Player, PlayerSchema } from './schemas/player.schema';
-import { PlayerService } from './player.service';
 import { PlayerController } from './player.controller';
-import { SpawnerModule } from '@/spawner/spawner.module';
+import { PlayerService } from './player.service';
+import { Player, PlayerSchema } from './schemas/player.schema';
+
 import { ScoringModule } from '@/scoring/scoring.module';
+import { SpawnerModule } from '@/spawner/spawner.module';
 
 @Module({
   imports: [

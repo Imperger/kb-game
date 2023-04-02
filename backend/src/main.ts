@@ -5,14 +5,14 @@ import {
 } from '@nestjs/platform-fastify';
 
 import { AppModule } from './app.module';
-import { DtoValidationPipe } from './common/pipes/dto-validation.pipe';
 import { AppExceptionFilter } from './common/filters/app-exception.filter';
-import { LoggerService } from './logger/logger.service';
 import { GoogleRecaptchaFilter } from './common/filters/recaptcha-exception.filter';
+import { DtoValidationPipe } from './common/pipes/dto-validation.pipe';
+import { LoggerService } from './logger/logger.service';
 import { setupTestEnvironment } from './setup-test-environment';
 
 async function bootstrap() {
-  if(process.env.NODE_ENV === 'test') {
+  if (process.env.NODE_ENV === 'test') {
     await setupTestEnvironment();
   }
 

@@ -1,6 +1,6 @@
+import { NewCustomGameOptions } from './api/spawner-api';
 import { Api } from './api-interface';
 import { ApiTester } from './api-tester';
-import { NewCustomGameOptions } from './api/spawner-api';
 import { Logger } from './logger';
 
 async function info(api: Api, logger: Logger): Promise<boolean> {

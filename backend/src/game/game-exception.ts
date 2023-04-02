@@ -1,5 +1,6 @@
-import { AppException, exceptionGuardFactory } from '@/common/app-exception';
 import { HttpStatus } from '@nestjs/common';
+
+import { AppException, exceptionGuardFactory } from '@/common/app-exception';
 
 export enum GameError {
   ConnectionFailed = 200,
@@ -8,7 +9,7 @@ export enum GameError {
   CantStartGame
 }
 
-export class GameException extends AppException { }
+export class GameException extends AppException {}
 
 export class ConnectionFailedException extends GameException {
   code = GameError.ConnectionFailed;
@@ -25,7 +26,7 @@ export class RequestInstanceFailedException extends GameException {
 export class EnterQuickMatchQueueException extends GameException {
   code = GameError.EnterQuickMatchQueueError;
   status = HttpStatus.BAD_REQUEST;
-  message = "The player already in a queue or in a running game";
+  message = 'The player already in a queue or in a running game';
 }
 
 export class CantStartGameException extends GameException {

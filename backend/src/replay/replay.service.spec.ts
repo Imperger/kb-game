@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { ReplayService } from './replay.service';
 
 describe('ReplayService', () => {
@@ -6,7 +7,7 @@ describe('ReplayService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ReplayService],
+      providers: [ReplayService]
     }).compile();
 
     service = module.get<ReplayService>(ReplayService);

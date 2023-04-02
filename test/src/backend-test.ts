@@ -1,17 +1,19 @@
-import { first } from 'rxjs/operators';
 import Crypto from 'crypto';
-import { sign } from 'jsonwebtoken';
 
-import { Api } from './api-interface';
-import { ApiTester, ApiTestResult } from './api-tester';
+import { AxiosResponse } from 'axios';
+import { sign } from 'jsonwebtoken';
+import { first } from 'rxjs/operators';
+
 import { BackendApi, DateCondition, ReplaysOverview } from './api/backend-api';
 import { RejectedResponse } from './api/types';
+import { Api } from './api-interface';
+import { ApiTester, ApiTestResult } from './api-tester';
 import { delay } from './delay';
 import { GameClient } from './gameplay/game-client';
+import { DateModifier, GoogleIdentity, IdToken } from './google-identity';
 import { Logger } from './logger';
 import { Mailbox } from './mailbox';
-import { AxiosResponse } from 'axios';
-import { DateModifier, GoogleIdentity, IdToken } from './google-identity';
+
 
 function genUser() {
   const id = Crypto.randomBytes(7).toString('hex');
@@ -27,20 +29,20 @@ function genGoogleIdTokenPayload(aud: string): IdToken {
   const noise = Crypto.randomBytes(7).toString('hex');
 
   return {
-    "iss": "https://accounts.google.com",
-    "nbf": Math.round(Date.now() / 1000 - 3600),
-    "aud": aud,
-    "sub": `111111111111111111111_${noise}`,
-    "email": `johndoe_${noise}@gmail.com`,
-    "email_verified": true,
-    "azp": aud,
-    "name": `John Doe_${noise}`,
-    "picture": "https://lh3.googleusercontent.com/a/12345",
-    "given_name": `John_${noise}`,
-    "family_name": `Doe_${noise}`,
-    "iat": Math.round(Date.now() / 1000),
-    "exp": Math.round(Date.now() / 1000 + 86400),
-    "jti": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    iss: 'https://accounts.google.com',
+    nbf: Math.round(Date.now() / 1000 - 3600),
+    aud: aud,
+    sub: `111111111111111111111_${noise}`,
+    email: `johndoe_${noise}@gmail.com`,
+    email_verified: true,
+    azp: aud,
+    name: `John Doe_${noise}`,
+    picture: 'https://lh3.googleusercontent.com/a/12345',
+    given_name: `John_${noise}`,
+    family_name: `Doe_${noise}`,
+    iat: Math.round(Date.now() / 1000),
+    exp: Math.round(Date.now() / 1000 + 86400),
+    jti: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
   };
 }
 
@@ -87,33 +89,72 @@ async function googleAuthFlow(api: Api, logger: Logger): Promise<boolean> {
     return false;
   }
 
-  const token = genGoogleIdTokenPayload(aud);
-
-  const signupExpired = await tester
+  const withoutIdToken = await tester
     .test(
-      () => api.backend.registerGoogle(gi.signIdTokenAndModifyDate(token, DateModifier.Expired)),
-      'Signup with expired google id token')
+      () =>
+        api.backend.raw({
+          method: 'post',
+          url: '/auth/register/google',
+          headers: { 'Content-Type': 'application/json' },
+          data: { unexpectedIdToken: '12345' }
+        }),
+      'Missing id token'
+    )
     .status(401)
     .toPromise();
 
-  const signupNotValidBefore= await tester
+  const token = genGoogleIdTokenPayload(aud);
+
+  const loginValidTokenNonExistUser = await tester
     .test(
-      () => api.backend.registerGoogle(gi.signIdTokenAndModifyDate(token, DateModifier.NotValidBefore)),
-      'Signup with not valid before google id token')
+      () =>
+        api.backend.loginGoogle(
+          gi.signIdTokenAndModifyDate(token, DateModifier.Valid)
+        ),
+      'Login with valid google id token but unknown user'
+    )
+    .status(401)
+    .toPromise();
+
+  const signupExpired = await tester
+    .test(
+      () =>
+        api.backend.registerGoogle(
+          gi.signIdTokenAndModifyDate(token, DateModifier.Expired)
+        ),
+      'Signup with expired google id token'
+    )
+    .status(401)
+    .toPromise();
+
+  const signupNotValidBefore = await tester
+    .test(
+      () =>
+        api.backend.registerGoogle(
+          gi.signIdTokenAndModifyDate(token, DateModifier.NotValidBefore)
+        ),
+      'Signup with not valid before google id token'
+    )
     .status(401)
     .toPromise();
 
   const signupUnsuitableAudience = await tester
     .test(
-      () => api.backend.registerGoogle(gi.signIdTokenAndSetInvalidAudiene(token)),
-      'Signup with unsuitable audience in google id token')
+      () =>
+        api.backend.registerGoogle(gi.signIdTokenAndSetInvalidAudiene(token)),
+      'Signup with unsuitable audience in google id token'
+    )
     .status(401)
     .toPromise();
 
   const signupValid = await tester
     .test(
-      () => api.backend.registerGoogle(gi.signIdTokenAndModifyDate(token, DateModifier.Valid)),
-      'Signup with valid google id token')
+      () =>
+        api.backend.registerGoogle(
+          gi.signIdTokenAndModifyDate(token, DateModifier.Valid)
+        ),
+      'Signup with valid google id token'
+    )
     .status(201)
     .toPromise();
 
@@ -122,59 +163,84 @@ async function googleAuthFlow(api: Api, logger: Logger): Promise<boolean> {
 
   const signupExistingEmail = await tester
     .test(
-      () => api.backend.registerGoogle(gi.signIdTokenAndModifyDate(sameEmailToken, DateModifier.Valid)),
-      'Signup with google id token that contain an already registered email')
+      () =>
+        api.backend.registerGoogle(
+          gi.signIdTokenAndModifyDate(sameEmailToken, DateModifier.Valid)
+        ),
+      'Signup with google id token that contain an already registered email'
+    )
     .status(409)
     .toPromise();
 
   const sameSub = { ...token };
   sameSub.email += '_';
-  
-  const signupExistingSub= await tester
+
+  const signupExistingSub = await tester
     .test(
-      () => api.backend.registerGoogle(gi.signIdTokenAndModifyDate(sameSub, DateModifier.Valid)),
-      'Signup with google id token that contain an already registered google id')
+      () =>
+        api.backend.registerGoogle(
+          gi.signIdTokenAndModifyDate(sameSub, DateModifier.Valid)
+        ),
+      'Signup with google id token that contain an already registered google id'
+    )
     .status(409)
     .toPromise();
 
   const loginExpired = await tester
     .test(
-      () => api.backend.loginGoogle(gi.signIdTokenAndModifyDate(token, DateModifier.Expired)),
-      'Login with expired google id token')
+      () =>
+        api.backend.loginGoogle(
+          gi.signIdTokenAndModifyDate(token, DateModifier.Expired)
+        ),
+      'Login with expired google id token'
+    )
     .status(401)
     .toPromise();
 
-  const loginNotValidBefore= await tester
+  const loginNotValidBefore = await tester
     .test(
-      () => api.backend.loginGoogle(gi.signIdTokenAndModifyDate(token, DateModifier.NotValidBefore)),
-      'Login with not valid before google id token')
+      () =>
+        api.backend.loginGoogle(
+          gi.signIdTokenAndModifyDate(token, DateModifier.NotValidBefore)
+        ),
+      'Login with not valid before google id token'
+    )
     .status(401)
     .toPromise();
 
   const loginГnsuitableAudience = await tester
     .test(
       () => api.backend.loginGoogle(gi.signIdTokenAndSetInvalidAudiene(token)),
-      'Login with unsuitable audience in google id token')
+      'Login with unsuitable audience in google id token'
+    )
     .status(401)
     .toPromise();
 
-  const loginValid= await tester
+  const loginValid = await tester
     .test(
-      () => api.backend.loginGoogle(gi.signIdTokenAndModifyDate(token, DateModifier.Valid)),
-      'Login with valid google id token')
+      () =>
+        api.backend.loginGoogle(
+          gi.signIdTokenAndModifyDate(token, DateModifier.Valid)
+        ),
+      'Login with valid google id token'
+    )
     .status(200)
     .toPromise();
 
-  return signupExpired.pass &&
-      signupNotValidBefore.pass &&
-      signupUnsuitableAudience.pass &&
-      signupValid.pass &&
-      signupExistingEmail.pass &&
-      signupExistingSub.pass &&
-      loginExpired.pass && 
-      loginNotValidBefore.pass && 
-      loginГnsuitableAudience.pass && 
-      loginValid.pass;
+  return (
+    withoutIdToken.pass &&
+    loginValidTokenNonExistUser.pass &&
+    signupExpired.pass &&
+    signupNotValidBefore.pass &&
+    signupUnsuitableAudience.pass &&
+    signupValid.pass &&
+    signupExistingEmail.pass &&
+    signupExistingSub.pass &&
+    loginExpired.pass &&
+    loginNotValidBefore.pass &&
+    loginГnsuitableAudience.pass &&
+    loginValid.pass
+  );
 }
 
 async function signinInvalidCreds(api: Api, logger: Logger): Promise<boolean> {
@@ -495,14 +561,22 @@ async function gameFlow(api: Api, logger: Logger): Promise<boolean> {
 async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
   const tester = new ApiTester(logger);
 
+  const scenario = { id: '', title: 'Sample title', text: 'Scenario content' };
+
+  const newScenarioWithoutPermission = await tester
+    .test(
+      () => api.backend.addScenario(scenario.title, scenario.text),
+      'Add new scenario without the permission'
+    )
+    .status(403)
+    .toPromise();
+
   await api.mongo
     .collection('users')
     .updateOne(
       { email: user.cred.email },
       { $set: { 'scopes.editScenario': true } }
     );
-
-  const scenario = { id: '', title: 'Sample title', text: 'Scenario content' };
 
   const newScenario = await tester
     .test(
@@ -562,10 +636,7 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
   };
 
   try {
-    await api.backend.addSpawner(
-      knownSpawner.url,
-      knownSpawner.secret
-    );
+    await api.backend.addSpawner(knownSpawner.url, knownSpawner.secret);
   } catch (e) {
     // Network error
   }
@@ -611,6 +682,7 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
   }
 
   return (
+    newScenarioWithoutPermission.pass &&
     newScenario.pass &&
     updateScenario.pass &&
     scenarioContent.pass &&
@@ -967,7 +1039,7 @@ async function quickGameFlow(api: Api, logger: Logger): Promise<boolean> {
 async function awaitGameStart(gameClient: GameClient) {
   if (gameClient.inQuickgGameLobby) {
     await gameClient.quickGameLobby.awaitInitialization();
-  
+
     return new Promise<void>(ok => {
       if (gameClient.inQuickgGameLobby) {
         gameClient.quickGameLobby.$gameWillStart

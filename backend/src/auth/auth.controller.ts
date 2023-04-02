@@ -8,17 +8,22 @@ import {
 } from '@nestjs/common';
 import { Recaptcha } from '@nestlab/google-recaptcha';
 
-import { CreateUserDto } from './dto/create-user.dto';
 import { AuthService } from './auth.service';
-import { LoginByEmailGuard } from './decorators/login-by-email.guard';
-import { RegistrationConfirmGuard } from './decorators/registration-confirm.guard';
-import { UserId } from './decorators/user-id';
-import { LoginByUsernameGuard } from './decorators/login-by-username.guard';
+import {
+  GoogleIdToken,
+  GoogleIdTokenDecoded
+} from './decorators/google-id-token';
 import { User } from './decorators/user';
-import { User as UserSchema } from '@/user/schemas/user.schema';
+import { UserId } from './decorators/user-id';
+import { CreateUserDto } from './dto/create-user.dto';
+import { AuthGoogleGuard } from './guards/auth-google.guard';
+import { LoginByEmailGuard } from './guards/login-by-email.guard';
+import { LoginByUsernameGuard } from './guards/login-by-username.guard';
+import { RegistrationConfirmGuard } from './guards/registration-confirm.guard';
+
 import { LoggerService } from '@/logger/logger.service';
-import { AuthGoogleGuard } from './decorators/auth-google.guard';
-import { GoogleIdToken, GoogleIdTokenDecoded } from './decorators/google-id-token';
+import { User as UserSchema } from '@/user/schemas/user.schema';
+
 
 @Controller('auth')
 export class AuthController {
@@ -47,9 +52,11 @@ export class AuthController {
   @Post('register/google')
   async registerGoogle(@GoogleIdToken() idToken: GoogleIdTokenDecoded) {
     const username = idToken.payload.name.replace(/\s/g, '');
-    const userId = await this.authService.registerUserByGoogle(username, 
-      idToken.payload.email, 
-      idToken.payload.sub);
+    const userId = await this.authService.registerUserByGoogle(
+      username,
+      idToken.payload.email,
+      idToken.payload.sub
+    );
 
     this.logger.log(
       `New user with google '${userId}:${idToken.payload.sub}:${username}:${idToken.payload.email}'`,

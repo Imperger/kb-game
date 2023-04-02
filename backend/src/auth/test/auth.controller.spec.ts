@@ -1,16 +1,19 @@
-import { LoggerService } from '@/logger/logger.service';
-import { User } from '@/user/schemas/user.schema';
-import { userStub } from '@/user/test/stubs/user.stub';
-import { GoogleRecaptchaModule } from '@nestlab/google-recaptcha';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthController } from '../auth.controller';
-import { AuthService } from '../auth.service';
+import { GoogleRecaptchaModule } from '@nestlab/google-recaptcha';
+
 import {
   EmailIsTakenException,
   RegistrationAlreadyConfirmedException,
   UnknownUserForConfirmRegistrationException,
   UsernameIsTakenException
 } from '../auth-exception';
+import { AuthController } from '../auth.controller';
+import { AuthService } from '../auth.service';
+
+import { LoggerService } from '@/logger/logger.service';
+import { User } from '@/user/schemas/user.schema';
+import { userStub } from '@/user/test/stubs/user.stub';
+
 
 jest.mock('../../logger/logger.service');
 jest.mock('../auth.service');

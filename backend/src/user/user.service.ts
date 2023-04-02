@@ -26,8 +26,7 @@ export class UserService {
   }
 
   async findByGoogleId(googleId: string) {
-    return this.userModel
-      .findOne({ ['externalIdentity.google']: googleId });
+    return this.userModel.findOne({ ['externalIdentity.google']: googleId });
   }
 
   async findById(id: string) {

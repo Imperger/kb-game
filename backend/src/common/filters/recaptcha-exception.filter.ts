@@ -5,8 +5,8 @@ import {
   HttpStatus
 } from '@nestjs/common';
 import { GoogleRecaptchaException } from '@nestlab/google-recaptcha';
-
 import { FastifyReply } from 'fastify';
+
 import { CommonError } from '../common-exception';
 
 @Catch(GoogleRecaptchaException)

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 
-import { ConfigValidator } from './config-validator';
 import { ConfigSchema } from './config-schema';
+import { ConfigValidator } from './config-validator';
 
 export class ConfigLoader {
   private readonly validator = new ConfigValidator();

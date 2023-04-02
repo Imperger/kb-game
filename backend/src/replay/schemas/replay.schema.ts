@@ -1,9 +1,9 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 import { Document } from 'mongoose';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-import { Player } from '@/player/schemas/player.schema';
 import { Seconds } from '@/common/duration';
+import { Player } from '@/player/schemas/player.schema';
 
 @Schema({ timestamps: false, _id: false })
 export class InputEvent {
@@ -21,7 +21,12 @@ export const InputEventSchema = SchemaFactory.createForClass(InputEvent);
 
 @Schema({ timestamps: false, _id: false })
 export class Track {
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: Player.name, index: true })
+  @Prop({
+    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Player.name,
+    index: true
+  })
   player: Player;
 
   @Prop({ required: true, type: Number })

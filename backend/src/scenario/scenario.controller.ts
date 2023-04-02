@@ -12,17 +12,19 @@ import {
   UseGuards
 } from '@nestjs/common';
 
-import { ScopeGuard } from '@/auth/guards/scope.guard';
-import { JwtGuard } from '@/jwt/decorators/jwt.guard';
-import { JwtKnownSpawnerGuard } from '@/spawner/decorators/jwt-known-spawner.guard';
-import { Scope } from '@/auth/scopes';
 import { NewScenarioDto } from './dto/new-scenario.dto';
 import { ScenarioService } from './scenario.service';
+
+import { ScopeGuard } from '@/auth/guards/scope.guard';
+import { Scope } from '@/auth/scopes';
 import { ParseObjectIdPipe } from '@/common/pipes/parse-object-id.pipe';
+import { JwtGuard } from '@/jwt/decorators/jwt.guard';
+import { JwtKnownSpawnerGuard } from '@/spawner/decorators/jwt-known-spawner.guard';
+
 
 @Controller('scenario')
 export class ScenarioController {
-  constructor(private readonly scenarioService: ScenarioService) { }
+  constructor(private readonly scenarioService: ScenarioService) {}
 
   @UseGuards(JwtGuard, ScopeGuard(Scope.EditScenario))
   @Post()
@@ -33,7 +35,7 @@ export class ScenarioController {
   @UseGuards(JwtGuard, ScopeGuard(Scope.EditScenario))
   @Put(':id')
   async update(
-  @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id', ParseObjectIdPipe) id: string,
     @Body() content: NewScenarioDto
   ) {
     return this.scenarioService.update(id, content);
@@ -49,7 +51,7 @@ export class ScenarioController {
   @UseGuards(JwtGuard)
   @Get()
   async paginate(
-  @Query('offset', ParseIntPipe) offset: number,
+    @Query('offset', ParseIntPipe) offset: number,
     @Query('limit', ParseIntPipe) limit: number
   ) {
     const page = await this.scenarioService.list(offset, limit);

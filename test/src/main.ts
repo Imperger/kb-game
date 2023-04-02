@@ -1,14 +1,14 @@
 import colors from 'colors';
 import { MongoClient } from 'mongodb';
 
+import { BackendApi } from './api/backend-api';
 import { SpawnerApi } from './api/spawner-api';
-import { isAxiosError } from './guards/axios-error-guard';
 import { testBackend } from './backend-test';
 import { delay } from './delay';
+import { isAxiosError } from './guards/axios-error-guard';
 import { Logger } from './logger';
 import { testSpawner } from './spawner-test';
 import { TestError } from './test-error';
-import { BackendApi } from './api/backend-api';
 
 type seconds = number;
 

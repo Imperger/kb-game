@@ -1,14 +1,12 @@
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
-import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 import { MongoError } from 'mongodb';
+import { Model } from 'mongoose';
 import { firstValueFrom } from 'rxjs';
 
 import { Spawner } from './schemas/spawner.schema';
-import { isAxiosError } from '@/common/typeguards/axios-typeguard';
-import { ConfigHelperService } from '@/config/config-helper.service';
 import {
   HostNotFoundException,
   HostNotResponseException,
@@ -19,6 +17,9 @@ import {
   UnknownException,
   WrongSecretException
 } from './spawner-exception';
+
+import { isAxiosError } from '@/common/typeguards/axios-typeguard';
+import { ConfigHelperService } from '@/config/config-helper.service';
 
 export interface KnownSpawnerInfo {
   name: string;
@@ -89,6 +90,7 @@ export class SpawnerService {
               throw new WrongSecretException();
             }
           }
+          // eslint-disable-next-line no-fallthrough
           default:
             throw new UnknownException();
         }
@@ -101,7 +103,7 @@ export class SpawnerService {
   }
 
   async remove(url: string): Promise<void> {
-    if((await this.spawnerModel.deleteOne({ url })).deletedCount === 0) {
+    if ((await this.spawnerModel.deleteOne({ url })).deletedCount === 0) {
       throw new SpawnerNotFound();
     }
   }
@@ -110,9 +112,7 @@ export class SpawnerService {
     return this.spawnerModel.find({});
   }
 
-  async findCustomInstance(
-    ownerId: string
-  ): Promise<RequestedInstance | null> {
+  async findCustomInstance(ownerId: string): Promise<RequestedInstance | null> {
     const spawners = await this.listAll();
 
     for (const s of spawners) {
@@ -122,7 +122,9 @@ export class SpawnerService {
           spawnerUrl: s.url,
           spawnerSecret: s.secret
         };
-      } catch (e) {}
+      } catch (e) {
+        // Failed to request a custom instance
+      }
     }
 
     return null;
@@ -137,11 +139,18 @@ export class SpawnerService {
     for (const s of spawners) {
       try {
         return {
-          ...(await this.requestQuickInstance(s.url, s.secret, players, scenarioId)),
+          ...(await this.requestQuickInstance(
+            s.url,
+            s.secret,
+            players,
+            scenarioId
+          )),
           spawnerUrl: s.url,
           spawnerSecret: s.secret
         };
-      } catch (e) {}
+      } catch (e) {
+        // Failed to rerquest quick instance
+      }
     }
 
     return null;
@@ -200,7 +209,11 @@ export class SpawnerService {
         await firstValueFrom(
           this.http.post<InstanceLocation>(
             `${spawnerUrl}/game/new_quick`,
-            { players, scenarioId, backendApi: this.configHelperService.apiEntry },
+            {
+              players,
+              scenarioId,
+              backendApi: this.configHelperService.apiEntry
+            },
             this.useAuthorization(secret)
           )
         )

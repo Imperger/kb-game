@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { userStub } from '@/user/test/stubs/user.stub';
 import {
   EmailIsTakenException,
   RegistrationAlreadyConfirmedException,
   UnknownUserForConfirmRegistrationException,
   UsernameIsTakenException
 } from '../auth-exception';
+
+import { userStub } from '@/user/test/stubs/user.stub';
 
 export class AuthService {
   async registerUser(

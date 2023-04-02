@@ -1,10 +1,10 @@
+import { Type } from 'class-transformer';
 import {
   IsString,
   ValidateNested,
   IsDefined,
   IsOptional
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 class Api {
   @IsDefined({ message: "missing property 'api.jwtSecret'" })

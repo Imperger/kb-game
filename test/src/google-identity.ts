@@ -1,7 +1,7 @@
-import { readFile } from 'fs/promises';
 import { X509Certificate, randomBytes } from 'crypto';
+import { readFile } from 'fs/promises';
 
-import jwt from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
 
 export interface IdToken {
   aud: string;
@@ -36,19 +36,22 @@ export class GoogleIdentity {
   }
 
   public signIdToken(token: IdToken): string {
-    return jwt.sign(token, this.key, { algorithm: 'RS256', keyid: this.kid });
+    return sign(token, this.key, { algorithm: 'RS256', keyid: this.kid });
   }
 
-  public signIdTokenAndModifyDate(token: IdToken, dateMod: DateModifier): string {
+  public signIdTokenAndModifyDate(
+    token: IdToken,
+    dateMod: DateModifier
+  ): string {
     const now = Math.round(Date.now() / 1000);
 
     const oneDay = 86400;
-    
+
     let nbf = 0;
     let iat = 0;
     let exp = 0;
 
-    switch(dateMod) {
+    switch (dateMod) {
       case DateModifier.Expired:
         ({ nbf, iat, exp } = GoogleIdentity.adjustTimestamps(now - oneDay));
         break;
