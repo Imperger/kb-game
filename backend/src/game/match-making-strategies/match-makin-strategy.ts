@@ -1,6 +1,6 @@
-import type { Observable } from "rxjs";
+import type { Observable } from 'rxjs';
 
-import { PlayerDescriptor } from "../interfaces/player-descriptor";
+import { PlayerDescriptor } from '../interfaces/player-descriptor';
 
 export const matchMakingStrategyToken = Symbol('match-making-strategy-token');
 

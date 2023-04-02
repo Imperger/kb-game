@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+
 import { EloCalculatorService } from './elo-calculator.service';
 import { exponentialDistribution } from './score-distribution/exponential-distribution';
 
@@ -6,7 +7,8 @@ import { exponentialDistribution } from './score-distribution/exponential-distri
   providers: [
     {
       provide: EloCalculatorService,
-      useFactory: () => new EloCalculatorService(400, 32, exponentialDistribution)
+      useFactory: () =>
+        new EloCalculatorService(400, 32, exponentialDistribution)
     }
   ],
   exports: [EloCalculatorService]

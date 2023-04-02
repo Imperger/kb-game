@@ -51,5 +51,8 @@ export class Player extends Document {
 
 export const PlayerSchema = SchemaFactory.createForClass(Player);
 
-PlayerSchema.index({ nickname: 1, discriminator: 1 }, { unique: true, collation: { locale: 'en', strength: 1 } });
+PlayerSchema.index(
+  { nickname: 1, discriminator: 1 },
+  { unique: true, collation: { locale: 'en', strength: 1 } }
+);
 PlayerSchema.index({ quickGameQueue: 1 }, { sparse: true });

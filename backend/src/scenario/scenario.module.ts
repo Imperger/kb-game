@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { ScenarioService } from './scenario.service';
 import { ScenarioController } from './scenario.controller';
+import { ScenarioService } from './scenario.service';
 import { Scenario, ScenarioSchema } from './schemas/scenario.schema';
+
 import { SpawnerModule } from '@/spawner/spawner.module';
 
 @Module({

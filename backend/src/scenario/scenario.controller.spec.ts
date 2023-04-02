@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { ScenarioController } from './scenario.controller';
 
 describe('Scenario Controller', () => {

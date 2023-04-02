@@ -1,20 +1,25 @@
 import * as Crypto from 'crypto';
+
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { CustomInstanceInfo, SpawnerService } from '@/spawner/spawner.service';
-import { LoggerService } from '@/logger/logger.service';
-import { PlayerService } from '@/player/player.service';
 import {
   ConnectionFailedException,
   RequestInstanceFailedException
 } from './game-exception';
-import { Player } from '@/player/schemas/player.schema';
-import { MatchMakingService } from './matchmaking.service';
-import { Participant, PlayerGroup } from './match-making-strategies/match-makin-strategy';
-import { QuickGameQueueResponderService } from './quick-game-queue-responder.service';
 import { PlayerDescriptor } from './interfaces/player-descriptor';
+import {
+  Participant,
+  PlayerGroup
+} from './match-making-strategies/match-makin-strategy';
+import { MatchMakingService } from './matchmaking.service';
+import { QuickGameQueueResponderService } from './quick-game-queue-responder.service';
+
+import { LoggerService } from '@/logger/logger.service';
+import { PlayerService } from '@/player/player.service';
+import { Player } from '@/player/schemas/player.schema';
 import { ScenarioService } from '@/scenario/scenario.service';
+import { CustomInstanceInfo, SpawnerService } from '@/spawner/spawner.service';
 
 export interface CustomGameDescriptor {
   instanceUrl: string;
@@ -62,18 +67,25 @@ export class GameService implements OnModuleInit {
   async newQuick(group: PlayerGroup) {
     const instance = await this.spawnerService.findQuickInstance(
       group.map(x => x.playerId),
-      await this.scenaio.randomScenarioId());
+      await this.scenaio.randomScenarioId()
+    );
 
     if (instance === null) {
-      group.forEach(x => this.quickGameQueueResponder.resolve(x.playerId, null));
+      group.forEach(x =>
+        this.quickGameQueueResponder.resolve(x.playerId, null)
+      );
 
       return;
     }
 
-    await Promise.all(group.map(x => this.leaveQuickQueue({ id: x.playerId, nickname: x.nickname })));
+    await Promise.all(
+      group.map(x =>
+        this.leaveQuickQueue({ id: x.playerId, nickname: x.nickname })
+      )
+    );
 
-    group
-      .forEach(x => this.quickGameQueueResponder.resolve(x.playerId, {
+    group.forEach(x =>
+      this.quickGameQueueResponder.resolve(x.playerId, {
         instanceUrl: instance.instanceUrl,
         playerToken: this.jwtService.sign(
           {
@@ -82,7 +94,8 @@ export class GameService implements OnModuleInit {
           },
           { expiresIn: '3m', secret: instance.spawnerSecret }
         )
-      }));
+      })
+    );
   }
 
   async newCustom(player: PlayerDescriptor): Promise<CustomGameDescriptor> {
@@ -180,7 +193,9 @@ export class GameService implements OnModuleInit {
             spawner.secret
           ))
         );
-      } catch (e) { }
+      } catch (e) {
+        // Failed to request data from the spawner
+      }
     }
 
     return ret;

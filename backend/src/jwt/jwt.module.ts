@@ -1,9 +1,10 @@
 import { Module, Global } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtModule as NestJwtModule } from '@nestjs/jwt';
 
-import { UserModule } from '@/user/user.module';
 import { JwtStrategy } from './jwt.strategy';
-import { ConfigService } from '@nestjs/config';
+
+import { UserModule } from '@/user/user.module';
 
 @Global()
 @Module({

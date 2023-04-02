@@ -1,15 +1,15 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import request = require('supertest');
-import { Model } from 'mongoose';
 import { getModelToken } from '@nestjs/mongoose';
+import { Test, TestingModule } from '@nestjs/testing';
+import { Model } from 'mongoose';
+import request = require('supertest');
 
 import { AppModule } from '@/app.module';
+import { AppExceptionFilter } from '@/common/filters/app-exception.filter';
 import { DtoValidationPipe } from '@/common/pipes/dto-validation.pipe';
+import { LoggerService } from '@/logger/logger.service';
 import { User } from '@/user/schemas/user.schema';
 import { userStub } from '@/user/test/stubs/user.stub';
-import { AppExceptionFilter } from '@/common/filters/app-exception.filter';
-import { LoggerService } from '@/logger/logger.service';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;

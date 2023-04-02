@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { ReplayController } from './replay.controller';
 
 describe('Replay Controller', () => {
@@ -6,7 +7,7 @@ describe('Replay Controller', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [ReplayController],
+      controllers: [ReplayController]
     }).compile();
 
     controller = module.get<ReplayController>(ReplayController);

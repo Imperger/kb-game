@@ -1,10 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 
-import { PlayerService } from "@/player/player.service";
+import { PlayerService } from '@/player/player.service';
 
 @Injectable()
 export class PlayerServiceExtension {
-  constructor(private readonly player: PlayerService) { }
+  constructor(private readonly player: PlayerService) {}
 
   findByOrderedInQueueTime(limit: number) {
     return this.player.model

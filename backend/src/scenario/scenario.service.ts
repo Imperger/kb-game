@@ -1,11 +1,15 @@
-import { Model } from 'mongoose';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+
+import { NewScenarioDto } from './dto/new-scenario.dto';
+import {
+  RemovingLastScenarioException,
+  ScenarioNotFoundException
+} from './scenario-exception';
+import { Scenario } from './schemas/scenario.schema';
 
 import { LoggerService } from '@/logger/logger.service';
-import { NewScenarioDto } from './dto/new-scenario.dto';
-import { Scenario } from './schemas/scenario.schema';
-import { RemovingLastScenarioException, ScenarioNotFoundException } from './scenario-exception';
 
 export interface ScenarioPage {
   total: number;
@@ -22,11 +26,14 @@ export class ScenarioService implements OnModuleInit {
   constructor(
     @InjectModel(Scenario.name) private readonly scenarioModel: Model<Scenario>,
     private readonly logger: LoggerService
-  ) { }
+  ) {}
 
   async onModuleInit() {
     if (await this.populateIfEmpty()) {
-      this.logger.log('Populate the empty scenario list with a sample', 'ScenarioService');
+      this.logger.log(
+        'Populate the empty scenario list with a sample',
+        'ScenarioService'
+      );
     }
   }
 
@@ -52,7 +59,7 @@ export class ScenarioService implements OnModuleInit {
   }
 
   async remove(id: string): Promise<void> {
-    if (await this.scenarioModel.count() > 1) {
+    if ((await this.scenarioModel.count()) > 1) {
       if ((await this.scenarioModel.deleteOne({ _id: id })).deletedCount > 0) {
         return;
       }
@@ -95,9 +102,9 @@ export class ScenarioService implements OnModuleInit {
   }
 
   async all_titles() {
-    return (
-      await this.scenarioModel.find({}, { title: 1 })
-    ).map(({ id, title }) => ({ id, title }));
+    return (await this.scenarioModel.find({}, { title: 1 })).map(
+      ({ id, title }) => ({ id, title })
+    );
   }
 
   async content(id: string): Promise<ScenarioContent> {
@@ -115,13 +122,13 @@ export class ScenarioService implements OnModuleInit {
   }
 
   async randomScenarioId(): Promise<string> {
-    return (await this.scenarioModel.aggregate([{ $sample: { size: 1 } }]))[0]
-      ._id
-      .toString();
+    return (
+      await this.scenarioModel.aggregate([{ $sample: { size: 1 } }])
+    )[0]._id.toString();
   }
 
   private async populateIfEmpty(): Promise<boolean> {
-    if (await this.scenarioModel.count() === 0) {
+    if ((await this.scenarioModel.count()) === 0) {
       new this.scenarioModel({
         title: 'Lorem ipsum',
         text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent ut felis mauris. Donec nec placerat justo. Proin at tempor orci. Morbi dignissim tortor nec massa commodo, at feugiat purus vestibulum. Nunc scelerisque mollis nisi mattis eleifend. Fusce dictum non orci vitae cursus. Phasellus a elementum felis. Nullam urna est, venenatis non elit eget, rutrum efficitur velit. Proin lacus erat, sodales sed urna in, condimentum convallis nulla. Quisque iaculis nunc augue, et imperdiet risus tempor non.'

@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
-import { ReplayDto } from "./dto/replay-dto";
-import { ReplayStats } from "./interfaces/replay-stats";
-import { Track } from './dto/replay-dto';
+import { Injectable } from '@nestjs/common';
+
+import { ReplayDto, Track } from './dto/replay-dto';
+import { ReplayStats } from './interfaces/replay-stats';
 
 interface TrackWithSortdAttributes extends Track {
   correctHits: number;
@@ -18,18 +18,26 @@ export class StatsGathererService {
       .map(StatsGathererService.populateStats);
   }
 
-  private static attachSortAttributes(track: Track, gameDuration: number): TrackWithSortdAttributes {
+  private static attachSortAttributes(
+    track: Track,
+    gameDuration: number
+  ): TrackWithSortdAttributes {
     const correctHits = track.data.filter(x => x.correct).length;
 
     return {
       ...track,
-      playTime: track.finished ? track.data[track.data.length - 1].timestamp : gameDuration,
+      playTime: track.finished
+        ? track.data[track.data.length - 1].timestamp
+        : gameDuration,
       correctHits,
       accuracy: correctHits / (track.data.length || 1)
     };
   }
 
-  private static trackComparator(a: TrackWithSortdAttributes, b: TrackWithSortdAttributes): number {
+  private static trackComparator(
+    a: TrackWithSortdAttributes,
+    b: TrackWithSortdAttributes
+  ): number {
     if (a.correctHits === b.correctHits) {
       if (a.playTime === b.playTime) {
         return b.accuracy - a.accuracy;
@@ -41,7 +49,10 @@ export class StatsGathererService {
     return b.correctHits - a.correctHits;
   }
 
-  private static populateStats(track: TrackWithSortdAttributes, position: number): ReplayStats {
+  private static populateStats(
+    track: TrackWithSortdAttributes,
+    position: number
+  ): ReplayStats {
     return {
       playerId: track.playerId,
       winner: position === 0,

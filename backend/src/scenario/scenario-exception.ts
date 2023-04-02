@@ -1,5 +1,6 @@
-import { AppException, exceptionGuardFactory } from '@/common/app-exception';
 import { HttpStatus } from '@nestjs/common';
+
+import { AppException, exceptionGuardFactory } from '@/common/app-exception';
 
 export enum ScenarioError {
   UnknownError = 400,
@@ -7,7 +8,7 @@ export enum ScenarioError {
   RemovingLastScenario
 }
 
-export class ScenarioException extends AppException { }
+export class ScenarioException extends AppException {}
 
 export class ScenarioNotFoundException extends ScenarioException {
   code = ScenarioError.ScenarioNotFound;

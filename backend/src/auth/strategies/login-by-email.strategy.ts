@@ -1,12 +1,15 @@
-import { Counter } from 'prom-client';
-import { Strategy } from 'passport-local';
-import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Strategy } from 'passport-local';
+import { Counter } from 'prom-client';
 
 import { AuthService } from '@/auth/auth.service';
 import { LoginByEmailStrategyName } from '@/auth/constants';
-import { loginSuccessCountTotalToken, loginUnsuccessCountTotalToken } from '@/metrics/inject-tokens';
+import {
+  loginSuccessCountTotalToken,
+  loginUnsuccessCountTotalToken
+} from '@/metrics/inject-tokens';
 
 @Injectable()
 export class LoginByEmailStrategy extends PassportStrategy(
@@ -15,8 +18,11 @@ export class LoginByEmailStrategy extends PassportStrategy(
 ) {
   constructor(
     private authService: AuthService,
-    @InjectMetric(loginSuccessCountTotalToken) private loginSuccessCounter: Counter<string>,
-    @InjectMetric(loginUnsuccessCountTotalToken) private loginUnsuccessCounter: Counter<string>) {
+    @InjectMetric(loginSuccessCountTotalToken)
+    private loginSuccessCounter: Counter<string>,
+    @InjectMetric(loginUnsuccessCountTotalToken)
+    private loginUnsuccessCounter: Counter<string>
+  ) {
     super({ usernameField: 'email' });
   }
 

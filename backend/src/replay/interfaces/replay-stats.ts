@@ -4,4 +4,3 @@ export interface ReplayStats {
   cpm: number;
   accuracy: number;
 }
-  

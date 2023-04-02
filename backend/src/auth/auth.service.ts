@@ -1,22 +1,16 @@
 import * as crypto from 'crypto';
 import * as util from 'util';
+
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { MailerService } from '@nestjs-modules/mailer';
+import { LoginTicket, OAuth2Client } from 'google-auth-library';
 import { MongoError } from 'mongodb';
 import { Model } from 'mongoose';
 import ms from 'ms';
-import { LoginTicket, OAuth2Client } from 'google-auth-library';
 
-import { User } from '@/user/schemas/user.schema';
-import { UserService } from '@/user/user.service';
-import { ExtractDuplicateKey } from '@/common/util/mongo-error-parser';
-import { timeDiff } from '@/common/util/time-diff';
-import { PlayerService } from '@/player/player.service';
-import { ConfigHelperService } from '@/config/config-helper.service';
-import { LoggerService } from '@/logger/logger.service';
 import {
   AuthException,
   EmailIsTakenException,
@@ -29,6 +23,15 @@ import {
   UnknownUserForConfirmRegistrationException,
   UsernameIsTakenException
 } from './auth-exception';
+
+import { ExtractDuplicateKey } from '@/common/util/mongo-error-parser';
+import { timeDiff } from '@/common/util/time-diff';
+import { ConfigHelperService } from '@/config/config-helper.service';
+import { LoggerService } from '@/logger/logger.service';
+import { PlayerService } from '@/player/player.service';
+import { User } from '@/user/schemas/user.schema';
+import { UserService } from '@/user/user.service';
+
 
 @Injectable()
 export class AuthService {
@@ -69,7 +72,7 @@ export class AuthService {
 
       return userId;
     } catch (e) {
-      const err = this.MongoErrorToAppError(e, {username, email}, true);
+      const err = this.MongoErrorToAppError(e, { username, email }, true);
 
       if (err) {
         throw err;
@@ -85,16 +88,18 @@ export class AuthService {
 
   async registerUserByGoogle(
     username: string,
-    email: string, 
-    googleId: string): Promise<string> {
+    email: string,
+    googleId: string
+  ): Promise<string> {
     return this.registerUserByGoogleStep(username, email, googleId, false);
   }
 
   private async registerUserByGoogleStep(
     username: string,
-    email: string, 
+    email: string,
     googleId: string,
-    lastStep: boolean): Promise<string> {
+    lastStep: boolean
+  ): Promise<string> {
     const createUser = new this.userModel({
       username,
       email,
@@ -102,19 +107,25 @@ export class AuthService {
       confirmed: true,
       scopes: {}
     });
-  
+
     try {
       this.userService.clearExpiredRegistrations(username, email);
-      createUser.player = await this.playerService.newPlayer(createUser.username);
+      createUser.player = await this.playerService.newPlayer(
+        createUser.username
+      );
       const userId = (await createUser.save()).id;
       return userId;
-    } catch(e) {
-      const err = this.MongoErrorToAppError(e, { username, email, googleId }, lastStep);
-      
-      if(lastStep) {
+    } catch (e) {
+      const err = this.MongoErrorToAppError(
+        e,
+        { username, email, googleId },
+        lastStep
+      );
+
+      if (lastStep) {
         throw err;
       }
-      
+
       if (err instanceof UsernameIsTakenException) {
         username = await this.makeUsernameUnique(username, 5);
         return this.registerUserByGoogleStep(username, email, googleId, true);
@@ -196,12 +207,13 @@ export class AuthService {
 
   async verifyGoolgeCredentials(idToken: string): Promise<LoginTicket | null> {
     const oauthClient = new OAuth2Client();
-    
+
     try {
       return await oauthClient.verifyIdToken({
-        idToken, 
-        audience: this.configService.get<string>('auth.google.clientId') });
-    } catch(e) {
+        idToken,
+        audience: this.configService.get<string>('auth.google.clientId')
+      });
+    } catch (e) {
       return null;
     }
   }
@@ -214,8 +226,9 @@ export class AuthService {
         user.secret.hash
     ) {
       this.logger.warn(
-        `Invalid credentials for a user '${user?.id ?? '??'}:${user?.username ??
-          '??'}'`,
+        `Invalid credentials for a user '${user?.id ?? '??'}:${
+          user?.username ?? '??'
+        }'`,
         'AuthService::SignIn'
       );
 
@@ -260,13 +273,20 @@ export class AuthService {
     return crypto.randomBytes(16).toString('base64');
   }
 
-  private async makeUsernameUnique(username: string, iterations: number): Promise<string> {
-    for(let uniqueUsername = username; iterations -- > 0; uniqueUsername = username) {
+  private async makeUsernameUnique(
+    username: string,
+    iterations: number
+  ): Promise<string> {
+    for (
+      let uniqueUsername = username;
+      iterations-- > 0;
+      uniqueUsername = username
+    ) {
       uniqueUsername += '_' + crypto.randomBytes(2).toString('hex');
 
       const user = await this.userService.findByUsername(uniqueUsername);
 
-      if(!user) {
+      if (!user) {
         return uniqueUsername;
       }
     }
@@ -275,18 +295,20 @@ export class AuthService {
   }
 
   private MongoErrorToAppError(
-    e: unknown, 
-    input: { 
-      username?: string, 
-      email?: string, 
-      googleId?:string },
-    log: boolean): AuthException | null {
+    e: unknown,
+    input: {
+      username?: string;
+      email?: string;
+      googleId?: string;
+    },
+    log: boolean
+  ): AuthException | null {
     if (e instanceof MongoError) {
       if (e.code === 11000) {
         const k = ExtractDuplicateKey(e.message);
 
         if (k.startsWith('username')) {
-          if(log) {
+          if (log) {
             this.logger.warn(
               `Username already taken '${input.username}'`,
               'AuthService::SignUp'
@@ -295,7 +317,7 @@ export class AuthService {
 
           return new UsernameIsTakenException();
         } else if (k.startsWith('email')) {
-          if(log) {
+          if (log) {
             this.logger.warn(
               `Email already taken '${input.email}'`,
               'AuthService::SignUp'
@@ -303,8 +325,8 @@ export class AuthService {
           }
 
           return new EmailIsTakenException();
-        } else if(k.startsWith('externalIdentity.google')) {
-          if(log) {
+        } else if (k.startsWith('externalIdentity.google')) {
+          if (log) {
             this.logger.warn(
               `Google id already taken '${input.googleId}'`,
               'AuthService::SignUp'

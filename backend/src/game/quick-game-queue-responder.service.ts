@@ -1,13 +1,16 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 
-import { QuickGameDescriptor } from "./interfaces/quick-game-descriptor";
-import { QuickGameRequestResolver } from "./interfaces/request-resolver";
+import { QuickGameDescriptor } from './interfaces/quick-game-descriptor';
+import { QuickGameRequestResolver } from './interfaces/request-resolver';
 
 type PlayerId = string;
 
 @Injectable()
 export class QuickGameQueueResponderService {
-  private readonly pendingRequests = new Map<PlayerId, QuickGameRequestResolver>();
+  private readonly pendingRequests = new Map<
+    PlayerId,
+    QuickGameRequestResolver
+  >();
 
   register(id: PlayerId, resolver: QuickGameRequestResolver) {
     this.pendingRequests.set(id, resolver);

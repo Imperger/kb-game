@@ -1,4 +1,10 @@
-import { IsArray, IsBoolean, IsMongoId, IsNumber, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsMongoId,
+  IsNumber,
+  IsString
+} from 'class-validator';
 
 export class InputEvent {
   @IsString()

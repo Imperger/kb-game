@@ -28,6 +28,8 @@ export interface GoogleIdTokenDecoded {
   payload: Payload;
 }
 
-export const GoogleIdToken = createParamDecorator((data, req): GoogleIdTokenDecoded => {
-  return req.getArgByIndex(0).credentials;
-});
+export const GoogleIdToken = createParamDecorator(
+  (data, req): GoogleIdTokenDecoded => {
+    return req.getArgByIndex(0).credentials;
+  }
+);

@@ -1,9 +1,10 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 
-import { JwtGuard } from '@/jwt/decorators/jwt.guard';
-import { User } from '@/auth/decorators/user';
-import { CurrentUserPipe } from './pipes/current-user.pipe';
 import { CurrentUser } from './interfaces/current-user';
+import { CurrentUserPipe } from './pipes/current-user.pipe';
+
+import { User } from '@/auth/decorators/user';
+import { JwtGuard } from '@/jwt/decorators/jwt.guard';
 
 @Controller('user')
 export class UserController {

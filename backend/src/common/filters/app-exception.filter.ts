@@ -1,5 +1,6 @@
-import { FastifyReply } from 'fastify';
 import { Catch, ArgumentsHost, ExceptionFilter } from '@nestjs/common';
+import { FastifyReply } from 'fastify';
+
 import { AppException } from '../app-exception';
 
 @Catch(AppException)
