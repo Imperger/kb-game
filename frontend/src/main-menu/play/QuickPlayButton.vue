@@ -34,6 +34,7 @@ export default class QuickPlayButton extends Mixins(ApiServiceMixin, GameMixin, 
         return;
       } else if (descriptor === null) {
         this.inQuickQueue = false;
+        return;
       }
 
       switch (await this.gameClient.connect(descriptor.instanceUrl, descriptor.playerToken)) {
