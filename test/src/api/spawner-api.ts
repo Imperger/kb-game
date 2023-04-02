@@ -1,6 +1,8 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { sign } from 'jsonwebtoken';
+
 import type { FailType } from '../api-tester';
+
 import { RejectedResponse } from './types';
 
 export interface RequestedSpawnerInfo {
@@ -43,14 +45,14 @@ export class SpawnerApi {
   }
 
   info():
-  | Promise<AxiosResponse<RequestedSpawnerInfo>>
-  | FailType<RejectedResponse> {
+    | Promise<AxiosResponse<RequestedSpawnerInfo>>
+    | FailType<RejectedResponse> {
     return this.http.get<RequestedSpawnerInfo>('/info');
   }
 
   gameList():
-  | Promise<AxiosResponse<ServerDescription>>
-  | FailType<RejectedResponse> {
+    | Promise<AxiosResponse<ServerDescription>>
+    | FailType<RejectedResponse> {
     return this.http.get<ServerDescription>('/game/list');
   }
 

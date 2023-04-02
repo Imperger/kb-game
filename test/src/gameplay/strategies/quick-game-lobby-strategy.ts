@@ -1,8 +1,9 @@
-import { Subject } from 'rxjs';
 import { DefaultEventsMap } from '@socket.io/component-emitter';
+import { Subject } from 'rxjs';
 import { Socket } from 'socket.io-client';
 
-import { Strategy } from './strategy';
+import { remoteCall } from '../remote-call';
+
 import { GameStrategy } from './game-strategy';
 import {
   LobbyEvent,
@@ -10,7 +11,8 @@ import {
   PlayerJoinedEvent,
   PlayerLeavesEvent
 } from './interfaces/lobby-events';
-import { remoteCall } from '../remote-call';
+import { Strategy } from './strategy';
+
 
 export interface Player {
   id: string;

@@ -45,8 +45,8 @@ export abstract class Strategy {
     return this.initialized
       ? Promise.resolve()
       : new Promise<void>(resolve =>
-        this.initializationAwaiter.push(resolve)
-      );
+          this.initializationAwaiter.push(resolve)
+        );
   }
 
   get bufferedEvents(): unknown[] {

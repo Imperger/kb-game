@@ -1,4 +1,5 @@
 import assert, { AssertionError } from 'node:assert';
+
 import { AxiosResponse } from 'axios';
 
 import { isAxiosError } from './guards/axios-error-guard';
@@ -95,7 +96,7 @@ export class ApiTester {
         if (this.ref === this.empty) return true;
 
         if (typeof this.ref === 'function') {
-          return (this.ref as ((x: unknown) => boolean))(data);
+          return (this.ref as (x: unknown) => boolean)(data);
         } else {
           try {
             assert.deepStrictEqual(data, this.ref);

@@ -1,4 +1,5 @@
 import colors from 'colors';
+
 import { TestError, isTestError } from './test-error';
 
 export class Logger {
