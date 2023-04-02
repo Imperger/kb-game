@@ -4,10 +4,12 @@ module.exports = {
     project: 'tsconfig.json',
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'import'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
+    'plugin:import/recommended',
+    'plugin:import/typescript',
     'prettier'
   ],
   root: true,
@@ -17,9 +19,9 @@ module.exports = {
   },
   rules: {
     'indent': 'off',
+    '@typescript-eslint/indent': 'off',
     "comma-dangle": "off",
     "@typescript-eslint/comma-dangle": ["error"],
-    '@typescript-eslint/indent': ['error', 2],
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
@@ -29,6 +31,27 @@ module.exports = {
       "warn",
       { "argsIgnorePattern": "^_" }
     ],
-    "arrow-parens" : ["warn", "as-needed", { "requireForBlockBody": false }]
+    "arrow-parens" : ["warn", "as-needed", { "requireForBlockBody": false }],
+    "import/no-unresolved": "error",
+    "import/order": [
+      "error", 
+      {
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }
+    ]
   },
+  "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true
+      }
+    }
+  }
 };
