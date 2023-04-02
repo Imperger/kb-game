@@ -10,14 +10,14 @@ import { Recaptcha } from '@nestlab/google-recaptcha';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthService } from './auth.service';
-import { LoginByEmailGuard } from './decorators/login-by-email.guard';
-import { RegistrationConfirmGuard } from './decorators/registration-confirm.guard';
+import { LoginByEmailGuard } from './guards/login-by-email.guard';
+import { RegistrationConfirmGuard } from './guards/registration-confirm.guard';
 import { UserId } from './decorators/user-id';
-import { LoginByUsernameGuard } from './decorators/login-by-username.guard';
+import { LoginByUsernameGuard } from './guards/login-by-username.guard';
 import { User } from './decorators/user';
 import { User as UserSchema } from '@/user/schemas/user.schema';
 import { LoggerService } from '@/logger/logger.service';
-import { AuthGoogleGuard } from './decorators/auth-google.guard';
+import { AuthGoogleGuard } from './guards/auth-google.guard';
 import { GoogleIdToken, GoogleIdTokenDecoded } from './decorators/google-id-token';
 
 @Controller('auth')
