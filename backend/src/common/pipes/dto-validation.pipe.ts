@@ -26,7 +26,7 @@ export class DtoValidationPipe implements PipeTransform<any> {
     const object = plainToClass(metatype, value);
     const errors = await validate(object);
     if (errors.length > 0) {
-      const error = `Dto validation failed: ${this.buildError(errors)}`;
+      const error = `Dto validation failed: ${JSON.stringify(this.buildError(errors))}`;
 
       this.logger.warn(error);
 
