@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { NewScenarioDto } from './dto/new-scenario.dto';
+import { UpdateScenarioDto } from './dto/update-scenario.dto';
 import {
   RemovingLastScenarioException,
   ScenarioNotFoundException
@@ -37,7 +38,7 @@ export class ScenarioService implements OnModuleInit {
     }
   }
 
-  async add(title: string, text: string): Promise<string> {
+  async add({ title, text }: NewScenarioDto): Promise<string> {
     text = text
       .split('')
       .filter(x => !'\r\n'.includes(x))
@@ -46,13 +47,19 @@ export class ScenarioService implements OnModuleInit {
     return (await new this.scenarioModel({ title, text }).save()).id;
   }
 
-  async update(id: string, content: NewScenarioDto): Promise<boolean> {
+  async update(id: string, content: UpdateScenarioDto): Promise<boolean> {
     const scenario = await this.scenarioModel.findById(id);
 
     if (!scenario) return false;
 
-    scenario.title = content.title;
-    scenario.text = content.text;
+    if (content.title) {
+      scenario.title = content.title;
+    }
+
+    if (content.text) {
+      scenario.text = content.text;
+    }
+
     await scenario.save();
 
     return true;

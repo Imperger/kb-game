@@ -1,3 +1,4 @@
+import { PartialProps } from '@/util/type/partial-props';
 import { AxiosInstance } from 'axios';
 import { isRejectedResponse, RejectedResponse } from '../rejected-response';
 
@@ -12,10 +13,11 @@ export interface ScenarioPage {
   scenarios: Scenario[];
 }
 
-export interface ScenarioContent {
-  title: string;
-  text: string;
-}
+export type ScenarioContent = Omit<Scenario, 'id'>;
+
+export type ScenarioContentUpdate = PartialProps<Scenario, 'title' | 'text'>;
+
+export type ScenarioCreate = Omit<Scenario, 'title' | 'text'>;
 
 export default class ScenarioApi {
   private http!: AxiosInstance;
@@ -24,11 +26,11 @@ export default class ScenarioApi {
     this.http = httpClient;
   }
 
-  async add (title: string, text: string): Promise<boolean> {
-    return !isRejectedResponse((await this.http.post('scenario', { title, text })).data);
+  async add ({ title, text }: ScenarioContent): Promise<ScenarioCreate | RejectedResponse> {
+    return (await this.http.post('scenario', { title, text })).data;
   }
 
-  async update (id: string, content: ScenarioContent): Promise<boolean> {
+  async update ({ id, ...content }: ScenarioContentUpdate): Promise<boolean> {
     return !isRejectedResponse((await this.http.put<boolean>(`scenario/${id}`, { ...content })));
   }
 

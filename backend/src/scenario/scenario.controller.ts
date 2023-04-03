@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 
 import { NewScenarioDto } from './dto/new-scenario.dto';
+import { UpdateScenarioDto } from './dto/update-scenario.dto';
 import { ScenarioService } from './scenario.service';
 
 import { ScopeGuard } from '@/auth/guards/scope.guard';
@@ -21,7 +22,6 @@ import { ParseObjectIdPipe } from '@/common/pipes/parse-object-id.pipe';
 import { JwtGuard } from '@/jwt/decorators/jwt.guard';
 import { JwtKnownSpawnerGuard } from '@/spawner/decorators/jwt-known-spawner.guard';
 
-
 @Controller('scenario')
 export class ScenarioController {
   constructor(private readonly scenarioService: ScenarioService) {}
@@ -29,14 +29,16 @@ export class ScenarioController {
   @UseGuards(JwtGuard, ScopeGuard(Scope.EditScenario))
   @Post()
   async add(@Body() scenario: NewScenarioDto) {
-    return this.scenarioService.add(scenario.title, scenario.text);
+    return {
+      id: await this.scenarioService.add(scenario)
+    };
   }
 
   @UseGuards(JwtGuard, ScopeGuard(Scope.EditScenario))
   @Put(':id')
   async update(
     @Param('id', ParseObjectIdPipe) id: string,
-    @Body() content: NewScenarioDto
+    @Body() content: UpdateScenarioDto
   ) {
     return this.scenarioService.update(id, content);
   }
