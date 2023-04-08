@@ -1,15 +1,12 @@
 import { ConfigService } from '@/game/config.service';
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class CustomGameConfigService
-  extends ConfigService
-  implements OnModuleInit
-{
+export class CustomGameConfigService extends ConfigService {
   private _ownerId: string;
 
-  onModuleInit() {
-    super.onModuleInit();
+  constructor() {
+    super();
 
     this._ownerId = process.env.OWNER_ID;
   }

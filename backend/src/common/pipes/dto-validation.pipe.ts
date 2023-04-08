@@ -15,23 +15,28 @@ export class DtoValidationPipe implements PipeTransform<any> {
     value: unknown,
     metadata: ArgumentMetadata
   ): Promise<unknown> {
-    if (!value) {
-      throw new DtoValidationFailedException('No data submitted');
-    }
-
     const { metatype } = metadata;
-    if (!(metatype && metatype.name.endsWith('Dto'))) {
+
+    if (metatype && metatype.name.endsWith('Dto')) {
+      if (!value) {
+        throw new DtoValidationFailedException('No data submitted');
+      }
+    } else {
       return value;
     }
+
     const object = plainToClass(metatype, value);
     const errors = await validate(object);
     if (errors.length > 0) {
-      const error = `Dto validation failed: ${this.buildError(errors)}`;
+      const error = `Dto validation failed: ${JSON.stringify(
+        this.buildError(errors)
+      )}`;
 
       this.logger.warn(error);
 
       throw new DtoValidationFailedException(error);
     }
+
     return value;
   }
 

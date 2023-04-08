@@ -24,7 +24,6 @@ import { RegistrationConfirmGuard } from './guards/registration-confirm.guard';
 import { LoggerService } from '@/logger/logger.service';
 import { User as UserSchema } from '@/user/schemas/user.schema';
 
-
 @Controller('auth')
 export class AuthController {
   constructor(

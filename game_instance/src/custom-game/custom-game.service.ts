@@ -1,4 +1,4 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import { GameService } from '@/game/game.service';
 import { LobbyState } from './interfaces/lobby-state';
@@ -7,37 +7,37 @@ import { ConfigService } from '@/game/config.service';
 import { CustomGameConfigService } from './custom-game-config.service';
 import { ServerDescription } from './interfaces/server-description';
 import { CustomGameParticipantService } from './custom-game-participant.service';
+import { LobbyEventType } from '@/game/interfaces/lobby-event.interface';
 
 @Injectable()
-export class CustomGameService extends GameService implements OnModuleInit {
+export class CustomGameService extends GameService {
   @Inject(ConfigService)
   private readonly config: CustomGameConfigService;
 
   protected readonly participant: CustomGameParticipantService;
 
-  private scenarios: Scenario[];
+  private _scenario: Scenario | null = null;
 
-  private scenario: Scenario;
-
-  onModuleInit() {
-    this.backendApi.listAllTitles().then((x) => {
-      this.scenarios = x;
-      this.scenario = this.scenarios[0];
-    });
+  get scenario(): Scenario | null {
+    return this._scenario;
   }
 
-  get scenarioId(): string {
-    return this.scenario.id;
-  }
+  async selectScenario(id: string): Promise<boolean> {
+    try {
+      this._scenario = {
+        id,
+        ...(await this.backendApi.fetchScenarioContent(id)),
+      };
 
-  selectScenario(id: string): boolean {
-    const seleted = this.scenarios.find((x) => x.id === id);
+      this.eventEmitter.emitLobbyEvent({
+        type: LobbyEventType.SelectScenario,
+        data: this._scenario,
+      });
 
-    if (seleted) {
-      this.scenario = seleted;
+      return true;
+    } catch (e) {
+      return false;
     }
-
-    return !!this.scenarios;
   }
 
   lobby(): LobbyState {
@@ -48,7 +48,12 @@ export class CustomGameService extends GameService implements OnModuleInit {
         nickname: x.nickname,
         slot: x.slot,
       })),
-      scenarios: this.scenarios,
+      scenario: this.scenario
+        ? {
+            ...this._scenario,
+            text: this._scenario.text.substring(0, 100),
+          }
+        : null,
     };
   }
 

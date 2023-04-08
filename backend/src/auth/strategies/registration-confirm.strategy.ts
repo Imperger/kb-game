@@ -6,7 +6,6 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { RegistrationConfirmStrategyName } from '@/auth/constants';
 import { UserConfirmationToken } from '@/auth/interfaces/user-confirmation-token';
 
-
 @Injectable()
 export class RegistrationConfirmStrategy extends PassportStrategy(
   Strategy,

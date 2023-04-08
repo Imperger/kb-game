@@ -2,7 +2,7 @@ export enum LobbyEventType {
   PlayerJoined = 200,
   PlayerLeaves,
   GameWillStart,
-  FetchGameField
+  SelectScenario
 }
 
 export interface PlayerJoinedEvent {
@@ -15,13 +15,15 @@ export interface PlayerLeavesEvent {
   id: string;
 }
 
-export type Base64Image = string;
-
-export interface FetchGameFieldEvent {
-  field: Base64Image;
+export interface SelectScenarioEvent {
+  id: string;
+  title: string;
+  text: string;
 }
+
+export type Base64Image = string;
 
 export interface LobbyEvent {
   type: LobbyEventType;
-  data?: PlayerJoinedEvent | PlayerLeavesEvent | FetchGameFieldEvent;
+  data?: PlayerJoinedEvent | PlayerLeavesEvent | SelectScenarioEvent;
 }

@@ -12,15 +12,22 @@ import {
   UseGuards
 } from '@nestjs/common';
 
+import { CursorDecodePipe } from './decorators/cursor-decode.pipe';
 import { NewScenarioDto } from './dto/new-scenario.dto';
+import { UpdateScenarioDto } from './dto/update-scenario.dto';
+import {
+  SearchQueryCursor,
+  SearchQueryOrder,
+  SearchQuerySort
+} from './interfaces/search-query';
 import { ScenarioService } from './scenario.service';
 
 import { ScopeGuard } from '@/auth/guards/scope.guard';
 import { Scope } from '@/auth/scopes';
+import { EnumValidationPipe } from '@/common/pipes/enum-validation.pipe';
 import { ParseObjectIdPipe } from '@/common/pipes/parse-object-id.pipe';
 import { JwtGuard } from '@/jwt/decorators/jwt.guard';
 import { JwtKnownSpawnerGuard } from '@/spawner/decorators/jwt-known-spawner.guard';
-
 
 @Controller('scenario')
 export class ScenarioController {
@@ -29,14 +36,16 @@ export class ScenarioController {
   @UseGuards(JwtGuard, ScopeGuard(Scope.EditScenario))
   @Post()
   async add(@Body() scenario: NewScenarioDto) {
-    return this.scenarioService.add(scenario.title, scenario.text);
+    return {
+      id: await this.scenarioService.add(scenario)
+    };
   }
 
   @UseGuards(JwtGuard, ScopeGuard(Scope.EditScenario))
   @Put(':id')
   async update(
     @Param('id', ParseObjectIdPipe) id: string,
-    @Body() content: NewScenarioDto
+    @Body() content: UpdateScenarioDto
   ) {
     return this.scenarioService.update(id, content);
   }
@@ -51,17 +60,31 @@ export class ScenarioController {
   @UseGuards(JwtGuard)
   @Get()
   async paginate(
-    @Query('offset', ParseIntPipe) offset: number,
-    @Query('limit', ParseIntPipe) limit: number
+    @Query('query') query: string | undefined,
+    @Query('sort', EnumValidationPipe(SearchQuerySort)) sortBy: SearchQuerySort,
+    @Query('order', EnumValidationPipe(SearchQueryOrder))
+    orderBy: SearchQueryOrder,
+    @Query('limit', ParseIntPipe) limit: number,
+    @Query('cursorNext', CursorDecodePipe) cursorNext: SearchQueryCursor | null,
+    @Query('cursorPrev', CursorDecodePipe) cursorPrev: SearchQueryCursor | null
   ) {
-    const page = await this.scenarioService.list(offset, limit);
+    const page = await this.scenarioService.list({
+      ...(query && { query }),
+      sortBy,
+      orderBy,
+      limit,
+      ...(cursorNext && { cursorNext }),
+      ...(cursorPrev && { cursorPrev })
+    });
     return {
       total: page.total,
       scenarios: page.scenarios.map(({ _id, title, text }) => ({
         id: _id,
         title,
         text
-      }))
+      })),
+      cursorNext: page.cursorNext,
+      cursorPrev: page.cursorPrev
     };
   }
 
@@ -72,14 +95,8 @@ export class ScenarioController {
   }
 
   @UseGuards(JwtKnownSpawnerGuard)
-  @Get('titles')
-  async listAllTitles() {
-    return this.scenarioService.all_titles();
-  }
-
-  @UseGuards(JwtKnownSpawnerGuard)
   @Get('text/:id')
-  async text(@Param('id') id: string) {
-    return { text: await this.scenarioService.text(id) };
+  async selectScenario(@Param('id', ParseObjectIdPipe) id: string) {
+    return this.scenarioService.content(id);
   }
 }

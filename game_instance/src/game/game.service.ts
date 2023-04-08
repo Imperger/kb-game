@@ -9,7 +9,7 @@ import { EndGameStrategy } from './end-game/end-game-strategy';
 import { replayMetrics } from './Replay';
 import { WaitUntilProgressEndGame } from './end-game/wait-until-progress-end-game';
 import { ShutdownService } from '../shutdown.service';
-import { BackendApiService, InputEvent } from './backend-api.service';
+import { BackendApiService, InputEvent, Scenario } from './backend-api.service';
 import { ParticipantService } from './participant.service';
 import { EventEmitterService } from './event-emitter.service';
 import { LobbyEventType } from './interfaces/lobby-event.interface';
@@ -44,8 +44,6 @@ type Base64Image = string;
 export abstract class GameService {
   private _gameStarted = false;
 
-  private scenarioText!: string;
-
   private scenarioImg!: Base64Image;
 
   private scenarioImgDescription!: PopulatedLine[];
@@ -63,28 +61,24 @@ export abstract class GameService {
   private playerProgress = new Map<PlayerId, ProgressTracker>();
 
   constructor(
-    private readonly eventEmitter: EventEmitterService,
+    protected readonly eventEmitter: EventEmitterService,
     protected readonly participant: ParticipantService,
     protected readonly backendApi: BackendApiService,
     private readonly shutdownService: ShutdownService,
   ) {}
 
-  abstract get scenarioId(): string;
+  abstract get scenario(): Scenario | null;
 
   async startGame(): Promise<boolean> {
-    if (!this.scenarioId) return false;
+    if (!this.scenario) return false;
 
     this._gameStarted = true;
 
-    this.scenarioText = await this.backendApi.fetchScenarioText(
-      this.scenarioId,
-    );
-
     const gameFieldBuilder = new GameFieldBuilder();
     const gameFieldRenderer = new GameFieldRenderer();
-    this.scenarioImgDescription = gameFieldBuilder.build(this.scenarioText);
+    this.scenarioImgDescription = gameFieldBuilder.build(this.scenario.text);
     this.scenarioImg = await gameFieldRenderer.render(
-      { text: this.scenarioText, description: this.scenarioImgDescription },
+      { text: this.scenario.text, description: this.scenarioImgDescription },
       { ...gameFieldBuilder.options, lineHeight: 50 },
     );
 
@@ -167,7 +161,7 @@ export abstract class GameService {
 
     if (!progressTracker) {
       progressTracker = new ProgressTracker(
-        this.scenarioText,
+        this.scenario.text,
         this.scenarioImgDescription,
         this.gameStartTime,
       );

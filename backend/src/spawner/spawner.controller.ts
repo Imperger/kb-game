@@ -21,7 +21,6 @@ import { ScopeGuard } from '@/auth/guards/scope.guard';
 import { Scope } from '@/auth/scopes';
 import { JwtGuard } from '@/jwt/decorators/jwt.guard';
 
-
 @Controller('spawner')
 export class SpawnerController {
   constructor(private readonly spawnerService: SpawnerService) {}

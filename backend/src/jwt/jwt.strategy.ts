@@ -7,7 +7,6 @@ import { AuthToken } from './interfaces/auth-token';
 
 import { UserService } from '@/user/user.service';
 
-
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(

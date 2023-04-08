@@ -18,6 +18,7 @@ import { Component, Mixins, Prop } from 'vue-property-decorator';
 
 import { ApiServiceMixin } from '@/mixins';
 import { isRejectedResponse } from '@/services/api-service/rejected-response';
+import { ScenarioContentUpdate } from '@/services/api-service/scenario/scenario-api';
 
 @Component
 export default class ScenarioEditor extends Mixins(ApiServiceMixin) {
@@ -27,6 +28,9 @@ export default class ScenarioEditor extends Mixins(ApiServiceMixin) {
   title = '';
   text = '';
   savePending = false;
+
+  originTitle = '';
+  originText = '';
 
   readonly titleBounds = { min: 3, max: 50 };
   readonly textBounds = { min: 10, max: 100000 };
@@ -38,6 +42,8 @@ export default class ScenarioEditor extends Mixins(ApiServiceMixin) {
       if (!isRejectedResponse(content)) {
         this.title = content.title;
         this.text = content.text;
+
+        this.syncOrigin();
       }
     }
   }
@@ -46,9 +52,27 @@ export default class ScenarioEditor extends Mixins(ApiServiceMixin) {
     this.savePending = true;
 
     if (this.isEditMode) {
-      await this.api.scenario.update(this.id, { title: this.title, text: this.text });
+      const updated: ScenarioContentUpdate = { id: this.id };
+
+      if (this.isTitleEdited) {
+        updated.title = this.title;
+      }
+
+      if (this.isTextEdited) {
+        updated.text = this.text;
+      }
+
+      await this.api.scenario.update(updated);
+
+      this.syncOrigin();
     } else {
-      await this.api.scenario.add(this.title, this.text);
+      const created = await this.api.scenario.add({ title: this.title, text: this.text });
+
+      if (!isRejectedResponse(created)) {
+        this.$router.push({ name: 'EditScenario', params: { id: created.id } });
+
+        this.syncOrigin();
+      }
     }
 
     this.savePending = false;
@@ -66,11 +90,29 @@ export default class ScenarioEditor extends Mixins(ApiServiceMixin) {
 
   get canSave (): boolean {
     return this.validateTitle(this.title) === true &&
-     this.validateText(this.text) === true;
+     this.validateText(this.text) === true &&
+     this.isEdited;
   }
 
   get isEditMode (): boolean {
     return this.id !== undefined;
+  }
+
+  get isEdited (): boolean {
+    return this.isTitleEdited || this.isTextEdited;
+  }
+
+  get isTitleEdited (): boolean {
+    return this.title !== this.originTitle;
+  }
+
+  get isTextEdited (): boolean {
+    return this.text !== this.originText;
+  }
+
+  private syncOrigin () : void {
+    this.originTitle = this.title;
+    this.originText = this.text;
   }
 }
 </script>

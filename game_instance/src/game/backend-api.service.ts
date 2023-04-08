@@ -6,11 +6,10 @@ import { sign } from 'jsonwebtoken';
 export interface Scenario {
   id: string;
   title: string;
-}
-
-export interface ScenarioText {
   text: string;
 }
+
+type ScenarioContent = Omit<Scenario, 'id'>;
 
 export interface LinkedGame {
   instanceUrl: string;
@@ -37,26 +36,15 @@ export interface Replay {
 export class BackendApiService {
   constructor(private readonly http: HttpService) {}
 
-  async listAllTitles(): Promise<Scenario[]> {
+  async fetchScenarioContent(id: string): Promise<ScenarioContent> {
     return (
       await firstValueFrom(
-        this.http.get(
-          `${process.env.BACKEND_API}/api/scenario/titles`,
-          this.useAuthorization(),
-        ),
-      )
-    ).data;
-  }
-
-  async fetchScenarioText(id: string): Promise<string> {
-    return (
-      await firstValueFrom(
-        this.http.get<ScenarioText>(
+        this.http.get<ScenarioContent>(
           `${process.env.BACKEND_API}/api/scenario/text/${id}`,
           this.useAuthorization(),
         ),
       )
-    ).data.text;
+    ).data;
   }
 
   async linkGame(playerId: string, linked: LinkedGame): Promise<boolean> {

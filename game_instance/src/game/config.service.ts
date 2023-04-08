@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 export enum GameType {
   Unknown,
@@ -7,7 +7,7 @@ export enum GameType {
 }
 
 @Injectable()
-export class ConfigService implements OnModuleInit {
+export class ConfigService {
   private _instanceId: string;
 
   private _backendApi: string;
@@ -18,7 +18,7 @@ export class ConfigService implements OnModuleInit {
 
   private _gameType: GameType;
 
-  onModuleInit() {
+  constructor() {
     this._instanceId = process.env.INSTANCE_ID;
     this._backendApi = process.env.BACKEND_API;
     this._spawnerApi = process.env.SPAWNER_API;

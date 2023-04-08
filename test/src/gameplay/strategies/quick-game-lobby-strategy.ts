@@ -13,7 +13,6 @@ import {
 } from './interfaces/lobby-events';
 import { Strategy } from './strategy';
 
-
 export interface Player {
   id: string;
   nickname: string;
