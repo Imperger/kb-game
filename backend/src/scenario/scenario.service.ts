@@ -144,12 +144,6 @@ export class ScenarioService implements OnModuleInit {
     };
   }
 
-  async all_titles() {
-    return (await this.scenarioModel.find({}, { title: 1 })).map(
-      ({ id, title }) => ({ id, title })
-    );
-  }
-
   async content(id: string): Promise<ScenarioContent> {
     const content = await this.scenarioModel.findById(id);
 
