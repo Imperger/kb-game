@@ -5,7 +5,7 @@
       <lobby-ffa-player-list :capacity="roomCapacity" :ownerId="ownerId" :players="players" />
     </v-col>
     <v-col>
-      <lobby-scenario-list @select="selectScenario" />
+      <lobby-scenario-list />
     </v-col>
   </v-row>
   <v-row>
@@ -22,7 +22,7 @@ import { Component, Mixins } from 'vue-property-decorator';
 import { first } from 'rxjs/operators';
 
 import { GameMixin } from '@/mixins';
-import { Player, Scenario } from './gameplay/strategies/lobby-strategy';
+import { Player } from './gameplay/strategies/lobby-strategy';
 import LobbyFfaPlayerList from './LobbyFfaPlayerList.vue';
 import LobbyScenarioList from './LobbyScenarioList.vue';
 
@@ -36,7 +36,6 @@ export default class GameLobby extends Mixins(GameMixin) {
   public roomCapacity = 10;
   public ownerId = '';
   public players: Player[] = [];
-  private scenario: Scenario = { id: '', title: '' };
 
   async created (): Promise<void> {
     if (this.gameClient.inLobby) {
@@ -53,13 +52,8 @@ export default class GameLobby extends Mixins(GameMixin) {
     }
   }
 
-  startGame (): void {
-    this.gameClient.lobby.startGame();
-  }
-
-  selectScenario (selected: Scenario): void {
-    this.scenario = selected;
-    this.gameClient.lobby.selectScenario(selected.id);
+  async startGame (): Promise<void> {
+    await this.gameClient.lobby.startGame();
   }
 }
 </script>

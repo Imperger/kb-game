@@ -67,6 +67,8 @@ export interface Scenario {
 export interface ScenarioPage {
   total: number;
   scenarios: Scenario[];
+  cursorNext: string;
+  cursorPrev: string;
 }
 
 export interface RequestedSpawnerInfo {
@@ -167,6 +169,33 @@ export interface ReplaySnapshot {
   createdAt: Date;
 }
 
+export enum SearchQueryOrder {
+  Asc = 'asc',
+  Desc = 'desc'
+}
+
+export enum SearchQuerySort {
+  Title = 'title',
+  Length = 'length'
+}
+
+export interface SearchQuery {
+  query?: string;
+  sortBy: SearchQuerySort;
+  orderBy: SearchQueryOrder;
+  limit: number;
+  /**
+   * Consists of a unique scenario id +
+   * the edge value of the field by which sorting occurs.
+   * Values are separated by '|', example: 642be6438a45da9476f9b6f0|10.
+   * The result string representation encoded using base64
+   */
+  cursorNext?: string;
+  cursorPrev?: string;
+}
+
+export type ScenarioCreate = Omit<Scenario, 'title' | 'text'>;
+
 export class BackendApi {
   private token!: string;
   private http!: AxiosInstance;
@@ -258,8 +287,8 @@ export class BackendApi {
   addScenario(
     title: string,
     text: string
-  ): Promise<AxiosResponse<string>> | FailType<RejectedResponse> {
-    return this.http.post<string>('/scenario', { title, text });
+  ): Promise<AxiosResponse<ScenarioCreate>> | FailType<RejectedResponse> {
+    return this.http.post<ScenarioCreate>('/scenario', { title, text });
   }
 
   updateScenario(
@@ -276,26 +305,29 @@ export class BackendApi {
   }
 
   listScenario(
-    offset: number,
-    limit: number
+    query: SearchQuery
   ): Promise<AxiosResponse<ScenarioPage>> | FailType<RejectedResponse> {
-    return this.http.get<ScenarioPage>(
-      `/scenario?offset=${offset}&limit=${limit}`
-    );
+    let q = '';
+
+    if (query.query) {
+      q += `query=${query.query}&`;
+    }
+
+    q += `sort=${query.sortBy}&order=${query.orderBy}&limit=${query.limit}`;
+
+    if (query.cursorNext) {
+      q += `&cursorNext=${query.cursorNext}`;
+    } else if (query.cursorPrev) {
+      q += `&cursorPrev=${query.cursorPrev}`;
+    }
+
+    return this.http.get<ScenarioPage>(`/scenario?${q}`);
   }
 
   getScenarioContent(
     id: string
   ): Promise<AxiosResponse<ScenarioContent>> | FailType<RejectedResponse> {
     return this.http.get<ScenarioContent>(`/scenario/${id}`);
-  }
-
-  getAllScenarioTitles(
-    accessToken: string
-  ): Promise<AxiosResponse<ScenarioTitle[]>> | FailType<RejectedResponse> {
-    return this.http.get<ScenarioTitle[]>('/scenario/titles', {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    });
   }
 
   getScenarioText(

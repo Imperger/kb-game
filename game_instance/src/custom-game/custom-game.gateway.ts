@@ -25,7 +25,7 @@ export class CustomGameGateway extends GameGateway {
 
   @UseGuards(OwnerGuard)
   @SubscribeMessage('select_scenario')
-  selectScenario(@MessageBody() id: string): boolean {
+  selectScenario(@MessageBody() id: string): Promise<boolean> {
     return this.game.selectScenario(id);
   }
 

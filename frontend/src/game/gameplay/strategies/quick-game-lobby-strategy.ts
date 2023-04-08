@@ -24,7 +24,7 @@ export class QuickGameLobbyStrategy extends Strategy {
 
   private switchStrategy!: (strategy: Strategy) => void;
 
-  public readonly $gameWillStart = new Subject();
+  public readonly $gameWillStart = new Subject<void>();
 
   async activate (socket: Socket<DefaultEventsMap, DefaultEventsMap>, switchStrategy: (strategy: Strategy) => void): Promise<void> {
     this.socket = socket;

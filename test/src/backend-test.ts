@@ -4,7 +4,15 @@ import { AxiosResponse } from 'axios';
 import { sign } from 'jsonwebtoken';
 import { first } from 'rxjs/operators';
 
-import { BackendApi, DateCondition, ReplaysOverview } from './api/backend-api';
+import {
+  BackendApi,
+  DateCondition,
+  ReplaysOverview,
+  Scenario,
+  ScenarioCreate,
+  SearchQueryOrder,
+  SearchQuerySort
+} from './api/backend-api';
 import { RejectedResponse } from './api/types';
 import { Api } from './api-interface';
 import { ApiTester, ApiTestResult } from './api-tester';
@@ -13,7 +21,6 @@ import { GameClient } from './gameplay/game-client';
 import { DateModifier, GoogleIdentity, IdToken } from './google-identity';
 import { Logger } from './logger';
 import { Mailbox } from './mailbox';
-
 
 function genUser() {
   const id = Crypto.randomBytes(7).toString('hex');
@@ -584,10 +591,10 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
       'Add new scenario'
     )
     .status(201)
-    .response(x => typeof x === 'string')
+    .response(x => x.id.length === 24)
     .toPromise();
 
-  scenario.id = newScenario.data;
+  scenario.id = newScenario.data.id;
 
   const updatedScenario = {
     title: 'Updated title',
@@ -616,7 +623,15 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
     .toPromise();
 
   const scenarioList = await tester
-    .test(() => api.backend.listScenario(0, 25), 'List scenarios')
+    .test(
+      () =>
+        api.backend.listScenario({
+          sortBy: SearchQuerySort.Title,
+          orderBy: SearchQueryOrder.Asc,
+          limit: 25
+        }),
+      'List scenarios'
+    )
     .status(200)
     .response(
       x =>
@@ -630,6 +645,308 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
     )
     .toPromise();
 
+  // Complex testing for the list method
+
+  const titleAnchor = Crypto.randomBytes(7).toString('hex');
+  const scenarios: Scenario[] = [
+    { id: '', title: titleAnchor + ' aaaaaaaaaab', text: 'aaaaaaaaaab' },
+    { id: '', title: titleAnchor + ' aaaaaaaaaabc', text: 'aaaaaaaaaabc' },
+    { id: '', title: titleAnchor + ' aaaaaaaaaabcd', text: 'aaaaaaaaaabcd' },
+    { id: '', title: titleAnchor + ' aaaaaaaaaabcdef', text: 'aaaaaaaaaabcdef' }
+  ];
+
+  for (const scenario of scenarios) {
+    try {
+      const response = await api.backend.addScenario(
+        scenario.title,
+        scenario.text
+      );
+      scenario.id = (response as AxiosResponse<ScenarioCreate>).data.id;
+    } catch (e) {
+      // Failed to add the scenario
+    }
+  }
+
+  const listQueryByTitleAsc = await tester
+    .test(
+      () =>
+        api.backend.listScenario({
+          query: titleAnchor,
+          sortBy: SearchQuerySort.Title,
+          orderBy: SearchQueryOrder.Asc,
+          limit: 2
+        }),
+      'List scenarios with query by title ordered by ascend'
+    )
+    .status(200)
+    .response(
+      x =>
+        x.total === 4 &&
+        x.scenarios.length === 2 &&
+        x.scenarios[0].id === scenarios[0].id &&
+        x.scenarios[1].id === scenarios[1].id &&
+        x.cursorNext?.length > 0
+    )
+    .toPromise();
+
+  const listQueryByTitleAscNext = await tester
+    .test(
+      () =>
+        api.backend.listScenario({
+          query: titleAnchor,
+          sortBy: SearchQuerySort.Title,
+          orderBy: SearchQueryOrder.Asc,
+          cursorNext: listQueryByTitleAsc.data.cursorNext,
+          limit: 2
+        }),
+      'List scenarios with query by title ordered by ascend using the next cursor'
+    )
+    .status(200)
+    .response(
+      x =>
+        x.total === 4 &&
+        x.scenarios.length === 2 &&
+        x.scenarios[0].id === scenarios[2].id &&
+        x.scenarios[1].id === scenarios[3].id &&
+        x.cursorNext?.length > 0
+    )
+    .toPromise();
+
+  const listQueryByTitleAscPrev = await tester
+    .test(
+      () =>
+        api.backend.listScenario({
+          query: titleAnchor,
+          sortBy: SearchQuerySort.Title,
+          orderBy: SearchQueryOrder.Asc,
+          cursorPrev: listQueryByTitleAscNext.data.cursorPrev,
+          limit: 2
+        }),
+      'List scenarios with query by title ordered by ascend using the prev cursor'
+    )
+    .status(200)
+    .response(
+      x =>
+        x.total === 4 &&
+        x.scenarios.length === 2 &&
+        x.scenarios[0].id === scenarios[0].id &&
+        x.scenarios[1].id === scenarios[1].id &&
+        x.cursorNext?.length > 0
+    )
+    .toPromise();
+
+  const listQueryByTitleDesc = await tester
+    .test(
+      () =>
+        api.backend.listScenario({
+          query: titleAnchor,
+          sortBy: SearchQuerySort.Title,
+          orderBy: SearchQueryOrder.Desc,
+          limit: 2
+        }),
+      'List scenarios with query by title ordered by descend'
+    )
+    .status(200)
+    .response(
+      x =>
+        x.total === 4 &&
+        x.scenarios.length === 2 &&
+        x.scenarios[0].id === scenarios[3].id &&
+        x.scenarios[1].id === scenarios[2].id &&
+        x.cursorNext?.length > 0
+    )
+    .toPromise();
+
+  const listQueryByTitleDescNext = await tester
+    .test(
+      () =>
+        api.backend.listScenario({
+          query: titleAnchor,
+          sortBy: SearchQuerySort.Title,
+          orderBy: SearchQueryOrder.Desc,
+          cursorNext: listQueryByTitleDesc.data.cursorNext,
+          limit: 2
+        }),
+      'List scenarios with query by title ordered by descend using the next cursor'
+    )
+    .status(200)
+    .response(
+      x =>
+        x.total === 4 &&
+        x.scenarios.length === 2 &&
+        x.scenarios[0].id === scenarios[1].id &&
+        x.scenarios[1].id === scenarios[0].id &&
+        x.cursorNext?.length > 0
+    )
+    .toPromise();
+
+  const listQueryByTitleDescPrev = await tester
+    .test(
+      () =>
+        api.backend.listScenario({
+          query: titleAnchor,
+          sortBy: SearchQuerySort.Title,
+          orderBy: SearchQueryOrder.Desc,
+          cursorPrev: listQueryByTitleDescNext.data.cursorPrev,
+          limit: 2
+        }),
+      'List scenarios with query by title ordered by descend using the prev cursor'
+    )
+    .status(200)
+    .response(
+      x =>
+        x.total === 4 &&
+        x.scenarios.length === 2 &&
+        x.scenarios[0].id === scenarios[3].id &&
+        x.scenarios[1].id === scenarios[2].id &&
+        x.cursorNext?.length > 0
+    )
+    .toPromise();
+
+  const listQueryByLengthAsc = await tester
+    .test(
+      () =>
+        api.backend.listScenario({
+          query: titleAnchor,
+          sortBy: SearchQuerySort.Length,
+          orderBy: SearchQueryOrder.Asc,
+          limit: 2
+        }),
+      'List scenarios with query by length ordered by ascend'
+    )
+    .status(200)
+    .response(
+      x =>
+        x.total === 4 &&
+        x.scenarios.length === 2 &&
+        x.scenarios[0].id === scenarios[0].id &&
+        x.scenarios[1].id === scenarios[1].id &&
+        x.cursorNext?.length > 0
+    )
+    .toPromise();
+
+  const listQueryByLengthAscNext = await tester
+    .test(
+      () =>
+        api.backend.listScenario({
+          query: titleAnchor,
+          sortBy: SearchQuerySort.Length,
+          orderBy: SearchQueryOrder.Asc,
+          cursorNext: listQueryByLengthAsc.data.cursorNext,
+          limit: 2
+        }),
+      'List scenarios with query by length ordered by ascend using the next cursor'
+    )
+    .status(200)
+    .response(
+      x =>
+        x.total === 4 &&
+        x.scenarios.length === 2 &&
+        x.scenarios[0].id === scenarios[2].id &&
+        x.scenarios[1].id === scenarios[3].id &&
+        x.cursorNext?.length > 0
+    )
+    .toPromise();
+
+  const listQueryByLengthAscPrev = await tester
+    .test(
+      () =>
+        api.backend.listScenario({
+          query: titleAnchor,
+          sortBy: SearchQuerySort.Length,
+          orderBy: SearchQueryOrder.Asc,
+          cursorPrev: listQueryByLengthAscNext.data.cursorPrev,
+          limit: 2
+        }),
+      'List scenarios with query by length ordered by ascend using the prev cursor'
+    )
+    .status(200)
+    .response(
+      x =>
+        x.total === 4 &&
+        x.scenarios.length === 2 &&
+        x.scenarios[0].id === scenarios[0].id &&
+        x.scenarios[1].id === scenarios[1].id &&
+        x.cursorNext?.length > 0
+    )
+    .toPromise();
+
+  const listQueryByLengthDesc = await tester
+    .test(
+      () =>
+        api.backend.listScenario({
+          query: titleAnchor,
+          sortBy: SearchQuerySort.Length,
+          orderBy: SearchQueryOrder.Desc,
+          limit: 2
+        }),
+      'List scenarios with query by length ordered by descend'
+    )
+    .status(200)
+    .response(
+      x =>
+        x.total === 4 &&
+        x.scenarios.length === 2 &&
+        x.scenarios[0].id === scenarios[3].id &&
+        x.scenarios[1].id === scenarios[2].id &&
+        x.cursorNext?.length > 0
+    )
+    .toPromise();
+
+  const listQueryByLengthDescNext = await tester
+    .test(
+      () =>
+        api.backend.listScenario({
+          query: titleAnchor,
+          sortBy: SearchQuerySort.Length,
+          orderBy: SearchQueryOrder.Desc,
+          cursorNext: listQueryByLengthDesc.data.cursorNext,
+          limit: 2
+        }),
+      'List scenarios with query by length ordered by descend using the next cursor'
+    )
+    .status(200)
+    .response(
+      x =>
+        x.total === 4 &&
+        x.scenarios.length === 2 &&
+        x.scenarios[0].id === scenarios[1].id &&
+        x.scenarios[1].id === scenarios[0].id &&
+        x.cursorNext?.length > 0
+    )
+    .toPromise();
+
+  const listQueryByLengthDescPrev = await tester
+    .test(
+      () =>
+        api.backend.listScenario({
+          query: titleAnchor,
+          sortBy: SearchQuerySort.Length,
+          orderBy: SearchQueryOrder.Desc,
+          cursorPrev: listQueryByLengthDescNext.data.cursorPrev,
+          limit: 2
+        }),
+      'List scenarios with query by length ordered by descend using the prev cursor'
+    )
+    .status(200)
+    .response(
+      x =>
+        x.total === 4 &&
+        x.scenarios.length === 2 &&
+        x.scenarios[0].id === scenarios[3].id &&
+        x.scenarios[1].id === scenarios[2].id &&
+        x.cursorNext?.length > 0
+    )
+    .toPromise();
+
+  for (const scenario of scenarios) {
+    try {
+      await api.backend.removeScenario(scenario.id);
+    } catch (e) {
+      // Failed to remove the scenario
+    }
+  }
+
   const knownSpawner = {
     url: 'https://spawner.dev.wsl:3001',
     secret: '12345'
@@ -642,12 +959,6 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
   }
 
   const token = sign({ spawner: knownSpawner.url }, knownSpawner.secret);
-
-  const allTitles = await tester
-    .test(() => api.backend.getAllScenarioTitles(token), 'Fetch all scenarios')
-    .status(200)
-    .response(x => Array.isArray(x) && x.length >= 1)
-    .toPromise();
 
   const scenarioText = await tester
     .test(
@@ -687,7 +998,18 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
     updateScenario.pass &&
     scenarioContent.pass &&
     scenarioList.pass &&
-    allTitles.pass &&
+    listQueryByTitleAsc.pass &&
+    listQueryByTitleAscNext.pass &&
+    listQueryByTitleAscPrev.pass &&
+    listQueryByTitleDesc.pass &&
+    listQueryByTitleDescNext.pass &&
+    listQueryByTitleDescPrev.pass &&
+    listQueryByLengthAsc.pass &&
+    listQueryByLengthAscNext.pass &&
+    listQueryByLengthAscPrev.pass &&
+    listQueryByLengthDesc.pass &&
+    listQueryByLengthDescNext.pass &&
+    listQueryByLengthDescPrev.pass &&
     scenarioText.pass &&
     removeScenario.pass &&
     removeLastScenario.pass
@@ -902,7 +1224,12 @@ async function quickGameFlow(api: Api, logger: Logger): Promise<boolean> {
 
   const oneScenario = await tester
     .test(
-      () => api.backend.listScenario(0, 2),
+      () =>
+        api.backend.listScenario({
+          sortBy: SearchQuerySort.Title,
+          orderBy: SearchQueryOrder.Asc,
+          limit: 2
+        }),
       'Only an one scenario is available'
     )
     .status(200)

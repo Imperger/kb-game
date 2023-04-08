@@ -4,5 +4,5 @@ import { LobbyPlayer } from './lobby-player';
 export interface LobbyState {
   ownerId: string;
   players: LobbyPlayer[];
-  scenarios: Scenario[];
+  scenario: Scenario | null;
 }

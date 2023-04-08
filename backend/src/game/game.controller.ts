@@ -25,9 +25,6 @@ import { LoggerService } from '@/logger/logger.service';
 import { Player } from '@/player/decorators/player.decorator';
 import { Player as PlayerSchema } from '@/player/schemas/player.schema';
 
-
-
-
 @Controller('game')
 export class GameController {
   constructor(
@@ -67,7 +64,7 @@ export class GameController {
             });
           }
         });
-    });
+      });
     } else {
       return Promise.reject(new EnterQuickMatchQueueException());
     }

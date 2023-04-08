@@ -32,7 +32,7 @@ export default class MainMenuReplay extends Mixins(ApiServiceMixin) {
 
   private perPage = 8;
 
-  private overview: IReplaysOverview = { total: 0, replays: [] };
+  public overview: IReplaysOverview = { total: 0, replays: [] };
 
   private prevLocked = false;
 

@@ -1,18 +1,17 @@
 import {
-    registerDecorator,
-    ValidatorConstraintInterface,
-    ValidationArguments,
-    ValidatorConstraint
-  } from 'class-validator';
+  registerDecorator,
+  ValidatorConstraintInterface,
+  ValidationArguments,
+  ValidatorConstraint
+} from 'class-validator';
 
 type AnyClass = { new (...args: any[]): any };
-  
+
 type PublicConstructor = new (...args: any[]) => any;
-  
+
 export type ClassValidationDecorator = <T extends AnyClass>(
-  target: T,
+  target: T
 ) => PublicConstructor;
-  
 
 export function registerClassValidator(options: {
   name: string;
@@ -51,7 +50,7 @@ export class AtLeasOneConstraint implements ValidatorConstraintInterface {
 
 export function AtLeastOne(): ClassValidationDecorator {
   return registerClassValidator({
-    name: 'AtleastOne',
+    name: 'AtLeastOne',
     validator: AtLeasOneConstraint,
     constraints: []
   });

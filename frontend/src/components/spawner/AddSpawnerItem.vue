@@ -19,11 +19,11 @@ import { LoadingController } from './loading-controller';
 
 @Component
 export default class AddSpawnerItem extends Mixins(ApiServiceMixin) {
-  private url = '';
+  public url = '';
 
-  private secret = '';
+  public secret = '';
 
-  private loading: LoadingController = { addBtn: false };
+  public loading: LoadingController = { addBtn: false };
 
   @Emit('add')
   add (url: string, secret: string, loading: LoadingController): void {}

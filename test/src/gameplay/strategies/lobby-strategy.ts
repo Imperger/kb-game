@@ -8,7 +8,8 @@ import {
   LobbyEvent,
   LobbyEventType,
   PlayerJoinedEvent,
-  PlayerLeavesEvent
+  PlayerLeavesEvent,
+  SelectScenarioEvent
 } from './interfaces/lobby-events';
 import { Strategy } from './strategy';
 
@@ -21,12 +22,13 @@ export interface Player {
 export interface Scenario {
   id: string;
   title: string;
+  text: string;
 }
 
 export interface LobbyState {
   ownerId: string;
   players: Player[];
-  scenarios: Scenario[];
+  scenario: Scenario | null;
 }
 
 export class LobbyStrategy extends Strategy {
@@ -34,12 +36,13 @@ export class LobbyStrategy extends Strategy {
 
   private _ownerId!: string;
   private _players: Player[] = [];
-  private _scenarios!: Scenario[];
-  private _scenario!: Scenario;
+  private _scenario!: Scenario | null;
 
   private switchStrategy!: (strategy: Strategy) => void;
 
   public readonly $gameWillStart = new Subject<void>();
+
+  public readonly $selectedScenario = new Subject<Scenario>();
 
   async activate(
     socket: Socket,
@@ -55,12 +58,10 @@ export class LobbyStrategy extends Strategy {
     ({
       ownerId: this._ownerId,
       players,
-      scenarios: this._scenarios
+      scenario: this._scenario
     } = await this.fetchLobbyState());
 
     this._players.push(...players);
-
-    this._scenario = this.scenarios[0];
   }
 
   async deactivate(): Promise<void> {
@@ -68,13 +69,7 @@ export class LobbyStrategy extends Strategy {
   }
 
   async selectScenario(id: string): Promise<void> {
-    const selected = this.scenarios.find(x => x.id === id);
-
-    if (selected) {
-      this._scenario = selected;
-
-      await remoteCall(this.socket, 'select_scenario', id);
-    }
+    await remoteCall(this.socket, 'select_scenario', id);
   }
 
   public startGame(): Promise<boolean> {
@@ -92,6 +87,9 @@ export class LobbyStrategy extends Strategy {
       case LobbyEventType.GameWillStart:
         this.switchStrategy(new GameStrategy());
         this.$gameWillStart.next();
+        return true;
+      case LobbyEventType.SelectScenario:
+        this.$selectedScenario.next(e.data as SelectScenarioEvent);
         return true;
       default:
         return false;
@@ -121,7 +119,7 @@ export class LobbyStrategy extends Strategy {
     return this._players;
   }
 
-  get scenarios(): Scenario[] {
-    return this._scenarios;
+  get scenario(): Scenario | null {
+    return this._scenario;
   }
 }

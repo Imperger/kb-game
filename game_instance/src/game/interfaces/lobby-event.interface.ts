@@ -8,13 +8,20 @@ export interface PlayerLeavesEvent {
   id: string;
 }
 
+export interface SelectScenarioEvent {
+  id: string;
+  title: string;
+  text: string;
+}
+
 export enum LobbyEventType {
   PlayerJoined = 200,
   PlayerLeaves,
   GameWillStart,
+  SelectScenario,
 }
 
 export interface LobbyEvent {
   type: LobbyEventType;
-  data?: PlayerJoinedEvent | PlayerLeavesEvent;
+  data?: PlayerJoinedEvent | PlayerLeavesEvent | SelectScenarioEvent;
 }

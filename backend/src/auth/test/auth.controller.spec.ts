@@ -14,7 +14,6 @@ import { LoggerService } from '@/logger/logger.service';
 import { User } from '@/user/schemas/user.schema';
 import { userStub } from '@/user/test/stubs/user.stub';
 
-
 jest.mock('../../logger/logger.service');
 jest.mock('../auth.service');
 
