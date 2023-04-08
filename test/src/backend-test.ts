@@ -622,6 +622,24 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
     )
     .toPromise();
 
+    const nonExistId = '64283c3fb77b24236a86772d';
+
+    const getScenarioContentNonExistId = await tester
+    .test(
+      () => api.backend.getScenarioContent(nonExistId),
+      'Fetch scenario content with non exist id'
+    )
+    .status(404)
+    .toPromise();
+
+    const removeScenarioContentNonExistId = await tester
+    .test(
+      () => api.backend.getScenarioContent(nonExistId),
+      'Remove scenario with non exist id'
+    )
+    .status(404)
+    .toPromise();
+
   const scenarioList = await tester
     .test(
       () =>
@@ -997,6 +1015,8 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
     newScenario.pass &&
     updateScenario.pass &&
     scenarioContent.pass &&
+    getScenarioContentNonExistId.pass &&
+    removeScenarioContentNonExistId.pass &&
     scenarioList.pass &&
     listQueryByTitleAsc.pass &&
     listQueryByTitleAscNext.pass &&
