@@ -1194,8 +1194,6 @@ async function linkPlayerFlow(api: Api, logger: Logger): Promise<boolean> {
 }
 
 async function quickGameFlow(api: Api, logger: Logger): Promise<boolean> {
-  const spawner = { url: 'https://spawner.dev.wsl:3001', secret: '12345' };
-
   const participantCreds1 = genUser();
   const participant1 = new BackendApi('https://backend.dev.wsl/api');
   await participant1.register(participantCreds1);
@@ -1206,6 +1204,18 @@ async function quickGameFlow(api: Api, logger: Logger): Promise<boolean> {
     participantCreds1.username,
     participantCreds1.password
   );
+
+  const tester = new ApiTester(logger);
+
+  const enterQueueWihtoutSpawner = await tester
+    .test(
+      () => participant1.enterQuickQueue(),
+      'Enter the quick game queue without any spawner'
+    )
+    .status(503)
+    .toPromise();
+
+  const spawner = { url: 'https://spawner.dev.wsl:3001', secret: '12345' };
 
   const participantCreds2 = genUser();
   const participant2 = new BackendApi('https://backend.dev.wsl/api');
@@ -1219,8 +1229,6 @@ async function quickGameFlow(api: Api, logger: Logger): Promise<boolean> {
   );
 
   await api.backend.addSpawner(spawner.url, spawner.secret);
-
-  const tester = new ApiTester(logger);
 
   const oneScenario = await tester
     .test(
@@ -1258,6 +1266,14 @@ async function quickGameFlow(api: Api, logger: Logger): Promise<boolean> {
     .response(x => x !== null)
     .toPromise();
 
+  const p1QueueFailed = tester
+    .test(
+      () => participant1.enterQuickQueue(),
+      'Enter the quick game queue for player#1 when he already in a queue'
+    )
+    .status(400)
+    .toPromise();
+
   const p2Queue = tester
     .test(
       () => participant2.enterQuickQueue(),
@@ -1292,7 +1308,13 @@ async function quickGameFlow(api: Api, logger: Logger): Promise<boolean> {
   let pass = false;
   try {
     pass = (
-      await Promise.all([p1Queue, p2Queue, p2LeaveQueue, p2QueueAgain])
+      await Promise.all([
+        p1Queue,
+        p1QueueFailed,
+        p2Queue,
+        p2LeaveQueue,
+        p2QueueAgain
+      ])
     ).every(x => x.pass);
   } catch (e) {
     // Test failed
@@ -1360,7 +1382,9 @@ async function quickGameFlow(api: Api, logger: Logger): Promise<boolean> {
 
   await api.backend.removeSpawner(spawner.url);
 
-  return pass && retries > 0 && singleReplay.pass;
+  return (
+    enterQueueWihtoutSpawner.pass && pass && retries > 0 && singleReplay.pass
+  );
 }
 
 async function awaitGameStart(gameClient: GameClient) {
