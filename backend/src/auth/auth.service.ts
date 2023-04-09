@@ -217,7 +217,7 @@ export class AuthService {
     }
   }
 
-  private async validateUser(user: User, password: string) {
+  public async validateUser(user: User, password: string) {
     if (
       user === null ||
       user.secret === undefined ||

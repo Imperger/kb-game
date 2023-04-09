@@ -5,7 +5,7 @@
       v-slot="{ invalid }">
       <validation-provider
         v-slot="{ errors }"
-        name="Name"
+        name="userid"
         rules="required|username_or_email">
         <v-text-field
           v-model="credentials.identifier"
@@ -16,7 +16,7 @@
       </validation-provider>
       <validation-provider
         v-slot="{ errors }"
-        name="Name"
+        name="password"
         rules="required|length:8,100">
         <v-text-field
           v-model="credentials.password"

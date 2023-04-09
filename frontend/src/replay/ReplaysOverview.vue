@@ -28,9 +28,9 @@ import { ReplayOverview } from '@/services/api-service/replay/replay-overview';
 })
 export default class ReplaysOverview extends Mixins(ApiServiceMixin) {
   @Prop({ required: true })
-  private readonly replays!: ReplayOverview[];
+  public readonly replays!: ReplayOverview[];
 
-  private currentPlayerId = '';
+  public currentPlayerId = '';
 
   async created (): Promise<void> {
     const player = await this.api.player.currentPlayerInfo();

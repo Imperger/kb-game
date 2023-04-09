@@ -6,6 +6,7 @@ import MainMenuProfile from './MainMenuProfile.vue';
 import MainMenuReplay from './MainMenuReplay.vue';
 import MainMenuServer from './MainMenuServer.vue';
 import ServerBrowser from './play/ServerBrowser.vue';
+import MainMenuSettings from './MainMenuSettings.vue';
 
 export const mainMenu: Array<RouteConfig> = [
   {
@@ -37,5 +38,10 @@ export const mainMenu: Array<RouteConfig> = [
     path: 'server',
     name: 'MainMenuServer',
     component: MainMenuServer
+  },
+  {
+    path: 'settings',
+    name: 'MainMenuSettings',
+    component: MainMenuSettings
   }
 ];

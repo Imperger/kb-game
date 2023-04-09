@@ -72,10 +72,10 @@ import { msToMmss } from '@/util/formatters/ms-to-mm-ss';
 @Component
 export default class ReplayOverviewCard extends Mixins(StoreMixin) {
   @Prop({ required: true })
-  private readonly currentPlayerId!: string;
+  public readonly currentPlayerId!: string;
 
   @Prop({ required: true })
-  private readonly replay!: ReplayOverview;
+  public readonly replay!: ReplayOverview;
 
   fullNickname (nickname: Nickname): string {
     return `${nickname.nickname}#${nickname.discriminator}`;
