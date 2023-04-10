@@ -196,6 +196,15 @@ export interface SearchQuery {
 
 export type ScenarioCreate = Omit<Scenario, 'title' | 'text'>;
 
+export interface PasswordValidationResponse {
+  valid: boolean;
+}
+
+export interface UpdatePasswordRequest {
+  password?: string;
+  updatedPassword: string;
+}
+
 export class BackendApi {
   private token!: string;
   private http!: AxiosInstance;
@@ -250,8 +259,27 @@ export class BackendApi {
 
   loginGoogle(
     idToken: string
+  ): Promise<AxiosResponse<LoginResponse>> | FailType<RejectedResponse> {
+    return this.handleAuthToken(() =>
+      this.http.post<LoginResponse>('/auth/login/google', { idToken })
+    );
+  }
+
+  checkPassword(
+    password: string
+  ):
+    | Promise<AxiosResponse<PasswordValidationResponse>>
+    | FailType<RejectedResponse> {
+    return this.http.post<PasswordValidationResponse>(
+      '/auth/password/validate',
+      { password }
+    );
+  }
+
+  updatePassword(
+    update: UpdatePasswordRequest
   ): Promise<AxiosResponse<void>> | FailType<RejectedResponse> {
-    return this.http.post<void>('/auth/login/google', { idToken });
+    return this.http.put<void>('/auth/password', update);
   }
 
   me(): Promise<AxiosResponse<CurrentUser>> | FailType<RejectedResponse> {

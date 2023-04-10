@@ -215,7 +215,7 @@ async function googleAuthFlow(api: Api, logger: Logger): Promise<boolean> {
     .status(401)
     .toPromise();
 
-  const loginГnsuitableAudience = await tester
+  const loginUnsuitableAudience = await tester
     .test(
       () => api.backend.loginGoogle(gi.signIdTokenAndSetInvalidAudiene(token)),
       'Login with unsuitable audience in google id token'
@@ -234,6 +234,97 @@ async function googleAuthFlow(api: Api, logger: Logger): Promise<boolean> {
     .status(200)
     .toPromise();
 
+  const updatedPassword = '1234567890';
+
+  const checkPasswordWithInvalidValue = await tester
+    .test(
+      () => api.backend.checkPassword(updatedPassword),
+      'Check password with invalid value for an external user'
+    )
+    .status(200)
+    .response({ valid: false })
+    .toPromise();
+
+  const updatePassword = await tester
+    .test(
+      () => api.backend.updatePassword({ updatedPassword }),
+      'Update password for an external user'
+    )
+    .status(200)
+    .toPromise();
+
+  /**
+   * Mongodb updates the updatedAt field at secret section with some delay, 
+   * and making login right after update password can result in unauthorized response 
+   * because auth token has issue date before the updateAt field
+   */
+  await delay(2000);
+
+  const loginValidWithUpdatedPassword = await tester
+    .test(
+      () =>
+        api.backend.loginGoogle(
+          gi.signIdTokenAndModifyDate(token, DateModifier.Valid)
+        ),
+      'Login with valid google id token for user with updated password'
+    )
+    .status(200)
+    .toPromise();
+
+  const checkPasswordAfterUpdateWitnInvalidValue = await tester
+    .test(
+      () => api.backend.checkPassword(updatedPassword + '_'),
+      'Check password with invalid value for an external user after update his password'
+    )
+    .status(200)
+    .response({ valid: false })
+    .toPromise();
+
+  const checkPasswordAfterUpdateWitnValidValue = await tester
+    .test(
+      () => api.backend.checkPassword(updatedPassword),
+      'Check password with valid value for an external user after update his password'
+    )
+    .status(200)
+    .response({ valid: true })
+    .toPromise();
+
+  const updatePasswordWithInvalidPassword = await tester
+    .test(
+      () =>
+        api.backend.updatePassword({
+          password: updatedPassword + '_',
+          updatedPassword: '1111111111'
+        }),
+      'Update password for an external user with invalid password'
+    )
+    .status(400)
+    .toPromise();
+
+  const updatePasswordWithSamePassword = await tester
+    .test(
+      () =>
+        api.backend.updatePassword({
+          password: updatedPassword,
+          updatedPassword
+        }),
+      'Update password for an external user with the same passwords'
+    )
+    .status(400)
+    .toPromise();
+
+  const updatePasswordCorrectly = await tester
+    .test(
+      () =>
+        api.backend.updatePassword({
+          password: updatedPassword,
+          updatedPassword: updatePassword + '_'
+        }),
+      'Update password for an external user with previously updated password'
+    )
+    .status(200)
+    .toPromise();
+
   return (
     withoutIdToken.pass &&
     loginValidTokenNonExistUser.pass &&
@@ -245,8 +336,16 @@ async function googleAuthFlow(api: Api, logger: Logger): Promise<boolean> {
     signupExistingSub.pass &&
     loginExpired.pass &&
     loginNotValidBefore.pass &&
-    loginГnsuitableAudience.pass &&
-    loginValid.pass
+    loginUnsuitableAudience.pass &&
+    loginValid.pass &&
+    checkPasswordWithInvalidValue.pass &&
+    updatePassword.pass &&
+    loginValidWithUpdatedPassword.pass &&
+    checkPasswordAfterUpdateWitnInvalidValue.pass &&
+    checkPasswordAfterUpdateWitnValidValue.pass &&
+    updatePasswordWithInvalidPassword.pass &&
+    updatePasswordWithSamePassword.pass &&
+    updatePasswordCorrectly.pass
   );
 }
 
@@ -374,7 +473,30 @@ async function signinFlow(api: Api, logger: Logger): Promise<boolean> {
     .response(x => x.token?.length > 0)
     .toPromise();
 
-  return signinByUsername.pass && signinByEmail.pass;
+  const invalidPassword = await tester
+    .test(
+      () => api.backend.checkPassword(user.cred.password + '_'),
+      'Check password with invalid value for an internal user'
+    )
+    .status(200)
+    .response({ valid: false })
+    .toPromise();
+
+  const validPassword = await tester
+    .test(
+      () => api.backend.checkPassword(user.cred.password),
+      'Check password with valid value for an internal user'
+    )
+    .status(200)
+    .response({ valid: true })
+    .toPromise();
+
+  return (
+    signinByUsername.pass &&
+    signinByEmail.pass &&
+    invalidPassword.pass &&
+    validPassword.pass
+  );
 }
 
 async function registerWithSameCreds(
@@ -622,9 +744,9 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
     )
     .toPromise();
 
-    const nonExistId = '64283c3fb77b24236a86772d';
+  const nonExistId = '64283c3fb77b24236a86772d';
 
-    const getScenarioContentNonExistId = await tester
+  const getScenarioContentNonExistId = await tester
     .test(
       () => api.backend.getScenarioContent(nonExistId),
       'Fetch scenario content with non exist id'
@@ -632,7 +754,7 @@ async function scenarioFlow(api: Api, logger: Logger): Promise<boolean> {
     .status(404)
     .toPromise();
 
-    const removeScenarioContentNonExistId = await tester
+  const removeScenarioContentNonExistId = await tester
     .test(
       () => api.backend.getScenarioContent(nonExistId),
       'Remove scenario with non exist id'

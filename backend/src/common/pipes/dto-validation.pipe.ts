@@ -26,6 +26,12 @@ export class DtoValidationPipe implements PipeTransform<any> {
     }
 
     const object = plainToClass(metatype, value);
+
+    // Request without ContentType: application/json
+    if (typeof value !== 'object') {
+      throw new DtoValidationFailedException('Dto validation failed: Expected object');
+    }
+
     const errors = await validate(object);
     if (errors.length > 0) {
       const error = `Dto validation failed: ${JSON.stringify(

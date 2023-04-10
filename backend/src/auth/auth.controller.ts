@@ -4,7 +4,9 @@ import {
   Post,
   Patch,
   UseGuards,
-  HttpCode
+  HttpCode,
+  Put,
+  BadRequestException
 } from '@nestjs/common';
 import { Recaptcha } from '@nestlab/google-recaptcha';
 
@@ -16,11 +18,14 @@ import {
 import { User } from './decorators/user';
 import { UserId } from './decorators/user-id';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdatePasswordDto } from './dto/update-password-dto';
+import { ValidatePasswordDto } from './dto/validate-password-dto';
 import { AuthGoogleGuard } from './guards/auth-google.guard';
 import { LoginByEmailGuard } from './guards/login-by-email.guard';
 import { LoginByUsernameGuard } from './guards/login-by-username.guard';
 import { RegistrationConfirmGuard } from './guards/registration-confirm.guard';
 
+import { JwtGuard } from '@/jwt/decorators/jwt.guard';
 import { LoggerService } from '@/logger/logger.service';
 import { User as UserSchema } from '@/user/schemas/user.schema';
 
@@ -108,5 +113,51 @@ export class AuthController {
     );
 
     return { token: await this.authService.generateAccessToken(user.id) };
+  }
+
+  @UseGuards(JwtGuard)
+  @Recaptcha()
+  @HttpCode(200)
+  @Post('password/validate')
+  async validatePassword(
+    @User() user: UserSchema,
+    @Body() payload: ValidatePasswordDto
+  ) {
+    let valid = true;
+
+    try {
+      await this.authService.validateUser(user, payload.password, 'CheckPassword');
+    } catch (e) {
+      valid = false;
+    }
+
+    return { valid };
+  }
+
+  @UseGuards(JwtGuard)
+  @Recaptcha()
+  @Put('password')
+  async updatePassword(
+    @User() user: UserSchema,
+    @Body() update: UpdatePasswordDto
+  ) {
+    if (update.password === update.updatedPassword) {
+      throw new BadRequestException('The updated password and the old are same');
+    }
+
+    try {
+      if (user.secret) {
+        await this.authService.validateUser(user, update.password, 'UpdatePassword');
+      }
+
+      await this.authService.updatePassword(user._id, update.updatedPassword);
+
+      this.logger.log(
+        `Updated password for '${user.id}':${user.username}`,
+        'AuthController::UpdatePassword'
+      );
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
   }
 }

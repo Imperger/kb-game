@@ -11,6 +11,7 @@ export class CurrentUserPipe implements PipeTransform {
       email: user.email,
       avatar: user.avatar,
       registeredAt: new Date(user.createdAt),
+      hasPassword: !!user.secret,
       scopes: {
         assignScope: user.scopes.assignScope,
         serverMaintainer: user.scopes.serverMaintainer,

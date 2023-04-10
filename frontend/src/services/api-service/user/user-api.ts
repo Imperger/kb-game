@@ -1,5 +1,5 @@
 import { AxiosInstance } from 'axios';
-import { RejectedResponse } from '../rejected-response';
+import { RejectedResponse, isRejectedResponse } from '../rejected-response';
 import { CurrentUser } from './types';
 
 export default class UserApi {
@@ -10,6 +10,14 @@ export default class UserApi {
   }
 
   async currentUserInfo (): Promise<CurrentUser | RejectedResponse> {
-    return (await this.http.get('user/me')).data;
+    const response = (await this.http.get<CurrentUser>('user/me')).data;
+
+    if (!isRejectedResponse(response)) {
+      response.registeredAt = new Date(response.registeredAt);
+      response.scopes.blockedUntil = new Date(response.scopes.blockedUntil);
+      response.scopes.mutedUntil = new Date(response.scopes.mutedUntil);
+    }
+
+    return response;
   }
 }

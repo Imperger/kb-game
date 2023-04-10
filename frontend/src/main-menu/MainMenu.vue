@@ -13,6 +13,7 @@
       <v-tab :disabled="!App.loggedIn" :to="{ name: 'MainMenuProfile' }">Profile</v-tab>
       <v-tab :disabled="!App.loggedIn" :to="{ name: 'MainMenuReplays' }">Replays</v-tab>
       <v-tab v-if="App.serverMaintainer" :to="{ name: 'MainMenuServer' }">Server</v-tab>
+      <v-tab :disabled="!App.loggedIn" :to="{ name: 'MainMenuSettings' }">Settings</v-tab>
     </v-tabs>
     <section class="profile">
       <profile-widget v-if="App.loggedIn" :profile="App.user" />

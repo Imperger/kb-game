@@ -8,8 +8,8 @@
     </v-btn>
   </template>
   <v-list>
-    <v-list-item>
-      <v-list-item-title @click="signOut">Log out</v-list-item-title>
+    <v-list-item @click="signOut">
+      Log out
     </v-list-item>
   </v-list>
 </v-menu>

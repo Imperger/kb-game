@@ -11,6 +11,15 @@ export interface LoginResponse {
   token?: string;
 }
 
+export interface UpdatePasswordRequest {
+  password?: string;
+  updatedPassword: string;
+}
+
+export interface PasswordValidationResponse {
+  valid: boolean;
+}
+
 export default class AuthApi {
   private token = '';
   private http!: AxiosInstance;
@@ -118,6 +127,18 @@ export default class AuthApi {
     }
 
     return response;
+  }
+
+  async validatePassword (password: string, reCaptchaResponse: string): Promise<PasswordValidationResponse | RejectedResponse> {
+    return (await this.http.post<PasswordValidationResponse>('auth/password/validate',
+      { password },
+      { headers: { recaptcha: reCaptchaResponse } })).data;
+  }
+
+  async updatePassword (options: UpdatePasswordRequest, reCaptchaResponse: string): Promise<EmptyObject | RejectedResponse> {
+    return (await this.http.put<EmptyObject>('auth/password',
+      options,
+      { headers: { recaptcha: reCaptchaResponse } })).data;
   }
 
   signOut (): void {

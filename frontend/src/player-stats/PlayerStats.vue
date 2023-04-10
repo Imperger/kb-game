@@ -47,7 +47,7 @@ import { PlayerStats as Player } from '@/services/api-service/player/player-stat
 @Component
 export default class PlayerStats extends Mixins(ApiServiceMixin) {
   @Prop()
-  private player: Player | null = null;
+  public player: Player | null = null;
 
   get nicknameFull (): string {
     return `${this.player?.nickname}#${this.player?.discriminator}`;

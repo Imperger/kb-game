@@ -19,7 +19,7 @@ import { PlayerStats as Player } from '@/services/api-service/player/player-stat
   }
 })
 export default class MainMenuProfile extends Mixins(ApiServiceMixin) {
-  private player: Player | null = null;
+  public player: Player | null = null;
 
   async created (): Promise<void> {
     const player = await this.api.player.currentPlayerInfo();

@@ -217,7 +217,7 @@ export class AuthService {
     }
   }
 
-  private async validateUser(user: User, password: string) {
+  public async validateUser(user: User, password: string, scope = 'SignIn') {
     if (
       user === null ||
       user.secret === undefined ||
@@ -228,7 +228,7 @@ export class AuthService {
         `Invalid credentials for a user '${user?.id ?? '??'}:${
           user?.username ?? '??'
         }'`,
-        'AuthService::SignIn'
+        `AuthService::${scope}`
       );
 
       throw new InvalidCredentialsException();
@@ -241,7 +241,7 @@ export class AuthService {
       ) {
         this.logger.warn(
           `Expired the confirmation time '${user.id}:${user.username}'`,
-          'AuthService::SignIn'
+          `AuthService::${scope}`
         );
 
         throw new RegistrationConfirmExpiredException();
@@ -249,7 +249,7 @@ export class AuthService {
 
       this.logger.warn(
         `Pending the confirmation '${user.id}:${user.username}'`,
-        'AuthService::SignIn'
+        `AuthService::${scope}`
       );
 
       throw new RegistrationNotConfirmedException();

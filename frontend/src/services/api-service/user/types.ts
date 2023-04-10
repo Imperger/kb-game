@@ -3,6 +3,7 @@ export interface CurrentUser {
   email: string;
   registeredAt: Date;
   avatar: string,
+  hasPassword: boolean,
   scopes: {
     assignScope: boolean;
     serverMaintainer: boolean;

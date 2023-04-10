@@ -22,7 +22,7 @@ export default class PlayerStatsViewer extends Mixins(ApiServiceMixin) {
   @Prop()
   private readonly nickname!: string;
 
-  private player: Player | null = null;
+  public player: Player | null = null;
 
   async created (): Promise<void> {
     const player = await this.api.player.getPlayerInfo(this.nickname);
