@@ -126,7 +126,7 @@ export class AuthController {
     let valid = true;
 
     try {
-      await this.authService.validateUser(user, payload.password);
+      await this.authService.validateUser(user, payload.password, 'CheckPassword');
     } catch (e) {
       valid = false;
     }
@@ -142,19 +142,19 @@ export class AuthController {
     @Body() update: UpdatePasswordDto
   ) {
     if (update.password === update.updatedPassword) {
-      return;
+      throw new BadRequestException('The updated password and the old are same');
     }
 
     try {
       if (user.secret) {
-        await this.authService.validateUser(user, update.password);
+        await this.authService.validateUser(user, update.password, 'UpdatePassword');
       }
 
       await this.authService.updatePassword(user._id, update.updatedPassword);
 
       this.logger.log(
         `Updated password for '${user.id}':${user.username}`,
-        'AuthController::Password'
+        'AuthController::UpdatePassword'
       );
     } catch (e) {
       throw new BadRequestException(e);
